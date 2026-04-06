@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Sistem BMN Sarpras</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 13px; background: #f0f2f5; color: #222; }
+
+  .app-header {
+    background: #1a3a5c; color: #fff; padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  }
+  .app-header h1 { font-size: 16px; font-weight: 700; }
+  .app-header small { font-size: 11px; opacity: .75; }
+  .btn-back {
+    margin-left: auto; color: rgba(255,255,255,.8); text-decoration: none;
+    font-size: 12px; padding: 5px 12px; border: 1px solid rgba(255,255,255,.3);
+    border-radius: 4px;
+  }
+  .btn-back:hover { background: rgba(255,255,255,.1); }
+
+  /* TABS */
+  .tab-bar { display: flex; gap: 0; border-bottom: 2px solid #1a3a5c; margin-bottom: 20px; }
+  .tab-btn {
+    padding: 9px 22px; font-size: 13px; font-weight: 700; background: none;
+    border: none; cursor: pointer; color: #888; border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab-btn.active { color: #1a3a5c; border-bottom-color: #1a3a5c; background: #fff; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* LOGIN */
+  .login-wrap {
+    display: flex; align-items: center; justify-content: center;
+    min-height: calc(100vh - 50px);
+  }
+  .login-box {
+    background: #fff; border-radius: 10px; padding: 36px 40px;
+    width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,.1); text-align: center;
+  }
+  .login-box .lock-icon { font-size: 40px; margin-bottom: 12px; }
+  .login-box h2 { font-size: 16px; color: #1a3a5c; margin-bottom: 6px; }
+  .login-box p  { font-size: 12px; color: #888; margin-bottom: 20px; }
+  .login-box input[type=password] {
+    width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 5px;
+    font-size: 14px; margin-bottom: 12px; text-align: center; letter-spacing: 3px;
+  }
+  .login-box input:focus { outline: none; border-color: #1a3a5c; }
+  .btn-login {
+    width: 100%; padding: 10px; background: #1a3a5c; color: #fff;
+    border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .login-error { margin-top: 10px; font-size: 12px; color: #c0392b; display: none; font-weight: 600; }
+
+  /* ADMIN PANEL */
+  .admin-wrap { display: none; max-width: 1000px; margin: 28px auto; padding: 0 16px 40px; }
+  .panel-card {
+    background: #fff; border-radius: 8px; padding: 24px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08); margin-bottom: 20px;
+  }
+  .panel-card h2 {
+    font-size: 14px; font-weight: 700; color: #1a3a5c;
+    margin-bottom: 16px; border-bottom: 2px solid #1a3a5c; padding-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .filter-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 10px; align-items: end; margin-bottom: 16px;
+  }
+  .filter-grid label { font-size: 11px; font-weight: 600; color: #555; display: block; margin-bottom: 3px; }
+  .filter-grid input {
+    width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;
+  }
+  .filter-grid input:focus { outline: none; border-color: #1a3a5c; }
+  .btn-reset-filter {
+    padding: 7px 14px; background: #95a5a6; color: #fff; border: none;
+    border-radius: 4px; font-size: 12px; cursor: pointer; white-space: nowrap; height: 32px;
+  }
+
+  .surat-table-wrap { overflow-x: auto; }
+  table.surat-list { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.surat-list th {
+    background: #1a3a5c; color: #fff; padding: 8px 10px;
+    text-align: left; font-weight: 600; white-space: nowrap;
+  }
+  table.surat-list td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+  table.surat-list tr:hover { background: #f0f7ff; cursor: pointer; }
+  table.surat-list tr.selected { background: #d6eaf8; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .badge-rr { background: #fef9e7; color: #d35400; }
+  .badge-rb { background: #fdecea; color: #c0392b; }
+  .empty-state { text-align: center; padding: 24px; color: #aaa; font-size: 12px; }
+
+  .detail-panel {
+    display: none; border: 1px solid #d6eaf8; border-radius: 6px;
+    background: #f8fafc; padding: 16px 20px; margin-top: 16px;
+  }
+  .detail-panel h3 { font-size: 13px; color: #1a3a5c; font-weight: 700; margin-bottom: 12px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; font-size: 12px; }
+  .detail-grid .dl { color: #666; font-weight: 600; }
+  .action-row { margin-top: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .btn { padding: 9px 20px; border: none; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-pdf { background: #27ae60; color: #fff; }
+  .btn-pdf:disabled { background: #aaa; cursor: not-allowed; }
+  .btn-logout { background: #e74c3c; color: #fff; }
+  .foto-status { font-size: 11px; color: #888; }
+
+  .status-bar {
+    margin-top: 12px; padding: 9px 14px; border-radius: 4px;
+    font-size: 12px; font-weight: 600; display: none;
+  }
+  .status-bar.loading { background: #fef9e7; color: #b7950b; display: block; }
+  .status-bar.success { background: #d5f5e3; color: #1e8449; display: block; }
+  .status-bar.error   { background: #fdecea; color: #c0392b; display: block; }
+
+  /* PRINT AREA */
+  .print-area { display: none; }
+  .surat-wrapper {
+    background: #fff; width: 794px; padding: 40px 56px;
+    font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000; margin: 0 auto;
+  }
+  .kop-img { width: 100%; display: block; }
+  .kop-line { border-bottom: 3px solid #000; margin: 6px 0 16px; }
+  .surat-judul { text-align: center; font-weight: bold; font-size: 13pt; text-decoration: underline; text-transform: uppercase; margin: 10px 0 2px; }
+  .surat-nomor { text-align: center; font-size: 12pt; margin-bottom: 12px; }
+  .surat-tujuan { margin-bottom: 10px; line-height: 1.5; }
+  .surat-pembuka { margin-bottom: 8px; text-align: justify; line-height: 1.5; }
+  .identitas-table, .detail-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  .identitas-table td, .detail-table td { padding: 1px 0; vertical-align: top; font-size: 12pt; line-height: 1.5; }
+  .identitas-table td:first-child { width: 34%; }
+  .detail-table td:first-child { width: 38%; }
+  .identitas-table td:nth-child(2), .detail-table td:nth-child(2) { width: 4%; text-align: center; }
+  .nilai { border-bottom: 1px solid #000; padding-left: 4px; }
+  .kondisi-option { display: inline-block; padding: 0 4px; }
+  .kondisi-option.aktif { text-decoration: underline; font-weight: bold; }
+  .surat-penutup { text-align: justify; margin-bottom: 10px; line-height: 1.5; }
+  .ttd-row { display: flex; justify-content: space-between; margin-top: 20px; }
+  .ttd-col { text-align: center; width: 45%; }
+  .ttd-col .ttd-nama { font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; margin-top: 4px; word-break: break-word; }
+  .ttd-col .ttd-nip { margin-top: 4px; }
+  .ttd-block { text-align: center; }
+  .ttd-img-wrap { min-height: 65px; display: flex; align-items: center; justify-content: center; margin: 6px 0 2px; }
+  .lampiran-title { font-weight: bold; text-align: center; font-size: 12pt; margin-bottom: 16px; text-decoration: underline; }
+  .foto-item { margin-bottom: 20px; page-break-inside: avoid; break-inside: avoid; }
+  .foto-item .foto-caption { font-weight: bold; font-size: 11pt; margin-bottom: 6px; border-bottom: 1px solid #999; padding-bottom: 4px; }
+  .foto-item img { width: 100%; height: auto; max-width: 100%; display: block; }
+  .foto-placeholder-print { width: 100%; min-height: 80px; background: #f5f5f5; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 11pt; }
+
+  /* LOADING MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.55); align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 10px; padding: 32px 36px;
+    min-width: 320px; max-width: 400px; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  }
+  .modal-spinner {
+    width: 48px; height: 48px; border: 5px solid #e0e8f0;
+    border-top-color: #1a3a5c; border-radius: 50%;
+    animation: spin .8s linear infinite; margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .modal-title { font-size: 15px; font-weight: 700; color: #1a3a5c; margin-bottom: 10px; }
+  .modal-steps { text-align: left; margin-top: 12px; }
+  .modal-step-item {
+    font-size: 12px; padding: 4px 0; color: #bbb;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .modal-step-item.active { color: #1a3a5c; font-weight: 600; }
+  .modal-step-item.done   { color: #27ae60; }
+  .modal-step-item .si    { width: 18px; text-align: center; }
+
+  @media print {
+    @page { size: 215mm 330mm; margin: 18mm 25mm; }
+    body { background: #fff; }
+    .app-header, .admin-wrap { display: none !important; }
+    .print-area { display: none !important; }
+    body.print-usulan #printArea   { display: block !important; }
+    body.print-ba     #printAreaBA { display: block !important; }
+    .surat-wrapper { width: 100%; box-shadow: none; padding: 0; margin: 0; page-break-after: always; break-after: page; }
+    .surat-wrapper.lampiran { page-break-after: auto; break-after: auto; }
+    .foto-item { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div>
+    <h1>🔐 Admin Panel — Sistem BMN Sarpras</h1>
+    <small>Lihat arsip dan cetak ulang PDF dokumen</small>
+  </div>
+  <a href="index.html" class="btn-back">← Beranda</a>
+</div>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="lock-icon">🔒</div>
+    <h2>Area Admin</h2>
+    <p>Masukkan password untuk melanjutkan</p>
+    <input type="password" id="passwordInput" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter') doLogin()" />
+    <button class="btn-login" onclick="doLogin()">Masuk</button>
+    <div class="login-error" id="loginError">❌ Password salah. Coba lagi.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-wrap" id="adminWrap">
+  <div class="panel-card">
+    <h2 style="display:flex;align-items:center">Admin Panel
+      <span style="margin-left:auto">
+        <button class="btn btn-logout" onclick="doLogout()">Keluar</button>
+      </span>
+    </h2>
+
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabBtnUsulan" onclick="switchTab('usulan')">📋 Surat Usulan (PP)</button>
+      <button class="tab-btn"        id="tabBtnBA"     onclick="switchTab('ba')">📝 Berita Acara (BA-PP)</button>
+    </div>
+
+    <!-- TAB: USULAN PP -->
+    <div class="tab-content active" id="tabUsulan">
+      <div class="filter-grid">
+        <div>
+          <label>Cari Nama Pengaju</label>
+          <input type="text" id="filterNama" placeholder="Ketik nama…" oninput="renderTable()" />
+        </div>
+        <div>
+          <label>Cari Nomor / Barang / NUP</label>
+          <input type="text" id="filterQ" placeholder="Ketik kata kunci…" oninput="renderTable()" />
+        </div>
+        <div>
+          <label>Filter Bulan Surat</label>
+          <input type="month" id="filterBulan" onchange="renderTable()" />
+        </div>
+        <div><button class="btn-reset-filter" onclick="resetFilter()">Reset Filter</button></div>
+      </div>
+      <div class="surat-table-wrap">
+        <table class="surat-list">
+          <thead><tr>
+            <th>Tanggal Surat</th><th>Nomor Surat</th><th>Nama Pengaju</th>
+            <th>Bagian/Unit</th><th>Nama Barang</th><th>NUP</th><th>Kondisi</th>
+          </tr></thead>
+          <tbody id="suratTableBody">
+            <tr><td colspan="7" class="empty-state">⏳ Memuat data arsip…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="detail-panel" id="detailPanel">
+        <h3>📄 Detail Surat Terpilih</h3>
+        <div class="detail-grid" id="detailGrid"></div>
+        <div class="action-row">
+          <button class="btn btn-pdf" id="btnRegen" onclick="startRegenPDF()">🖨️ Cetak / Simpan PDF</button>
+          <span class="foto-status" id="fotoStatus"></span>
+        </div>
+        <div class="status-bar" id="statusBar"></div>
+      </div>
+    </div>
+
+    <!-- TAB: BA-PP -->
+    <div class="tab-content" id="tabBA">
+      <div class="filter-grid">
+        <div>
+          <label>Cari Nama Pelaksana</label>
+          <input type="text" id="filterBANama" placeholder="Ketik nama…" oninput="renderBATable()" />
+        </div>
+        <div>
+          <label>Cari Nomor / Barang / NUP</label>
+          <input type="text" id="filterBAQ" placeholder="Ketik kata kunci…" oninput="renderBATable()" />
+        </div>
+        <div>
+          <label>Filter Bulan BA</label>
+          <input type="month" id="filterBABulan" onchange="renderBATable()" />
+        </div>
+        <div><button class="btn-reset-filter" onclick="resetBAFilter()">Reset Filter</button></div>
+      </div>
+      <div class="surat-table-wrap">
+        <table class="surat-list">
+          <thead><tr>
+            <th>Tanggal BA</th><th>Nomor BA</th><th>Pelaksana</th>
+            <th>Nama Barang</th><th>NUP</th><th>Kondisi</th><th>No Usulan</th>
+          </tr></thead>
+          <tbody id="baTableBody">
+            <tr><td colspan="7" class="empty-state">⏳ Memuat data BA…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="detail-panel" id="baDetailPanel">
+        <h3>📝 Detail Berita Acara Terpilih</h3>
+        <div class="detail-grid" id="baDetailGrid"></div>
+        <div class="action-row">
+          <button class="btn btn-pdf" id="btnRegenBA" onclick="startRegenBAPDF()">🖨️ Cetak / Simpan PDF</button>
+          <span class="foto-status" id="baFotoStatus"></span>
+        </div>
+        <div class="status-bar" id="baStatusBar"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRINT AREA -->
+<div class="print-area" id="printArea">
+  <div class="surat-wrapper">
+    <img class="kop-img" src="KOP.png" onerror="this.style.display='none'" />
+    <div class="kop-line"></div>
+    <div class="surat-judul">Surat Usulan Perbaikan Barang Milik Negara</div>
+    <div class="surat-nomor">NOMOR: <span id="prNomor"></span></div>
+    <div class="surat-tujuan">
+      <p>Yth. Kepala Instalasi Sarana Prasarana</p><p>di Palembang</p>
+    </div>
+    <div class="surat-pembuka">Dengan hormat, yang bertanda tangan di bawah ini:</div>
+    <table class="identitas-table">
+      <tr><td>Nama</td><td>:</td><td class="nilai" id="prNama"></td></tr>
+      <tr><td>NIP</td><td>:</td><td class="nilai" id="prNip"></td></tr>
+      <tr><td>Jabatan</td><td>:</td><td class="nilai" id="prJabatan"></td></tr>
+      <tr><td>Bagian</td><td>:</td><td class="nilai" id="prBagian"></td></tr>
+    </table>
+    <div style="margin-bottom:8px">Dengan ini mengajukan usulan perbaikan/pemeliharaan Barang Milik Negara (BMN) sebagai berikut:</div>
+    <table class="detail-table">
+      <tr><td>Nama Barang</td><td>:</td><td class="nilai" id="prNamaBarang"></td></tr>
+      <tr><td>Tipe</td><td>:</td><td class="nilai" id="prTipe"></td></tr>
+      <tr><td>Merek</td><td>:</td><td class="nilai" id="prMerek"></td></tr>
+      <tr><td>Ruangan (Sesuai DBR)</td><td>:</td><td class="nilai" id="prRuangan"></td></tr>
+      <tr><td>NUP</td><td>:</td><td class="nilai" id="prNup"></td></tr>
+      <tr>
+        <td>Kondisi (Sesuai Status BMN)</td><td>:</td>
+        <td class="nilai">
+          <span id="prKondisiRR" class="kondisi-option">Rusak Ringan</span> &nbsp;/&nbsp;
+          <span id="prKondisiRB" class="kondisi-option">Rusak Berat</span>
+        </td>
+      </tr>
+      <tr><td>Keluhan</td><td>:</td><td class="nilai" id="prKeluhan" style="white-space:pre-wrap"></td></tr>
+      <tr><td>Foto (NUP, Merek/Tipe)</td><td>:</td><td class="nilai">(Terlampir)</td></tr>
+    </table>
+    <div class="surat-penutup">
+      Demikian usulan perbaikan Barang Milik Negara ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.
+    </div>
+    <div style="text-align:right;margin-bottom:8px">
+      <span id="prKota">Palembang</span>, <span id="prTanggal"></span>
+    </div>
+    <div class="ttd-row">
+      <div class="ttd-col">
+        <div style="margin-bottom:4px">Penerima,</div>
+        <div style="display:flex;align-items:center;justify-content:center;">
+          <img id="prTTDPenerima" style="max-width:150px;max-height:65px;display:none;" />
+        </div>
+        <div class="ttd-nama" style="font-weight:bold;" id="prNamaPenerima"></div>
+        <div class="ttd-nip">NIP. <span id="prNipPenerima"></span></div>
+      </div>
+      <div class="ttd-col">
+        <div style="margin-bottom:4px">Pengirim,</div>
+        <div style="display:flex;align-items:center;justify-content:center;">
+          <img id="prTTDPengirim" style="max-width:150px;max-height:65px;display:none;" />
+        </div>
+        <div class="ttd-nama" style="padding-top:0;font-weight:bold;" id="prNamaTtd"></div>
+        <div class="ttd-nip">NIP. <span id="prNipTtd"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lembar 2 Foto -->
+  <div class="surat-wrapper lampiran">
+    <div class="lampiran-title">LAMPIRAN FOTO<br>
+      <span style="font-size:10pt;font-weight:normal">Nomor: <span id="prNomorLampiran"></span></span>
+    </div>
+    <div class="foto-item">
+      <div class="foto-caption">1. Foto NUP Barang</div>
+      <img id="imgNup" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="phNup">[ Foto tidak tersedia ]</div>
+    </div>
+    <div class="foto-item">
+      <div class="foto-caption">2. Foto Merek / Tipe</div>
+      <img id="imgMerek" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="phMerek">[ Foto tidak tersedia ]</div>
+    </div>
+    <div class="foto-item">
+      <div class="foto-caption">3. Foto Kerusakan</div>
+      <img id="imgKerusakan" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="phKerusakan">[ Foto tidak tersedia ]</div>
+    </div>
+    <div class="foto-item">
+      <div class="foto-caption">4. Foto Keseluruhan Barang</div>
+      <img id="imgKeseluruhan" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="phKeseluruhan">[ Foto tidak tersedia ]</div>
+    </div>
+    <div class="foto-item">
+      <div class="foto-caption">5. Foto Lain-lain</div>
+      <img id="imgLainLain" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="phLainLain">[ Foto tidak tersedia ]</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT AREA BA-PP -->
+<div class="print-area" id="printAreaBA">
+  <div class="surat-wrapper">
+    <img class="kop-img" src="KOP.png" onerror="this.style.display='none'" />
+    <div class="kop-line"></div>
+    <div class="surat-judul">Berita Acara Serah Terima Pemeliharaan/Perbaikan/Penggantian Barang Milik Negara</div>
+    <div class="surat-nomor">NOMOR: <span id="brNomor"></span></div>
+    <div class="surat-pembuka">
+      Pada hari ini, <strong id="brHari"></strong> tanggal <strong id="brTglTerbilang"></strong> bulan <strong id="brBulan"></strong> tahun <strong id="brTahun"></strong>, saya yang bertanda tangan di bawah ini:
+    </div>
+    <table class="identitas-table">
+      <tr><td>Nama</td><td>:</td><td id="brNamaPelaksana"></td></tr>
+      <tr><td>Jabatan</td><td>:</td><td id="brJabPelaksana"></td></tr>
+      <tr><td colspan="3" style="font-weight:bold;text-align:center;padding-top:4px">Disebut Pihak yang Malaksanakan/Menerima</td></tr>
+    </table>
+    <div class="surat-pembuka">Telah selesai melakukan/menerima hasil pemeliharaan/perbaikan/penggantian BMN, sesuai dengan ketentuan sebagai berikut:</div>
+    <table class="detail-table">
+      <tr><td>No Surat Usulan</td><td>:</td><td class="nilai" id="brNoUsulan"></td></tr>
+      <tr><td>Nama Barang</td><td>:</td><td class="nilai" id="brNamaBarang"></td></tr>
+      <tr><td>Tipe</td><td>:</td><td class="nilai" id="brTipe"></td></tr>
+      <tr><td>Merek</td><td>:</td><td class="nilai" id="brMerek"></td></tr>
+      <tr><td>Ruangan</td><td>:</td><td class="nilai" id="brRuangan"></td></tr>
+      <tr><td>NUP</td><td>:</td><td class="nilai" id="brNup"></td></tr>
+      <tr><td>Lain-lain / No.Inv</td><td>:</td><td class="nilai" id="brLainLain"></td></tr>
+      <tr>
+        <td>Kondisi saat BA ini dibuat</td><td>:</td>
+        <td class="nilai">
+          <span id="brKondisiBaik" class="kondisi-option">Baik</span> /
+          <span id="brKondisiRR"   class="kondisi-option">Rusak Ringan</span> /
+          <span id="brKondisiRB"   class="kondisi-option">Rusak Berat</span>
+        </td>
+      </tr>
+      <tr><td style="vertical-align:top">Rincian Pemeliharaan/Perbaikan/Penggantian</td><td style="vertical-align:top">:</td><td class="nilai" id="brRincian" style="white-space:pre-wrap"></td></tr>
+      <!-- <tr><td style="vertical-align:top">Foto-Foto Pemeliharaan/Perbaikan/Penggantian</td><td style="vertical-align:top">:</td>
+        <td class="nilai">
+          1. Foto NUP Barang/Ruangan/Gedung (sebelum perbaikan)<br>
+          2. Foto Merek/Tipe Barang/Ruangan/Gedung (sebelum perbaikan)<br>
+          3. Foto Spare Part / Sisa Bongkaran Barang (Jika ada)<br>
+          4. Foto Barang setelah di perbaiki/di pasang 1<br>
+          5. Foto Barang setelah di perbaiki/di pasang 2<br>
+          6. Foto Lain-lain
+        </td>
+      </tr> -->
+    </table>
+    <div class="surat-penutup">
+      Demikianlah berita acara serah terima pemeliharaan/perbaikan/penggantian barang milik negara ini dibuat, untuk dipergunakan sebagaimana mestinya. Atas perhatiaannya diucapkan terimakasih.
+    </div>
+    <div style="text-align:right;margin-bottom:16px;font-size:12pt">Palembang, <span id="brTanggalTTD"></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;font-size:12pt;margin-bottom:12px;">
+      <div class="ttd-block" style="width:44%">
+        <div>Yang Mengawasi/Menyerahkan pekerjaan</div>
+        <div id="brJabPengawas" style="margin-bottom:4px;font-size:11pt"></div>
+        <div class="ttd-img-wrap">
+          <img id="brTTDPengawas" style="max-width:150px;max-height:65px;display:none" />
+        </div>
+        <div style="border-bottom:1px solid #000;padding:1px 0;min-height:20px;" id="brNamaPengawas"></div>
+      </div>
+      <div class="ttd-block" style="width:44%">
+        <div>Yang Malaksanakan/Menerima</div>
+        <div id="brJabPelaksanaTTD" style="margin-bottom:4px;font-size:11pt"></div>
+        <div class="ttd-img-wrap">
+          <img id="brTTDPelaksana" style="max-width:150px;max-height:65px;display:none" />
+        </div>
+        <div style="border-bottom:1px solid #000;padding:1px 0;min-height:20px;" id="brNamaPelaksanaTTD"></div>
+      </div>
+    </div>
+    <div class="ttd-block" style="font-size:12pt">
+      <div>Mengetahui,</div>
+      <div>Atasan Langsung</div>
+      <div id="brJabPengguna" style="margin-bottom:4px;font-size:11pt"></div>
+      <div class="ttd-img-wrap">
+        <img id="brTTDPengguna" style="max-width:150px;max-height:65px;display:none" />
+      </div>
+      <div style="border-bottom:1px solid #000;padding:1px 0;min-height:20px;width:200px;margin:0 auto;" id="brNamaPengguna"></div>
+    </div>
+  </div>
+
+  <!-- Lampiran Foto BA -->
+  <div class="surat-wrapper lampiran">
+    <div class="lampiran-title">LAMPIRAN FOTO<br>
+      <span style="font-size:10pt;font-weight:normal">Nomor: <span id="brNomorLampiran"></span></span>
+    </div>
+    <div class="foto-item"><div class="foto-caption">1. Foto NUP Barang/Ruangan/Gedung (sebelum perbaikan)</div>
+      <img id="baImg1" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="baPh1">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">2. Foto Merek/Tipe Barang/Ruangan/Gedung (sebelum perbaikan)</div>
+      <img id="baImg2" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="baPh2">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">3. Foto Spare Part / Sisa Bongkaran Barang (Jika ada)</div>
+      <img id="baImg3" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="baPh3">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">4. Foto Barang setelah di perbaiki/di pasang 1</div>
+      <img id="baImg4" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="baPh4">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">5. Foto Barang setelah di perbaiki/di pasang 2</div>
+      <img id="baImg5" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="baPh5">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">6. Foto Lain-lain</div>
+      <img id="baImg6" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="baPh6">[ Foto tidak tersedia ]</div></div>
+  </div>
+</div>
+
+<!-- LOADING MODAL -->
+<div class="modal-overlay" id="loadingModal">
+  <div class="modal-box">
+    <div class="modal-spinner"></div>
+    <div class="modal-title">Menyiapkan PDF…</div>
+    <div class="modal-steps">
+      <div class="modal-step-item" id="ms1"><span class="si">⏳</span> Menyiapkan data surat</div>
+      <div class="modal-step-item" id="ms2"><span class="si">⏳</span> Mengambil foto dari Google Drive</div>
+      <div class="modal-step-item" id="ms3"><span class="si">⏳</span> Membuka dialog cetak / PDF</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const GAS_URL     = '__GAS_URL__';
+const PASSWORD    = '__ADMIN_PASSWORD__';
+const SESSION_KEY = 'bmn_admin_auth';
+
+// SESSION
+window.addEventListener('load', () => {
+  if (sessionStorage.getItem(SESSION_KEY) === 'ok') showPanel();
+});
+
+function doLogin() {
+  const val = document.getElementById('passwordInput').value;
+  if (val === PASSWORD) {
+    sessionStorage.setItem(SESSION_KEY, 'ok');
+    document.getElementById('loginError').style.display = 'none';
+    showPanel();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
+  }
+}
+
+function doLogout() { sessionStorage.removeItem(SESSION_KEY); location.reload(); }
+
+function showPanel() {
+  document.getElementById('loginWrap').style.display  = 'none';
+  document.getElementById('adminWrap').style.display  = 'block';
+  loadSuratList();
+}
+
+// ===== TAB SWITCH =====
+let activeTab = 'usulan';
+let baLoaded  = false;
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabBtnUsulan').className = 'tab-btn' + (tab === 'usulan' ? ' active' : '');
+  document.getElementById('tabBtnBA').className     = 'tab-btn' + (tab === 'ba'     ? ' active' : '');
+  document.getElementById('tabUsulan').className    = 'tab-content' + (tab === 'usulan' ? ' active' : '');
+  document.getElementById('tabBA').className        = 'tab-content' + (tab === 'ba'     ? ' active' : '');
+  if (tab === 'ba' && !baLoaded) loadBASuratList();
+}
+
+// DATA
+let allSurat = [];
+let selectedRow = null;
+
+async function loadSuratList() {
+  try {
+    const resp = await fetch(GAS_URL + '?action=getSuratList');
+    const data = await resp.json();
+    if (data.status !== 'ok') throw new Error(data.error);
+    allSurat = data.data;
+    renderTable();
+  } catch(e) {
+    document.getElementById('suratTableBody').innerHTML =
+      `<tr><td colspan="7" class="empty-state">❌ Gagal memuat: ${e.message}</td></tr>`;
+  }
+}
+
+// FILTER
+function renderTable() {
+  const qNama  = document.getElementById('filterNama').value.toLowerCase();
+  const qQ     = document.getElementById('filterQ').value.toLowerCase();
+  const qBulan = document.getElementById('filterBulan').value;
+
+  const filtered = allSurat.filter(r => {
+    if (qNama  && !r.nama.toLowerCase().includes(qNama)) return false;
+    if (qQ && ![r.nomor, r.namaBarang, r.nup, r.bagian, r.keluhan]
+               .some(v => v.toLowerCase().includes(qQ))) return false;
+    if (qBulan && !r.tanggalSurat.startsWith(qBulan)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('suratTableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data yang cocok</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const idx = allSurat.indexOf(r);
+    const bc  = r.kondisi === 'Rusak Berat' ? 'badge-rb' : 'badge-rr';
+    return `<tr onclick="selectRow(${idx})" id="row_${idx}">
+      <td>${formatTanggal(r.tanggalSurat)}</td>
+      <td style="font-family:monospace;font-size:11px">${r.nomor}</td>
+      <td><strong>${r.nama}</strong></td>
+      <td>${r.bagian}</td>
+      <td>${r.namaBarang}</td>
+      <td>${r.nup}</td>
+      <td><span class="badge ${bc}">${r.kondisi}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function resetFilter() {
+  ['filterNama','filterQ','filterBulan'].forEach(id => document.getElementById(id).value = '');
+  renderTable();
+}
+
+// SELECT ROW
+function selectRow(idx) {
+  document.querySelectorAll('table.surat-list tr.selected').forEach(el => el.classList.remove('selected'));
+  const rowEl = document.getElementById('row_' + idx);
+  if (rowEl) rowEl.classList.add('selected');
+  selectedRow = allSurat[idx];
+  const d = selectedRow;
+
+  document.getElementById('detailGrid').innerHTML = `
+    <div class="dl">Nomor Surat</div>   <div class="dv">${d.nomor}</div>
+    <div class="dl">Tanggal Surat</div> <div class="dv">${formatTanggal(d.tanggalSurat)}</div>
+    <div class="dl">Nama Pengaju</div>  <div class="dv">${d.nama}</div>
+    <div class="dl">NIP</div>           <div class="dv">${d.nip}</div>
+    <div class="dl">Jabatan</div>       <div class="dv">${d.jabatan}</div>
+    <div class="dl">Bagian/Unit</div>   <div class="dv">${d.bagian}</div>
+    <div class="dl">Nama Barang</div>   <div class="dv">${d.namaBarang}</div>
+    <div class="dl">Merek</div>         <div class="dv">${d.merekTipe || '-'}</div>
+    <div class="dl">Ruangan</div>       <div class="dv">${d.ruangan}</div>
+    <div class="dl">NUP BMN</div>       <div class="dv">${d.nup}</div>
+    <div class="dl">Kondisi</div>       <div class="dv">${d.kondisi}</div>
+    <div class="dl">Keluhan</div>       <div class="dv" style="white-space:pre-wrap">${d.keluhan}</div>
+  `;
+
+  const fotoAda = [d.fotoNup,d.fotoMerek,d.fotoKerusakan,d.fotoKeseluruhan,d.fotoLainLain].filter(f=>f&&f!=='-').length;
+  const ttdAda  = [d.ttdPenerima,d.ttdPengirim].filter(f=>f&&f!=='-').length;
+  document.getElementById('fotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia di Drive`;
+  document.getElementById('statusBar').style.display = 'none';
+  document.getElementById('detailPanel').style.display = 'block';
+  document.getElementById('btnRegen').disabled = false;
+}
+
+// MODAL HELPERS
+function showModal() { document.getElementById('loadingModal').classList.add('show'); }
+function hideModal() { document.getElementById('loadingModal').classList.remove('show'); }
+function setStep(id, status, icon) {
+  const el = document.getElementById(id); if (!el) return;
+  el.className = 'modal-step-item ' + status;
+  el.querySelector('.si').textContent = icon;
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// REGENERATE PDF
+async function startRegenPDF() {
+  if (!selectedRow) return;
+  const d = selectedRow;
+  const btn = document.getElementById('btnRegen');
+  btn.disabled = true;
+
+  // Reset & tampilkan modal
+  ['ms1','ms2','ms3'].forEach(id => setStep(id, '', '⏳'));
+  showModal();
+
+  // Step 1 — data surat
+  setStep('ms1', 'active', '🔄');
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val || ''; };
+  set('prNomor', d.nomor);       set('prNomorLampiran', d.nomor);
+  set('prNama', d.nama);         set('prNamaTtd', d.nama);
+  set('prNip',  d.nip);          set('prNipTtd',  d.nip);
+  set('prNamaPenerima', d.namaPenerima || ''); set('prNipPenerima', d.nipPenerima || '');
+  // Reset TTD Penerima & Pengirim
+  ['prTTDPenerima','prTTDPengirim'].forEach(id => { const el = document.getElementById(id); if(el){ el.src=''; el.style.display='none'; } });
+  set('prJabatan', d.jabatan);   set('prBagian', d.bagian);
+  set('prNamaBarang', d.namaBarang);
+  set('prTipe',  d.tipe    || '');
+  set('prMerek', d.merek || '');
+  set('prRuangan', d.ruangan);   set('prNup', d.nup);
+  set('prKeluhan', d.keluhan);   set('prKota', 'Palembang');
+  set('prTanggal', formatTanggal(d.tanggalSurat));
+  document.getElementById('prKondisiRR').className = 'kondisi-option' + (d.kondisi === 'Rusak Ringan' ? ' aktif' : '');
+  document.getElementById('prKondisiRB').className = 'kondisi-option' + (d.kondisi === 'Rusak Berat'  ? ' aktif' : '');
+  await sleep(300);
+  setStep('ms1', 'done', '✅');
+
+  // Step 2 — foto dari Drive
+  setStep('ms2', 'active', '🔄');
+  ['Nup','Merek','Kerusakan','Keseluruhan'].forEach(k => {
+    const img = document.getElementById('img' + k);
+    const ph  = document.getElementById('ph'  + k);
+    img.src = ''; img.style.display = 'none'; ph.style.display = 'flex';
+  });
+
+  const fotoMap = {
+    Nup: d.fotoNup, Merek: d.fotoMerek,
+    Kerusakan: d.fotoKerusakan, Keseluruhan: d.fotoKeseluruhan,
+    LainLain: d.fotoLainLain
+  };
+  // Reset semua slot foto Usulan
+  ['Nup','Merek','Kerusakan','Keseluruhan','LainLain'].forEach(k => {
+    const img = document.getElementById('img' + k);
+    const ph  = document.getElementById('ph'  + k);
+    if (img) { img.src = ''; img.style.display = 'none'; }
+    if (ph)  ph.style.display = 'flex';
+  });
+  let fetched = 0;
+  await Promise.all(Object.entries(fotoMap).map(async ([key, url]) => {
+    if (!url || url === '-') return;
+    try {
+      const resp = await fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(url));
+      const data = await resp.json();
+      if (data.status === 'ok' && data.base64) {
+        const img = document.getElementById('img' + key);
+        const ph  = document.getElementById('ph'  + key);
+        if (img) { img.src = data.base64; img.style.display = 'block'; }
+        if (ph)  ph.style.display = 'none';
+        fetched++;
+      }
+    } catch(_) {}
+  }));
+
+  // Load TTD Penerima & Pengirim
+  const ttdMap = { prTTDPenerima: d.ttdPenerima, prTTDPengirim: d.ttdPengirim };
+  await Promise.all(Object.entries(ttdMap).map(async ([imgId, url]) => {
+    if (!url || url === '-') return;
+    try {
+      const resp = await fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(url));
+      const data = await resp.json();
+      if (data.status === 'ok' && data.base64) {
+        const img = document.getElementById(imgId);
+        if (img) { img.src = data.base64; img.style.display = 'block'; }
+      }
+    } catch(_) {}
+  }));
+
+  setStep('ms2', 'done', `✅ ${fetched} foto dimuat`);
+  await sleep(300);
+
+  // Step 3 — cetak
+  setStep('ms3', 'active', '🔄');
+  await sleep(400);
+  setStep('ms3', 'done', '✅');
+  await sleep(400);
+  hideModal();
+
+  const origTitle = document.title;
+  document.title  = 'Surat_BMN_' + d.nomor.replace(/\//g,'-') + '_' + d.nama.substring(0,20);
+  document.body.classList.add('print-usulan');
+  window.print();
+  setTimeout(() => { document.title = origTitle; document.body.classList.remove('print-usulan'); btn.disabled = false; }, 2000);
+}
+
+// HELPERS
+function formatTanggal(val) {
+  if (!val) return '';
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const d = new Date(val + (val.includes('T') ? '' : 'T00:00:00'));
+  if (isNaN(d)) return val;
+  return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function setStatus(type, msg) {
+  const bar = document.getElementById('statusBar');
+  bar.className = 'status-bar ' + type;
+  bar.textContent = msg;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ===== BA-PP DATA =====
+let allBA = [];
+let selectedBA = null;
+
+async function loadBASuratList() {
+  try {
+    const resp = await fetch(GAS_URL + '?action=getBASuratList');
+    const data = await resp.json();
+    if (data.status !== 'ok') throw new Error(data.error);
+    allBA = data.data;
+    baLoaded = true;
+    renderBATable();
+  } catch(e) {
+    document.getElementById('baTableBody').innerHTML =
+      `<tr><td colspan="7" class="empty-state">❌ Gagal memuat: ${e.message}</td></tr>`;
+  }
+}
+
+function renderBATable() {
+  const qNama  = document.getElementById('filterBANama').value.toLowerCase();
+  const qQ     = document.getElementById('filterBAQ').value.toLowerCase();
+  const qBulan = document.getElementById('filterBABulan').value;
+
+  const filtered = allBA.filter(r => {
+    if (qNama  && !r.namaPelaksana.toLowerCase().includes(qNama)) return false;
+    if (qQ && ![r.nomor,r.namaBarang,r.nup,r.noSuratUsulan].some(v => v.toLowerCase().includes(qQ))) return false;
+    if (qBulan && !r.tanggalBA.startsWith(qBulan)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('baTableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data yang cocok</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(r => {
+    const idx = allBA.indexOf(r);
+    const bc  = r.kondisi === 'Rusak Berat' ? 'badge-rb' : r.kondisi === 'Baik' ? '' : 'badge-rr';
+    return `<tr onclick="selectBARow(${idx})" id="barow_${idx}">
+      <td>${formatTanggal(r.tanggalBA)}</td>
+      <td style="font-family:monospace;font-size:11px">${r.nomor}</td>
+      <td><strong>${r.namaPelaksana}</strong></td>
+      <td>${r.namaBarang}</td>
+      <td>${r.nup}</td>
+      <td><span class="badge ${bc}">${r.kondisi}</span></td>
+      <td style="font-size:11px">${r.noSuratUsulan || '-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function resetBAFilter() {
+  ['filterBANama','filterBAQ','filterBABulan'].forEach(id => document.getElementById(id).value = '');
+  renderBATable();
+}
+
+function selectBARow(idx) {
+  document.querySelectorAll('#baTableBody tr.selected').forEach(el => el.classList.remove('selected'));
+  const rowEl = document.getElementById('barow_' + idx);
+  if (rowEl) rowEl.classList.add('selected');
+  selectedBA = allBA[idx];
+  const d = selectedBA;
+
+  document.getElementById('baDetailGrid').innerHTML = `
+    <div class="dl">Nomor BA</div>         <div class="dv">${d.nomor}</div>
+    <div class="dl">Tanggal BA</div>       <div class="dv">${formatTanggal(d.tanggalBA)}</div>
+    <div class="dl">No Surat Usulan</div>  <div class="dv">${d.noSuratUsulan || '-'}</div>
+    <div class="dl">Nama Barang</div>      <div class="dv">${d.namaBarang}</div>
+    <div class="dl">Tipe</div>             <div class="dv">${d.tipe}</div>
+    <div class="dl">Merek</div>            <div class="dv">${d.merek}</div>
+    <div class="dl">Ruangan</div>          <div class="dv">${d.ruangan}</div>
+    <div class="dl">NUP BMN</div>          <div class="dv">${d.nup}</div>
+    <div class="dl">Lain-lain/No.Inv</div> <div class="dv">${d.lainLain || '-'}</div>
+    <div class="dl">Kondisi</div>          <div class="dv">${d.kondisi}</div>
+    <div class="dl">Rincian</div>          <div class="dv" style="white-space:pre-wrap">${d.rincian}</div>
+    <div class="dl">Yang Malaksanakan/Menerima</div><div class="dv">${d.namaPelaksana} — ${d.jabPelaksana}</div>
+    <div class="dl">Yang Mengawasi/Menyerahkan</div>   <div class="dv">${d.namaPengawas} — ${d.jabPengawas}</div>
+    <div class="dl">Pengguna BMN</div>     <div class="dv">${d.namaPengguna} — ${d.jabPengguna}</div>
+  `;
+  const fotoAda = [d.foto1,d.foto2,d.foto3,d.foto4,d.foto5,d.foto6].filter(f=>f&&f!=='-').length;
+  const ttdAda  = [d.ttdPelaksana,d.ttdPengawas,d.ttdPengguna].filter(f=>f&&f!=='-').length;
+  document.getElementById('baFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
+  document.getElementById('baStatusBar').style.display = 'none';
+  document.getElementById('baDetailPanel').style.display = 'block';
+  document.getElementById('btnRegenBA').disabled = false;
+}
+
+// ===== REGEN BA PDF =====
+const SATUAN_ID = ['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan',
+  'sepuluh','sebelas','dua belas','tiga belas','empat belas','lima belas','enam belas',
+  'tujuh belas','delapan belas','sembilan belas','dua puluh','dua puluh satu','dua puluh dua',
+  'dua puluh tiga','dua puluh empat','dua puluh lima','dua puluh enam','dua puluh tujuh',
+  'dua puluh delapan','dua puluh sembilan','tiga puluh','tiga puluh satu'];
+const BULAN_TBL = ['','januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'];
+const HARI_ID   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+function tahunTerbilang(y) {
+  const r = Math.floor(y/1000), s = y%1000, h = Math.floor(s/100), sr = s%100;
+  const ang = n => SATUAN_ID[n] || '';
+  let res = '';
+  if (r) res += ang(r) + ' ribu';
+  if (h) res += ' ' + ang(h) + ' ratus';
+  if (sr <= 31) res += ' ' + ang(sr);
+  return res.trim();
+}
+
+async function startRegenBAPDF() {
+  if (!selectedBA) return;
+  const d = selectedBA;
+  const btn = document.getElementById('btnRegenBA');
+  btn.disabled = true;
+  ['ms1','ms2','ms3'].forEach(id => setStep(id,'','⏳'));
+  showModal();
+
+  // Step 1 — data
+  setStep('ms1','active','🔄');
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val||''; };
+  const setImg = (id, show) => { const el = document.getElementById(id); if(el) el.style.display = show ? 'block' : 'none'; };
+
+  set('brNomor', d.nomor); set('brNomorLampiran', d.nomor);
+  set('brNamaBarang', d.namaBarang); set('brTipe', d.tipe); set('brMerek', d.merek);
+  set('brRuangan', d.ruangan); set('brNup', d.nup); set('brLainLain', d.lainLain);
+  set('brNoUsulan', d.noSuratUsulan || '-'); set('brRincian', d.rincian);
+  set('brNamaPelaksana', d.namaPelaksana); set('brJabPelaksana', d.jabPelaksana);
+  set('brNamaPelaksanaTTD', d.namaPelaksana); set('brJabPelaksanaTTD', d.jabPelaksana);
+  set('brNamaPengawas', d.namaPengawas); set('brJabPengawas', d.jabPengawas);
+  set('brNamaPengguna', d.namaPengguna); set('brJabPengguna', d.jabPengguna);
+
+  // Tanggal terbilang
+  if (d.tanggalBA) {
+    const [y,m,day] = d.tanggalBA.split('-').map(Number);
+    const dt = new Date(y, m-1, day);
+    set('brHari', HARI_ID[dt.getDay()]);
+    set('brTglTerbilang', SATUAN_ID[day] || '');
+    set('brBulan', BULAN_TBL[m]);
+    set('brTahun', tahunTerbilang(y));
+    set('brTanggalTTD', day + ' ' + BULAN_TBL[m].charAt(0).toUpperCase() + BULAN_TBL[m].slice(1) + ' ' + y);
+  }
+
+  // Kondisi
+  ['brKondisiBaik','brKondisiRR','brKondisiRB'].forEach(id => document.getElementById(id)?.classList.remove('aktif'));
+  if (d.kondisi === 'Baik')         document.getElementById('brKondisiBaik')?.classList.add('aktif');
+  if (d.kondisi === 'Rusak Ringan') document.getElementById('brKondisiRR')?.classList.add('aktif');
+  if (d.kondisi === 'Rusak Berat')  document.getElementById('brKondisiRB')?.classList.add('aktif');
+
+  await sleep(300);
+  setStep('ms1','done','✅');
+
+  // Step 2 — foto & TTD
+  setStep('ms2','active','🔄');
+  const urlsToFetch = [
+    { id:'brTTDPelaksana', url: d.ttdPelaksana },
+    { id:'brTTDPengawas',  url: d.ttdPengawas  },
+    { id:'brTTDPengguna',  url: d.ttdPengguna  },
+    { id:'baImg1', url: d.foto1 }, { id:'baImg2', url: d.foto2 },
+    { id:'baImg3', url: d.foto3 }, { id:'baImg4', url: d.foto4 },
+    { id:'baImg5', url: d.foto5 }, { id:'baImg6', url: d.foto6 },
+  ];
+  // Reset semua
+  ['baImg1','baImg2','baImg3','baImg4','baImg5','baImg6'].forEach(id => {
+    const img = document.getElementById(id); if(img) { img.src=''; img.style.display='none'; }
+    const ph = document.getElementById('ba'+id.replace('baImg','Ph')); if(ph) ph.style.display='flex';
+  });
+  ['brTTDPelaksana','brTTDPengawas','brTTDPengguna'].forEach(id => setImg(id, false));
+
+  let fetched = 0;
+  await Promise.all(urlsToFetch.map(async ({id, url}) => {
+    if (!url || url === '-') return;
+    try {
+      const resp = await fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(url));
+      const data = await resp.json();
+      if (data.status === 'ok' && data.base64) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.src = data.base64; el.style.display = 'block';
+        const phKey = id.startsWith('baImg') ? 'baPh' + id.replace('baImg','') : null;
+        if (phKey) { const ph = document.getElementById(phKey); if(ph) ph.style.display='none'; }
+        fetched++;
+      }
+    } catch(_) {}
+  }));
+  setStep('ms2','done', `✅ ${fetched} item dimuat`);
+  await sleep(300);
+
+  // Step 3 — cetak
+  setStep('ms3','active','🔄');
+  await sleep(400);
+  setStep('ms3','done','✅');
+  await sleep(400);
+  hideModal();
+
+  const origTitle = document.title;
+  document.title  = 'BA-PP_' + d.nomor.replace(/\//g,'-');
+  document.body.classList.add('print-ba');
+  window.print();
+  setTimeout(() => {
+    document.title = origTitle;
+    document.body.classList.remove('print-ba');
+    btn.disabled = false;
+  }, 2000);
+}
+</script>
+</body>
+</html>

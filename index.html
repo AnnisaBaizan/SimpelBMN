@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem BMN — Instalasi Sarpras</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-header {
+      background: #1a3a5c;
+      color: #fff;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    }
+    .app-header h1 { font-size: 16px; font-weight: 700; }
+    .app-header small { font-size: 11px; opacity: .75; }
+    .app-header .header-right { margin-left: auto; }
+    .btn-admin {
+      color: rgba(255,255,255,.8);
+      text-decoration: none;
+      font-size: 12px;
+      padding: 5px 12px;
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 4px;
+    }
+    .btn-admin:hover { background: rgba(255,255,255,.1); }
+
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+    }
+    .hero-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a3a5c;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .hero-sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .card-grid {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 36px 32px;
+      width: 280px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      border: 2px solid transparent;
+      transition: border-color .15s, box-shadow .15s, transform .15s;
+      display: block;
+    }
+    .card:hover {
+      border-color: #1a3a5c;
+      box-shadow: 0 8px 32px rgba(26,58,92,.15);
+      transform: translateY(-3px);
+    }
+    .card-icon { font-size: 48px; margin-bottom: 16px; }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a3a5c;
+      margin-bottom: 8px;
+    }
+    .card-desc { font-size: 12px; color: #888; line-height: 1.6; }
+    .card-badge {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-usulan { background: #d6eaf8; color: #1a3a5c; }
+    .badge-ba     { background: #d5f5e3; color: #1e8449; }
+
+    footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 11px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Sistem Sarpras BMN</h1>
+      <small>Politeknik Kesehatan Palembang — Instalasi Sarana Prasarana</small>
+    </div>
+    <div class="header-right">
+      <a href="admin.html" class="btn-admin">⚙️ Admin</a>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="hero-title">Pilih Jenis Dokumen</div>
+    <div class="hero-sub">Klik salah satu untuk mengisi dan mencetak dokumen</div>
+
+    <div class="card-grid">
+      <a href="usulan.html" class="card">
+        <div class="card-icon">📋</div>
+        <div class="card-title">Surat Usulan Perbaikan BMN</div>
+        <div class="card-desc">
+          Formulir pengajuan usulan perbaikan atau pemeliharaan Barang Milik Negara oleh pengguna barang.
+        </div>
+        <span class="card-badge badge-usulan">Usulan PP</span>
+      </a>
+
+      <a href="bapp.html" class="card">
+        <div class="card-icon">📝</div>
+        <div class="card-title">Berita Acara Serah Terima</div>
+        <div class="card-desc">
+          Berita acara setelah selesai perbaikan atau pemeliharaan BMN, lengkap dengan tanda tangan digital.
+        </div>
+        <span class="card-badge badge-ba">BA-PP</span>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    Sistem Surat BMN — Politeknik Kesehatan Palembang &nbsp;|&nbsp; 100% gratis berbasis Google Apps Script
+  </footer>
+</body>
+</html>
