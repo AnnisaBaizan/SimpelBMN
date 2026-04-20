@@ -730,11 +730,11 @@ function getNomorLaporanAC() {
 //  Kolom: A=No, B=Nomor, C=TglSubmit, D=TglLaporan, E=NoSuratUsulan,
 //         F=NamaBarang, G=Tipe, H=Merek, I=Ruangan, J=NUP,
 //         K=KapasitasAC, L=Jenis1, M=Jenis2, N=Jenis3, O=Jenis4, P=Jenis5,
-//         Q=Deskripsi, R=NamaPelaksana, S=JabPelaksana,
-//         T=TTDNamaPelaksana, U=TTDJabPelaksana,
-//         V=NamaPengguna, W=JabPengguna, X=NamaPengawas,
-//         Y=TTDPelaksana, Z=TTDPengguna, AA=TTDPengawas,
-//         AB=Foto1, AC=Foto2, AD=Foto3, AE=Foto4, AF=Foto5
+//         Q=Deskripsi, R=NamaPelaksana, S=JabPelaksana, T=PerusahaanPelaksana,
+//         U=TTDNamaPelaksana, V=TTDJabPelaksana,
+//         W=NamaPengguna, X=JabPengguna, Y=NamaPengawas,
+//         Z=TTDPelaksana, AA=TTDPengguna, AB=TTDPengawas,
+//         AC=Foto1, AD=Foto2, AE=Foto3, AF=Foto4, AG=Foto5
 // ============================================================
 function getLaporanACList() {
   try {
@@ -763,21 +763,22 @@ function getLaporanACList() {
         jenisGantiModul      : String(r[14] || ''),
         jenisLainLain        : String(r[15] || ''),
         deskripsi      : String(r[16] || ''),
-        namaPelaksana  : String(r[17] || ''),
-        jabPelaksana   : String(r[18] || ''),
-        ttdNamaPelaksana: String(r[19] || ''),
-        ttdJabPelaksana : String(r[20] || ''),
-        namaPengguna   : String(r[21] || ''),
-        jabPengguna    : String(r[22] || ''),
-        namaPengawas   : String(r[23] || ''),
-        ttdPelaksana   : String(r[24] || '-'),
-        ttdPengguna    : String(r[25] || '-'),
-        ttdPengawas    : String(r[26] || '-'),
-        foto1          : String(r[27] || '-'),
-        foto2          : String(r[28] || '-'),
-        foto3          : String(r[29] || '-'),
-        foto4          : String(r[30] || '-'),
-        foto5          : String(r[31] || '-'),
+        namaPelaksana        : String(r[17] || ''),
+        jabPelaksana         : String(r[18] || ''),
+        perusahaanPelaksana  : String(r[19] || ''),
+        ttdNamaPelaksana     : String(r[20] || ''),
+        ttdJabPelaksana      : String(r[21] || ''),
+        namaPengguna         : String(r[22] || ''),
+        jabPengguna          : String(r[23] || ''),
+        namaPengawas         : String(r[24] || ''),
+        ttdPelaksana         : String(r[25] || '-'),
+        ttdPengguna          : String(r[26] || '-'),
+        ttdPengawas          : String(r[27] || '-'),
+        foto1                : String(r[28] || '-'),
+        foto2                : String(r[29] || '-'),
+        foto3                : String(r[30] || '-'),
+        foto4                : String(r[31] || '-'),
+        foto5                : String(r[32] || '-'),
       }))
       .reverse();
     return { status: 'ok', count: data.length, data: data };
@@ -803,10 +804,14 @@ function handleSubmitLaporanAC(d) {
     const foto4 = uploadFoto(subFolder, d.foto4, 'Foto4_Pekerjaan1');
     const foto5 = uploadFoto(subFolder, d.foto5, 'Foto5_Pekerjaan2');
 
-    // Upload TTD (base64 PNG dari canvas)
-    const ttdPelaksana = uploadFoto(subFolder, d.ttdPelaksana, 'TTD_Pelaksana');
-    const ttdPengguna  = uploadFoto(subFolder, d.ttdPengguna,  'TTD_Pengguna');
-    const ttdPengawas  = uploadFoto(subFolder, d.ttdPengawas,  'TTD_Pengawas');
+    // TTD: kalau base64 (gambar manual) → upload ke Drive, kalau nama (dari daftar) → simpan langsung
+    const ttdPelaksana = d.ttdPelaksana && d.ttdPelaksana.startsWith('data:')
+      ? uploadFoto(subFolder, d.ttdPelaksana, 'TTD_Pelaksana')
+      : (d.ttdPelaksana || '-');
+    const ttdPengguna  = uploadFoto(subFolder, d.ttdPengguna, 'TTD_Pengguna');
+    const ttdPengawas  = d.ttdPengawas && d.ttdPengawas.startsWith('data:')
+      ? uploadFoto(subFolder, d.ttdPengawas, 'TTD_Pengawas')
+      : (d.ttdPengawas || '-');
 
     // Append ke sheet L-PP-AC
     const ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
@@ -832,21 +837,22 @@ function handleSubmitLaporanAC(d) {
       d.jenisGantiModul     ? 'Ya' : '',       // O: Ganti Modul
       d.jenisLainLain       || '',             // P: Lain-lain (teks)
       d.deskripsi   || '',           // Q: Deskripsi
-      d.namaPelaksana,               // R: Nama Pelaksana (di badan surat)
-      d.jabPelaksana,                // S: Jabatan Pelaksana (di badan surat)
-      d.ttdNamaPelaksana || d.namaPelaksana, // T: Nama Pelaksana (di TTD)
-      d.ttdJabPelaksana  || d.jabPelaksana,  // U: Jabatan Pelaksana (di TTD)
-      d.namaPengguna,                // V: Nama Pengguna
-      d.jabPengguna || '',           // W: Jabatan Pengguna
-      d.namaPengawas,                // X: Nama Pengawas
-      ttdPelaksana,                  // Y: TTD Pelaksana (URL)
-      ttdPengguna,                   // Z: TTD Pengguna (URL)
-      ttdPengawas,                   // AA: TTD Pengawas (URL)
-      foto1,                         // AB: Foto 1 NUP
-      foto2,                         // AC: Foto 2 Merek
-      foto3,                         // AD: Foto 3 Sebelum
-      foto4,                         // AE: Foto 4 Pekerjaan 1
-      foto5,                         // AF: Foto 5 Pekerjaan 2
+      d.namaPelaksana,                       // R: Nama Pelaksana (badan surat)
+      d.jabPelaksana,                        // S: Jabatan Pelaksana (badan surat)
+      d.perusahaanPelaksana || '',           // T: Perusahaan / Instansi Pelaksana
+      d.ttdNamaPelaksana || d.namaPelaksana, // U: Nama Pelaksana (TTD)
+      d.ttdJabPelaksana  || d.jabPelaksana,  // V: Jabatan Pelaksana (TTD)
+      d.namaPengguna,                        // W: Nama Pengguna
+      d.jabPengguna || '',                   // X: Jabatan Pengguna
+      d.namaPengawas,                        // Y: Nama Pengawas
+      ttdPelaksana,                          // Z: TTD Pelaksana (URL Drive atau nama kunci)
+      ttdPengguna,                           // AA: TTD Pengguna (URL Drive)
+      ttdPengawas,                           // AB: TTD Pengawas (URL Drive atau nama kunci)
+      foto1,                                 // AC: Foto 1 NUP
+      foto2,                                 // AD: Foto 2 Merek
+      foto3,                                 // AE: Foto 3 Sebelum
+      foto4,                                 // AF: Foto 4 Pekerjaan 1
+      foto5,                                 // AG: Foto 5 Pekerjaan 2
     ]);
 
     const newRow = sheet.getLastRow();
@@ -861,4 +867,86 @@ function handleSubmitLaporanAC(d) {
   } catch (err) {
     return { status: 'error', error: err.message };
   }
+}
+// ============================================================
+//  SETUP SPREADSHEET HEADERS
+//  Jalankan sekali dari Apps Script Editor → Run → setupSheetHeaders
+//  Membuat/mengganti baris header di 3 sheet arsip BMN.
+//  PERINGATAN: Fungsi ini menghapus & menulis ulang baris 1 tiap sheet.
+//              Data di baris 2 ke bawah TIDAK tersentuh.
+// ============================================================
+function setupSheetHeaders() {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+
+  const SHEETS = {
+
+    // ── Sheet 1: Usulan-PP (A–Z = 26 kolom) ──────────────────
+    'Usulan-PP': [
+      'No', 'Nomor Surat', 'Tanggal Submit', 'Tanggal Surat',
+      'Nama Pengusul', 'NIP', 'Jabatan', 'Unit/Bagian',
+      'Nama Barang', 'Merek', 'Tipe', 'Ruangan (DBR)', 'NUP BMN',
+      'Kondisi', 'Keluhan',
+      'Link Foto NUP', 'Link Foto Merek', 'Link Foto Kerusakan',
+      'Link Foto Keseluruhan', 'Link Foto Lain-lain',
+      'TTD Penerima (Link Drive)', 'TTD Pengirim (Link Drive)',
+      'Nama Penerima', 'NIP Penerima', 'Status', 'Keterangan',
+    ],
+
+    // ── Sheet 2: BA-PP (A–AB = 28 kolom) ─────────────────────
+    'BA-PP': [
+      'No', 'Nomor BA', 'Tanggal Submit', 'Tanggal BA',
+      'No Surat Usulan', 'Nama Barang', 'Tipe', 'Merek',
+      'Ruangan', 'NUP', 'Lain-lain / No.Inv', 'Kondisi',
+      'Rincian Pemeliharaan/Perbaikan/Penggantian',
+      'Nama Pelaksana', 'Jabatan Pelaksana',
+      'Nama Pengawas', 'Jabatan Pengawas',
+      'Nama Pengguna BMN', 'Jabatan Pengguna BMN',
+      'TTD Pelaksana (Link Drive)', 'TTD Pengawas (Link Drive)',
+      'TTD Pengguna BMN (Link Drive)',
+      'Foto 1', 'Foto 2', 'Foto 3', 'Foto 4', 'Foto 5', 'Foto 6',
+    ],
+
+    // ── Sheet 3: L-PP-AC (A–AG = 33 kolom) ───────────────────
+    'L-PP-AC': [
+      'No', 'Nomor Laporan', 'Tanggal Submit', 'Tanggal Laporan',
+      'No Surat Usulan', 'Nama Barang', 'Tipe', 'Merek',
+      'Ruangan (DBR)', 'NUP', 'Kapasitas AC',
+      'Cuci', 'Isi Freon', 'Ganti Kapasitor', 'Ganti Modul', 'Lain-lain',
+      'Deskripsi',
+      'Nama Pelaksana', 'Jabatan Pelaksana', 'Perusahaan/Instansi Pelaksana',
+      'Nama Pelaksana (TTD)', 'Jabatan Pelaksana (TTD)',
+      'Nama Pengguna', 'Jabatan Pengguna', 'Nama Pengawas',
+      'TTD Pelaksana', 'TTD Pengguna', 'TTD Pengawas',
+      'Foto 1 NUP', 'Foto 2 Merek/Tipe',
+      'Foto 3 Sebelum/Spare Part', 'Foto 4 Pekerjaan', 'Foto 5 Pekerjaan',
+    ],
+  };
+
+  const HEADER_BG    = '#4a86e8';
+  const HEADER_COLOR = '#ffffff';
+
+  Object.entries(SHEETS).forEach(([sheetName, headers]) => {
+    let sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      Logger.log('Sheet baru dibuat: ' + sheetName);
+    }
+
+    const range = sheet.getRange(1, 1, 1, headers.length);
+    range.setValues([headers]);
+    range.setFontWeight('bold')
+         .setFontColor(HEADER_COLOR)
+         .setBackground(HEADER_BG)
+         .setHorizontalAlignment('center')
+         .setWrap(true);
+
+    sheet.setFrozenRows(1);
+    sheet.setFrozenColumns(1);
+    sheet.autoResizeColumns(1, headers.length);
+
+    Logger.log('✅ ' + sheetName + ' — ' + headers.length + ' kolom header diset.');
+  });
+
+  Logger.log('Setup selesai.');
+  SpreadsheetApp.flush();
 }

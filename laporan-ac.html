@@ -128,6 +128,14 @@
       display: none; padding: 4px 10px; background: #e74c3c; color: #fff;
       border: none; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 6px;
     }
+    .ttd-mode-toggle { display: flex; gap: 4px; margin-bottom: 10px; }
+    .btn-ttd-mode {
+      flex: 1; padding: 5px 8px; border: 1px solid #1a3a5c; border-radius: 4px;
+      background: #fff; color: #1a3a5c; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-ttd-mode.active { background: #1a3a5c; color: #fff; }
+    .btn-ttd-mode:hover:not(.active) { background: #eaf2fb; }
 
     /* Buttons */
     .btn-group { display: flex; gap: 8px; margin-top: 18px; }
@@ -330,18 +338,6 @@
         </div>
       </div>
 
-      <!-- IDENTITAS PELAKSANA -->
-      <div class="form-section">
-        <h3>Identitas Pelaksana Pekerjaan</h3>
-        <div class="form-row">
-          <label>Nama Pelaksana <span class="req">*</span></label>
-          <input type="text" id="namaPelaksana" placeholder="Nama lengkap" oninput="syncPreview()" />
-        </div>
-        <div class="form-row">
-          <label>Jabatan Pelaksana <span class="req">*</span></label>
-          <input type="text" id="jabPelaksana" placeholder="Jabatan" oninput="syncPreview()" />
-        </div>
-      </div>
 
       <!-- DETAIL BARANG -->
       <div class="form-section">
@@ -526,16 +522,39 @@
         <!-- Pelaksana Pekerjaan -->
         <div class="ttd-section">
           <h4>Pelaksana Pekerjaan</h4>
-          <div class="form-row">
-            <label>Nama <span class="req">*</span></label>
-            <input type="text" id="ttdNamaPelaksana" placeholder="Nama lengkap" oninput="syncPreview()" />
+          <div class="ttd-mode-toggle">
+            <button class="btn-ttd-mode active" id="modeBtn_pelaksana_list" onclick="setTTDMode('pelaksana','list')">🗂️ Pilih dari Daftar</button>
+            <button class="btn-ttd-mode" id="modeBtn_pelaksana_manual" onclick="setTTDMode('pelaksana','manual')">✍️ Gambar Manual</button>
           </div>
-          <div class="form-row">
-            <label>Jabatan <span class="req">*</span></label>
-            <input type="text" id="ttdJabPelaksana" placeholder="Jabatan" oninput="syncPreview()" />
+          <!-- Mode: pilih dari daftar — nama & identitas terisi otomatis -->
+          <div id="wrapMode_pelaksana_list">
+            <select id="selectTTD_pelaksana" onchange="onSelectTTD('pelaksana')">
+              <option value="">— Pilih nama —</option>
+            </select>
+            <div id="loadingTTD_pelaksana" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
           </div>
-          <div class="ttd-preview-wrap">
-            <button class="btn-ttd" onclick="openTTD('pelaksana')">✍️ Tanda Tangan</button>
+          <!-- Mode: gambar manual — isi identitas + tanda tangan di canvas -->
+          <div id="wrapMode_pelaksana_manual" style="display:none;margin-top:6px;">
+            <div class="form-row">
+              <label>Nama Pelaksana <span class="req">*</span></label>
+              <input type="text" id="namaPelaksana" placeholder="Nama lengkap" oninput="syncPreview()" />
+            </div>
+            <div class="form-row">
+              <label>Jabatan <span class="req">*</span></label>
+              <input type="text" id="jabPelaksana" list="jabPelaksanaList"
+                     placeholder="Pilih atau ketik jabatan" oninput="syncPreview()" autocomplete="off" />
+              <datalist id="jabPelaksanaList"><option value="Teknisi"></datalist>
+            </div>
+            <div class="form-row">
+              <label>Perusahaan / Instansi <span class="req">*</span></label>
+              <input type="text" id="perusahaanPelaksana" list="perusahaanPelaksanaList"
+                     placeholder="Pilih atau ketik perusahaan" oninput="syncPreview()" autocomplete="off" />
+              <datalist id="perusahaanPelaksanaList"><option value="PT. Sumber Tehnik Jaya"></datalist>
+            </div>
+            <button class="btn-ttd" style="margin-top:4px;" onclick="openTTD('pelaksana')">✍️ Tanda Tangan</button>
+          </div>
+          <!-- Preview bersama (kedua mode) -->
+          <div class="ttd-preview-wrap" style="margin-top:8px;">
             <button class="btn-clear-ttd" id="clearTTD_pelaksana" onclick="clearTTD('pelaksana')">✕ Hapus</button>
             <div>
               <img id="previewTTD_pelaksana" class="ttd-preview-img" />
@@ -565,20 +584,38 @@
           </div>
         </div>
 
-        <!-- Pengawas: pilih dari daftar TTD Sarpras -->
+        <!-- Pengawas: Instalasi Sarana Prasarana -->
         <div class="ttd-section">
           <h4>Pengawas — Instalasi Sarana Prasarana</h4>
-          <div class="form-row">
-            <label>Pilih Pengawas <span class="req">*</span></label>
-            <select id="selectPengawas" onchange="onPengawasChange()">
+          <div class="ttd-mode-toggle">
+            <button class="btn-ttd-mode active" id="modeBtn_pengawas_list" onclick="setTTDMode('pengawas','list')">🗂️ Pilih dari Daftar</button>
+            <button class="btn-ttd-mode" id="modeBtn_pengawas_manual" onclick="setTTDMode('pengawas','manual')">✍️ Gambar Manual</button>
+          </div>
+          <!-- Mode: pilih dari daftar -->
+          <div id="wrapMode_pengawas_list">
+            <select id="selectTTD_pengawas" onchange="onSelectTTD('pengawas')">
               <option value="">— Pilih nama pengawas —</option>
             </select>
+            <div id="loadingTTD_pengawas" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
           </div>
-          <div id="wrapPreviewPengawas" style="display:none;margin-top:8px;text-align:center;">
-            <img id="previewTTD_pengawas" style="max-width:100%;max-height:90px;border:1px solid #ddd;border-radius:4px;" />
-            <div style="font-size:10px;color:#27ae60;font-weight:600;margin-top:3px;">✅ TTD dimuat otomatis (hitam-putih)</div>
+          <!-- Mode: gambar manual (+ input nama) -->
+          <div id="wrapMode_pengawas_manual" style="display:none;margin-top:6px;">
+            <div class="form-row">
+              <label>Nama Pengawas <span class="req">*</span></label>
+              <input type="text" id="namaPengawasManual" placeholder="Nama lengkap pengawas" oninput="setHidden('namaPengawas',this.value);syncPreview()" />
+            </div>
+            <button class="btn-ttd" onclick="openTTD('pengawas')">✍️ Tanda Tangan</button>
           </div>
-          <div id="wrapLoadingPengawas" style="display:none;margin-top:8px;font-size:11px;color:#b7950b;">⏳ Memproses TTD…</div>
+          <!-- Hidden canonical name -->
+          <input type="hidden" id="namaPengawas" />
+          <!-- Preview bersama (kedua mode) -->
+          <div class="ttd-preview-wrap" style="margin-top:8px;">
+            <button class="btn-clear-ttd" id="clearTTD_pengawas" onclick="clearTTD('pengawas')">✕ Hapus</button>
+            <div>
+              <img id="previewTTD_pengawas" class="ttd-preview-img" />
+              <div class="ttd-status" id="statusTTD_pengawas">Belum ditandatangani</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -622,6 +659,10 @@
           <tr>
             <td>Jabatan</td><td>:</td>
             <td id="pvJabPelaksana">……………………………………………</td>
+          </tr>
+          <tr>
+            <td>Instansi</td><td>:</td>
+            <td id="pvPerusahaanPelaksana">……………………………………………</td>
           </tr>
           <tr>
             <td colspan="3" class="disebut">Disebut Pihak yang Malaksanakan Pekerjaan</td>
@@ -833,16 +874,27 @@
     const GAS_URL = '__GAS_URL__';
 
     // ===== TTD SARPRAS (embed saat build, diproses B&W di browser) =====
-    const TTD_SAPRAS_RAW = __TTD_SAPRAS__;   // { "Sukiman": "data:image/png;base64,...", ... }
-    const TTD_SAPRAS_CACHE = {};              // hasil proses B&W disimpan di sini
+    const TTD_SAPRAS_RAW    = __TTD_SAPRAS__;     // { "Sukiman": "data:...", ... }  — Pengawas
+    const TTD_PELAKSANA_RAW = __TTD_PELAKSANA__;  // { "Heriyanto": "data:...", ... } — Pelaksana
+    const TTD_SAPRAS_CACHE    = {};
+    const TTD_PELAKSANA_CACHE = {};
+
+    // ===== PROFIL PELAKSANA — auto-fill jabatan & perusahaan saat TTD dipilih =====
+    const PELAKSANA_PROFILE = {
+      'Heriyanto': { jabatan: 'Teknisi', perusahaan: 'PT. Sumber Tehnik Jaya' },
+      'Iqbal':     { jabatan: 'Teknisi', perusahaan: 'PT. Sumber Tehnik Jaya' },
+    };
 
     // ===== STATE =====
     let nomorData = null;
     let asetACList = [];   // daftar aset A.C yang sudah difilter dari server
     let selNup  = '', selNama = '', selMerk = '', selTipe = '';
     let isManualMode = false;
-    const fotoData = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null };
-    const ttdData  = { pelaksana:null, pengguna:null, pengawas:null };
+    const fotoData  = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null };
+    const ttdData   = { pelaksana:null, pengguna:null, pengawas:null };
+    // ttdIsKey: true = dipilih dari daftar (jangan upload), false = digambar manual (upload)
+    const ttdIsKey  = { pelaksana:false, pengguna:false, pengawas:false };
+    const ttdKeyVal = { pelaksana:'',    pengguna:'',    pengawas:'' };
     let currentTTDTarget = null;
     let isDrawing = false;
     let ctx = null;
@@ -860,26 +912,132 @@
       document.getElementById('tanggalLaporan').value = today;
       onTanggalChange();
       fetchNomor();
-      initPengawasList();
+      initTTDLists();
       fetchAset();
     });
 
-    // ===== INISIALISASI DROPDOWN PENGAWAS =====
-    function initPengawasList() {
-      const sel = document.getElementById('selectPengawas');
-      const names = Object.keys(TTD_SAPRAS_RAW).sort();
-      if (names.length === 0) {
-        const opt = document.createElement('option');
-        opt.value = ''; opt.textContent = '(tidak ada data TTD Sarpras)'; opt.disabled = true;
-        sel.appendChild(opt);
+    // ===== SUMBER TTD per target =====
+    function getTTDSource(target) {
+      return target === 'pengawas'
+        ? { raw: TTD_SAPRAS_RAW,    cache: TTD_SAPRAS_CACHE    }
+        : { raw: TTD_PELAKSANA_RAW, cache: TTD_PELAKSANA_CACHE };
+    }
+
+    // ===== INISIALISASI DROPDOWN TTD (Pelaksana & Pengawas) =====
+    function initTTDLists() {
+      const map = {
+        selectTTD_pelaksana: TTD_PELAKSANA_RAW,
+        selectTTD_pengawas:  TTD_SAPRAS_RAW,
+      };
+      Object.entries(map).forEach(([selId, raw]) => {
+        const sel   = document.getElementById(selId);
+        if (!sel) return;
+        const names = Object.keys(raw).sort();
+        if (names.length === 0) {
+          const opt = document.createElement('option');
+          opt.value = ''; opt.textContent = '(tidak ada data)'; opt.disabled = true;
+          sel.appendChild(opt);
+          return;
+        }
+        names.forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          sel.appendChild(opt);
+        });
+      });
+    }
+
+    // ===== MODE TOGGLE TTD =====
+    function setTTDMode(target, mode) {
+      const listWrap   = document.getElementById('wrapMode_' + target + '_list');
+      const manualWrap = document.getElementById('wrapMode_' + target + '_manual');
+      const listBtn    = document.getElementById('modeBtn_' + target + '_list');
+      const manualBtn  = document.getElementById('modeBtn_' + target + '_manual');
+      if (listWrap)   listWrap.style.display   = mode === 'list'   ? 'block' : 'none';
+      if (manualWrap) manualWrap.style.display = mode === 'manual' ? 'block' : 'none';
+      if (listBtn)    listBtn.classList.toggle('active',   mode === 'list');
+      if (manualBtn)  manualBtn.classList.toggle('active', mode === 'manual');
+      // Reset TTD saat ganti mode
+      clearTTD(target);
+      // Jika kembali ke list mode, reset select dan nama manual
+      if (mode === 'list') {
+        const sel = document.getElementById('selectTTD_' + target);
+        if (sel) sel.value = '';
+      }
+      if (mode === 'manual' && target === 'pengawas') {
+        const inp = document.getElementById('namaPengawasManual');
+        if (inp) inp.value = '';
+        setHidden('namaPengawas', '');
+      }
+      if (mode === 'list' && target === 'pelaksana') {
+        ['namaPelaksana','jabPelaksana','perusahaanPelaksana'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+      }
+    }
+
+    // ===== PILIH TTD DARI DAFTAR =====
+    function onSelectTTD(target) {
+      const name = document.getElementById('selectTTD_' + target)?.value || '';
+      const loadingEl = document.getElementById('loadingTTD_' + target);
+
+      if (!name) {
+        clearTTD(target);
+        if (target === 'pengawas') setHidden('namaPengawas', '');
         return;
       }
-      names.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        sel.appendChild(opt);
-      });
+
+      if (loadingEl) loadingEl.style.display = 'block';
+
+      const { raw, cache } = getTTDSource(target);
+      const applyFn = processed => {
+        if (loadingEl) loadingEl.style.display = 'none';
+        applyTTDFromList(target, name, processed);
+      };
+
+      if (cache[name]) {
+        applyFn(cache[name]);
+      } else {
+        processToBlackWhite(raw[name], processed => {
+          cache[name] = processed;
+          applyFn(processed);
+        });
+      }
+    }
+
+    function applyTTDFromList(target, name, processedUrl) {
+      ttdData[target]   = processedUrl;   // hanya untuk preview — tidak dikirim ke GAS
+      ttdIsKey[target]  = true;           // tandai: dari daftar, jangan upload
+      ttdKeyVal[target] = name;
+      // Update preview di form
+      const prevImg = document.getElementById('previewTTD_' + target);
+      if (prevImg) { prevImg.src = processedUrl; prevImg.style.display = 'block'; }
+      // Update status
+      const statusEl = document.getElementById('statusTTD_' + target);
+      if (statusEl) { statusEl.textContent = '✅ Dipilih: ' + name; statusEl.classList.add('signed'); }
+      // Tampilkan tombol Hapus
+      const clearBtn = document.getElementById('clearTTD_' + target);
+      if (clearBtn) clearBtn.style.display = 'inline-block';
+      // Auto-fill fields berdasarkan nama yang dipilih
+      if (target === 'pengawas') {
+        setHidden('namaPengawas', name);
+      } else if (target === 'pelaksana') {
+        const el  = document.getElementById('namaPelaksana');
+        const jabEl = document.getElementById('jabPelaksana');
+        const perEl = document.getElementById('perusahaanPelaksana');
+        if (el)  el.value  = name;
+        const profile = PELAKSANA_PROFILE[name];
+        if (profile) {
+          if (jabEl) jabEl.value = profile.jabatan;
+          if (perEl) perEl.value = profile.perusahaan;
+        }
+        syncPreview();
+      }
+      // Update preview surat
+      const pvMap = { pelaksana:'pvTTDPelaksana', pengguna:'pvTTDPengguna', pengawas:'pvTTDPengawas' };
+      const pvImg = document.getElementById(pvMap[target]);
+      if (pvImg) { pvImg.src = processedUrl; pvImg.style.display = 'block'; }
+      syncPreview();
     }
 
     // ===== HELPER: SET HIDDEN FIELD =====
@@ -1160,41 +1318,6 @@
       return list;
     }
 
-    // ===== HANDLER PILIH PENGAWAS =====
-    function onPengawasChange() {
-      const name = document.getElementById('selectPengawas').value;
-
-      if (!name) {
-        ttdData.pengawas = null;
-        document.getElementById('wrapPreviewPengawas').style.display = 'none';
-        syncPreview();
-        return;
-      }
-
-      // Gunakan cache jika sudah diproses
-      if (TTD_SAPRAS_CACHE[name]) {
-        applyPengawasTTD(name, TTD_SAPRAS_CACHE[name]);
-        return;
-      }
-
-      // Proses B&W terlebih dahulu
-      document.getElementById('wrapLoadingPengawas').style.display = 'block';
-      document.getElementById('wrapPreviewPengawas').style.display = 'none';
-
-      processToBlackWhite(TTD_SAPRAS_RAW[name], processed => {
-        TTD_SAPRAS_CACHE[name] = processed;
-        document.getElementById('wrapLoadingPengawas').style.display = 'none';
-        applyPengawasTTD(name, processed);
-      });
-    }
-
-    function applyPengawasTTD(name, processedUrl) {
-      ttdData.pengawas = processedUrl;
-      const img = document.getElementById('previewTTD_pengawas');
-      img.src = processedUrl;
-      document.getElementById('wrapPreviewPengawas').style.display = 'block';
-      syncPreview();
-    }
 
     // ===== FETCH NOMOR =====
     async function fetchNomor(msg = '⏳ Mengambil nomor laporan dari server…') {
@@ -1289,17 +1412,18 @@
       document.getElementById('pvDeskripsi').textContent  = g('deskripsi')     || '……………………………';
 
       // Pelaksana di body surat
-      document.getElementById('pvNamaPelaksana').textContent   = g('namaPelaksana') || '……………………………………';
-      document.getElementById('pvJabPelaksana').textContent    = g('jabPelaksana')  || '……………………………………';
+      document.getElementById('pvNamaPelaksana').textContent         = g('namaPelaksana')        || '……………………………………';
+      document.getElementById('pvJabPelaksana').textContent          = g('jabPelaksana')          || '……………………………………';
+      document.getElementById('pvPerusahaanPelaksana').textContent   = g('perusahaanPelaksana')   || '……………………………………';
       // Pelaksana di TTD
-      document.getElementById('pvNamaPelaksanaTTD').textContent = g('ttdNamaPelaksana') || g('namaPelaksana') || '……………………………………';
-      document.getElementById('pvJabPelaksanaSub').textContent  = g('ttdJabPelaksana')  || g('jabPelaksana')  || '……………………';
+      document.getElementById('pvNamaPelaksanaTTD').textContent = g('namaPelaksana') || '……………………………………';
+      const jabTTD = [g('jabPelaksana'), g('perusahaanPelaksana')].filter(Boolean).join(' - ');
+      document.getElementById('pvJabPelaksanaSub').textContent  = jabTTD || '……………………';
       // Pengguna
       document.getElementById('pvNamaPengguna').textContent    = g('namaPengguna')  || '……………………………………';
       document.getElementById('pvJabPenggunaLabel').textContent = g('jabPengguna') ? g('jabPengguna') : '';
       // Pengawas (dari select, bukan input teks)
-      const selPengawas = document.getElementById('selectPengawas');
-      const namaPengawasVal = selPengawas.value || '';
+      const namaPengawasVal = g('namaPengawas');
       document.getElementById('pvNamaPengawas').textContent = namaPengawasVal || '……………………………………';
 
       // Kapasitas AC
@@ -1400,7 +1524,9 @@
     function saveTTD() {
       const c   = document.getElementById('ttdCanvas');
       const b64 = c.toDataURL('image/png');
-      ttdData[currentTTDTarget] = b64;
+      ttdData[currentTTDTarget]   = b64;
+      ttdIsKey[currentTTDTarget]  = false;  // gambar manual → akan diupload
+      ttdKeyVal[currentTTDTarget] = '';
 
       const pvMap = { pelaksana:'pvTTDPelaksana', pengguna:'pvTTDPengguna', pengawas:'pvTTDPengawas' };
       const pvImg = document.getElementById(pvMap[currentTTDTarget]);
@@ -1424,7 +1550,15 @@
     }
 
     function clearTTD(target) {
-      ttdData[target] = null;
+      ttdData[target]   = null;
+      ttdIsKey[target]  = false;
+      ttdKeyVal[target] = '';
+      // Clear identity fields pelaksana
+      if (target === 'pelaksana') {
+        ['namaPelaksana','jabPelaksana','perusahaanPelaksana'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+      }
       const pvMap = { pelaksana:'pvTTDPelaksana', pengguna:'pvTTDPengguna', pengawas:'pvTTDPengawas' };
       const pvImg = document.getElementById(pvMap[target]);
       if (pvImg) pvImg.style.display = 'none';
@@ -1434,6 +1568,9 @@
       if (statusEl) { statusEl.textContent = 'Belum ditandatangani'; statusEl.classList.remove('signed'); }
       const clearBtn = document.getElementById('clearTTD_' + target);
       if (clearBtn) clearBtn.style.display = 'none';
+      // Reset select jika ada
+      const sel = document.getElementById('selectTTD_' + target);
+      if (sel) sel.value = '';
     }
 
     // ===== SUBMIT =====
@@ -1452,12 +1589,11 @@
         'Ruangan'            : g('ruangan'),
         'NUP'                : g('nup'),
         'Kapasitas AC'       : g('kapasitasAC'),
-        'Nama Pelaksana'     : g('namaPelaksana'),
-        'Jabatan Pelaksana'  : g('jabPelaksana'),
-        'Nama Pelaksana TTD' : g('ttdNamaPelaksana'),
-        'Jabatan Pelaksana TTD': g('ttdJabPelaksana'),
-        'Nama Pengguna'      : g('namaPengguna'),
-        'Pengawas'           : document.getElementById('selectPengawas').value,
+        'Nama Pelaksana'        : g('namaPelaksana'),
+        'Jabatan Pelaksana'     : g('jabPelaksana'),
+        'Perusahaan Pelaksana'  : g('perusahaanPelaksana'),
+        'Nama Pengguna'         : g('namaPengguna'),
+        'Pengawas'           : g('namaPengawas'),
       };
       for (const [k, v] of Object.entries(required)) {
         if (!v) {
@@ -1509,16 +1645,19 @@
         jenisGantiModul      : document.getElementById('jenisGantiModul').checked,
         jenisLainLain        : document.getElementById('jenisLainLainCb').checked ? g('jenisLainLain') : '',
         deskripsi            : g('deskripsi'),
-        namaPelaksana   : g('namaPelaksana'),
-        jabPelaksana    : g('jabPelaksana'),
-        ttdNamaPelaksana: g('ttdNamaPelaksana'),
-        ttdJabPelaksana : g('ttdJabPelaksana'),
+        namaPelaksana        : g('namaPelaksana'),
+        jabPelaksana         : g('jabPelaksana'),
+        perusahaanPelaksana  : g('perusahaanPelaksana'),
+        ttdNamaPelaksana     : g('namaPelaksana'),
+        ttdJabPelaksana      : g('jabPelaksana'),
         namaPengguna    : g('namaPengguna'),
         jabPengguna     : g('jabPengguna'),
-        namaPengawas    : document.getElementById('selectPengawas').value,
-        ttdPelaksana    : ttdData.pelaksana || '',
-        ttdPengguna     : ttdData.pengguna  || '',
-        ttdPengawas     : ttdData.pengawas  || '',
+        namaPengawas    : g('namaPengawas'),
+        // Kalau dari daftar: kirim nama kunci (tidak diupload ke Drive)
+        // Kalau gambar manual: kirim base64 (akan diupload ke Drive)
+        ttdPelaksana    : ttdIsKey.pelaksana ? ttdKeyVal.pelaksana : (ttdData.pelaksana || ''),
+        ttdPengguna     : ttdData.pengguna  || '',   // pengguna selalu gambar manual
+        ttdPengawas     : ttdIsKey.pengawas  ? ttdKeyVal.pengawas  : (ttdData.pengawas  || ''),
         foto1           : fotoData.foto1 || '',
         foto2           : fotoData.foto2 || '',
         foto3           : fotoData.foto3 || '',
@@ -1559,7 +1698,7 @@
     function resetForm() {
       if (!confirm('Reset semua isian? Data yang belum di-submit akan hilang.')) return;
       ['namaBarang','merek','tipe','ruangan','nup','noSuratUsulan','deskripsi',
-       'namaPelaksana','jabPelaksana','ttdNamaPelaksana','ttdJabPelaksana',
+       'namaPelaksana','jabPelaksana','perusahaanPelaksana',
        'namaPengguna','jabPengguna'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
@@ -1608,11 +1747,14 @@
         if (prev) { prev.src = ''; prev.style.display = 'none'; }
         if (ph)   ph.style.display = 'flex';
       }
-      ['pelaksana','pengguna'].forEach(t => clearTTD(t));
-      // Reset pengawas (dari select, bukan canvas)
-      document.getElementById('selectPengawas').value = '';
-      ttdData.pengawas = null;
-      document.getElementById('wrapPreviewPengawas').style.display = 'none';
+      ['pelaksana','pengguna','pengawas'].forEach(t => clearTTD(t));
+      // Kembalikan mode TTD ke default (list)
+      ['pelaksana','pengawas'].forEach(t => {
+        setTTDMode(t, 'list');
+      });
+      setHidden('namaPengawas', '');
+      const npManual = document.getElementById('namaPengawasManual');
+      if (npManual) npManual.value = '';
       const pvTTDPengawas = document.getElementById('pvTTDPengawas');
       if (pvTTDPengawas) pvTTDPengawas.style.display = 'none';
       nomorData = null;

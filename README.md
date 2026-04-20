@@ -10,10 +10,10 @@ Sistem digital pengelolaan dokumen Barang Milik Negara (BMN) — dilengkapi tand
 
 - **Surat Usulan BMN** — form pengajuan dengan foto dan TTD digital Penerima & Pengirim
 - **Berita Acara (BAPP)** — form serah terima dengan TTD digital 3 pihak
-- **Laporan Pemeliharaan/Perbaikan AC** — form laporan khusus AC dengan pilihan kapasitas, jenis pekerjaan, dan TTD Pengawas otomatis
+- **Laporan Pemeliharaan/Perbaikan AC** — form laporan khusus AC dengan dropdown aset A.C bertingkat (NUP→Nama→Merek→Tipe), pilihan kapasitas, jenis pekerjaan, dan TTD digital
 - **Panel Admin** — lihat, filter, dan cetak ulang semua dokumen
-- **TTD Digital** — tanda tangan via canvas (mouse/jari)
-- **TTD Sarpras Otomatis** — TTD Pengawas dimuat dari folder `TTDSapras/`, diproses hitam-putih + hapus background otomatis
+- **TTD Digital (2 mode)** — pilih dari daftar TTD tersimpan *atau* gambar manual via canvas (mouse/jari) untuk Pelaksana & Pengawas
+- **TTD Otomatis** — TTD Pelaksana dari `TTDPelaksana/`, TTD Pengawas dari `TTDSapras/`, diproses hitam-putih + hapus background otomatis saat dipilih
 - **Integrasi Google** — data tersimpan otomatis ke Google Sheets, foto & TTD ke Google Drive
 
 ---
@@ -27,11 +27,14 @@ SimpleBMN/
 ├── bapp.html           # Form berita acara serah terima
 ├── laporan-ac.html     # Form laporan pemeliharaan/perbaikan AC
 ├── index.html          # Halaman utama / landing
-├── build.js            # Script inject env → dist/ (termasuk embed TTD Sarpras)
+├── build.js            # Script inject env → dist/ (embed TTD Sarpras & Pelaksana)
 ├── vercel.json         # Konfigurasi deploy Vercel
-├── TTDSapras/          # Folder TTD Pengawas Sarpras (format: NamaPengawas_TTD.png)
-│   ├── Sukiman_TTD.png
-│   └── Tommy_TTD.png
+├── TTDSapras/          # TTD Pengawas Sarpras (format: Nama.png)
+│   ├── Sukiman.png
+│   └── Tommy.png
+├── TTDPelaksana/       # TTD Pelaksana pekerjaan (format: Nama.png)
+│   ├── Heriyanto.png
+│   └── Iqbal.png
 ├── Code_UseFonnte.gs   # Google Apps Script backend
 └── dist/               # Output build (di-generate, tidak di-commit)
 ```
@@ -42,12 +45,12 @@ SimpleBMN/
 
 ```
 EDIT KODE (VS Code/Cursor)
-  └─ HTML menggunakan placeholder __GAS_URL__, __ADMIN_PASSWORD__, __TTD_SAPRAS__
+  └─ HTML menggunakan placeholder __GAS_URL__, __ADMIN_PASSWORD__, __TTD_SAPRAS__, __TTD_PELAKSANA__
         ↓
 BUILD LOKAL
   └─ node --env-file=.env.local build.js
   └─ Placeholder diganti nilai asli dari .env.local → dist/
-  └─ File TTDSapras/*.png di-embed sebagai base64 ke dalam laporan-ac.html
+  └─ TTDSapras/*.png & TTDPelaksana/*.png di-embed sebagai base64 ke HTML
         ↓
 TEST LOKAL
   └─ npx serve dist → buka localhost:3000
@@ -87,17 +90,22 @@ Import `Template_Spreadsheet_BMN.xlsx` ke Google Drive. Pastikan ada 3 sheet:
 | `BA-PP` | Arsip berita acara | A–AB (28 kolom) |
 | `L-PP-AC` | Arsip laporan perbaikan AC | A–AF (32 kolom) |
 
-### 3. TTD Pengawas Sarpras
+### 3. TTD Pelaksana & Pengawas
 
-Taruh file TTD masing-masing pengawas di folder `TTDSapras/` dengan format nama file:
+| Folder | Dipakai untuk | Dropdown di form |
+|--------|--------------|-----------------|
+| `TTDSapras/` | Pengawas Instalasi Sarpras | TTD Pengawas |
+| `TTDPelaksana/` | Pelaksana pekerjaan | TTD Pelaksana |
 
-```
-NamaPengawas_TTD.png
-```
+Format nama file: **`Nama.png`** (cukup nama saja, tanpa suffix `_TTD`)
 
-Contoh: `Sukiman_TTD.png`, `Tommy_TTD.png`
+Contoh: `Sukiman.png`, `Tommy.png`, `Heriyanto.png`, `Iqbal.png`
 
-> Saat build, file-file ini di-embed sebagai base64 ke dalam `laporan-ac.html` dan diproses otomatis menjadi **hitam-putih + background transparan** di browser. Untuk menambah pengawas baru, cukup taruh file baru di folder ini lalu build ulang.
+> Saat build, semua file di kedua folder di-embed sebagai base64 ke `laporan-ac.html` dan diproses otomatis menjadi **hitam-putih + background transparan** saat dipilih di browser.
+>
+> Di form, setiap TTD punya 2 mode: **🗂️ Pilih dari Daftar** (otomatis dari folder) atau **✍️ Gambar Manual** (canvas tanda tangan).
+>
+> Untuk menambah nama baru, cukup taruh file `.png` di folder yang sesuai lalu build ulang / push ke GitHub.
 
 ### 4. Vercel
 
@@ -147,10 +155,10 @@ git push
 2. Vercel Dashboard → **Deployments** → **Redeploy**
 3. Update lokal: `vercel env pull .env.local`
 
-### Kalau ada Pengawas Sarpras baru
+### Kalau ada Pengawas atau Pelaksana baru
 
-1. Tambah file `NamaBaru_TTD.png` ke folder `TTDSapras/`
-2. Push ke GitHub → Vercel auto-rebuild (TTD baru otomatis muncul di dropdown)
+1. Tambah file `NamaBaru.png` ke folder `TTDSapras/` (pengawas) atau `TTDPelaksana/` (pelaksana)
+2. Push ke GitHub → Vercel auto-rebuild → nama baru otomatis muncul di dropdown
 
 ---
 

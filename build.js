@@ -15,24 +15,29 @@ const DIST = path.join(__dirname, 'dist');
 
 if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
 
-// ── TTD Sarpras: baca semua file dari folder TTDSapras, embed sebagai base64 ──
-// Format nama file: {Nama}_TTD.png  →  key = "Nama"
-const TTD_SAPRAS_DIR = path.join(SRC, 'TTDSapras');
-const ttdSaprasObj   = {};
-if (fs.existsSync(TTD_SAPRAS_DIR)) {
-  fs.readdirSync(TTD_SAPRAS_DIR)
+// ── Helper: baca folder TTD, embed sebagai base64 ──
+// Format nama file: {Nama}.png atau {Nama}_TTD.png  →  key = "Nama"
+function readTTDFolder(dirPath, label) {
+  const obj = {};
+  if (!fs.existsSync(dirPath)) return obj;
+  fs.readdirSync(dirPath)
     .filter(f => /\.(png|jpg|jpeg)$/i.test(f))
     .sort()
     .forEach(file => {
       const name = file.replace(/_TTD\.(png|jpg|jpeg)$/i, '').replace(/\.(png|jpg|jpeg)$/i, '');
       const ext  = path.extname(file).slice(1).toLowerCase();
       const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
-      const b64  = fs.readFileSync(path.join(TTD_SAPRAS_DIR, file)).toString('base64');
-      ttdSaprasObj[name] = `data:${mime};base64,${b64}`;
-      console.log(`🖊️  TTD Sarpras: ${file} → "${name}"`);
+      const b64  = fs.readFileSync(path.join(dirPath, file)).toString('base64');
+      obj[name] = `data:${mime};base64,${b64}`;
+      console.log(`🖊️  TTD ${label}: ${file} → "${name}"`);
     });
+  return obj;
 }
-const TTD_SAPRAS_JSON = JSON.stringify(ttdSaprasObj);
+
+// ── TTD Sarpras (Pengawas) ──
+const TTD_SAPRAS_JSON    = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDSapras'),    'Sarpras'));
+// ── TTD Pelaksana ──
+const TTD_PELAKSANA_JSON = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDPelaksana'), 'Pelaksana'));
 
 // ── File HTML yang perlu diproses ──
 const HTML_FILES = ['index.html', 'usulan.html', 'bapp.html', 'admin.html', 'laporan-ac.html'];
@@ -45,6 +50,7 @@ HTML_FILES.forEach(file => {
   content = content.replaceAll('__GAS_URL__',        GAS_URL);
   content = content.replaceAll('__ADMIN_PASSWORD__', ADMIN_PASSWORD);
   content = content.replaceAll('__TTD_SAPRAS__',     TTD_SAPRAS_JSON);
+  content = content.replaceAll('__TTD_PELAKSANA__',  TTD_PELAKSANA_JSON);
 
   fs.writeFileSync(path.join(DIST, file), content, 'utf8');
   console.log(`✅ ${file} → dist/${file}`);
@@ -58,6 +64,21 @@ ASSETS.forEach(file => {
     fs.copyFileSync(src, path.join(DIST, file));
     console.log(`📁 ${file} → dist/${file}`);
   }
+});
+
+// Copy TTD folders ke dist/ agar bisa di-load via path relatif di admin
+const TTD_DIRS = ['TTDPelaksana', 'TTDSapras'];
+TTD_DIRS.forEach(dir => {
+  const srcDir = path.join(SRC, dir);
+  const dstDir = path.join(DIST, dir);
+  if (!fs.existsSync(srcDir)) return;
+  if (!fs.existsSync(dstDir)) fs.mkdirSync(dstDir, { recursive: true });
+  fs.readdirSync(srcDir)
+    .filter(f => /\.(png|jpg|jpeg)$/i.test(f))
+    .forEach(file => {
+      fs.copyFileSync(path.join(srcDir, file), path.join(dstDir, file));
+      console.log(`📁 ${dir}/${file} → dist/${dir}/${file}`);
+    });
 });
 
 console.log('\nBuild selesai. Output: dist/');

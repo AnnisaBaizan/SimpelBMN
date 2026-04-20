@@ -559,6 +559,7 @@
     <table class="identitas-table">
       <tr><td>Nama</td><td>:</td><td class="nilai" id="acPrNamaPelaksana"></td></tr>
       <tr><td>Jabatan</td><td>:</td><td class="nilai" id="acPrJabPelaksana"></td></tr>
+      <tr><td>Instansi</td><td>:</td><td class="nilai" id="acPrPerusahaanPelaksana"></td></tr>
     </table>
     <div style="margin-bottom:8px">Dengan ini melaporkan telah selesai melaksanakan pemeliharaan/perbaikan Air Conditioner (AC) dengan rincian sebagai berikut:</div>
     <table class="detail-table">
@@ -647,6 +648,58 @@
 const GAS_URL     = '__GAS_URL__';
 const PASSWORD    = '__ADMIN_PASSWORD__';
 const SESSION_KEY = 'bmn_admin_auth';
+
+const TTD_PROCESSED_CACHE = {};
+
+// Muat TTD ke elemen img — deteksi otomatis: URL Drive vs nama kunci
+function loadTTDIntoEl(elId, val, pool) {
+  const el = document.getElementById(elId);
+  if (!el) return Promise.resolve();
+  if (!val || val === '-') return Promise.resolve();
+
+  if (val.startsWith('https://')) {
+    // URL Drive — fetch via GAS proxy (TTD gambar manual yang sudah diupload)
+    return fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(val))
+      .then(r => r.json())
+      .then(data => { if (data.status === 'ok' && data.base64) { el.src = data.base64; el.style.display = 'block'; } })
+      .catch(() => {});
+  }
+
+  // Nama kunci — load dari path file TTD di project (di-copy ke dist/ saat build)
+  const dir = pool === 'pelaksana' ? 'TTDPelaksana' : 'TTDSapras';
+  const imgPath = dir + '/' + val + '.png';
+  const cacheKey = pool + ':' + val;
+
+  if (TTD_PROCESSED_CACHE[cacheKey]) {
+    el.src = TTD_PROCESSED_CACHE[cacheKey]; el.style.display = 'block';
+    return Promise.resolve();
+  }
+
+  return new Promise(resolve => {
+    const tmp = new Image();
+    tmp.onload = () => {
+      // Proses B&W + hapus background
+      const c = document.createElement('canvas');
+      c.width = tmp.naturalWidth; c.height = tmp.naturalHeight;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(tmp, 0, 0);
+      const imgData = ctx.getImageData(0, 0, c.width, c.height);
+      const px = imgData.data;
+      for (let i = 0; i < px.length; i += 4) {
+        const lum = 0.299 * px[i] + 0.587 * px[i+1] + 0.114 * px[i+2];
+        if (lum > 200) { px[i+3] = 0; }
+        else { px[i] = 0; px[i+1] = 0; px[i+2] = 0; px[i+3] = 255; }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      const processed = c.toDataURL('image/png');
+      TTD_PROCESSED_CACHE[cacheKey] = processed;
+      el.src = processed; el.style.display = 'block';
+      resolve();
+    };
+    tmp.onerror = () => resolve();  // file tidak ada — skip saja
+    tmp.src = imgPath;
+  });
+}
 
 // SESSION
 window.addEventListener('load', () => {
@@ -1189,7 +1242,7 @@ function selectACRow(idx) {
     <div class="dl">Kapasitas AC</div>    <div class="dv">${d.kapasitasAC || '-'}</div>
     <div class="dl">Jenis Pekerjaan</div> <div class="dv" style="white-space:pre-wrap">${buildJenisList(d)}</div>
     <div class="dl">Deskripsi</div>       <div class="dv" style="white-space:pre-wrap">${d.deskripsi || '-'}</div>
-    <div class="dl">Pelaksana</div>       <div class="dv">${d.namaPelaksana} — ${d.jabPelaksana}</div>
+    <div class="dl">Pelaksana</div>       <div class="dv">${d.namaPelaksana} — ${d.jabPelaksana}${d.perusahaanPelaksana ? ' (' + d.perusahaanPelaksana + ')' : ''}</div>
     <div class="dl">Pengguna</div>        <div class="dv">${d.namaPengguna} — ${d.jabPengguna}</div>
     <div class="dl">Pengawas</div>        <div class="dv">${d.namaPengawas}</div>
   `;
@@ -1225,10 +1278,12 @@ async function startRegenACPDF() {
   set('acPrNoUsulan',       d.noSuratUsulan || '-');
   set('acPrDeskripsi',      d.deskripsi || '');
   set('acPrJenis',          buildJenisList(d));
-  set('acPrNamaPelaksana',  d.namaPelaksana);
-  set('acPrJabPelaksana',   d.jabPelaksana);
+  set('acPrNamaPelaksana',       d.namaPelaksana);
+  set('acPrJabPelaksana',        d.jabPelaksana);
+  set('acPrPerusahaanPelaksana', d.perusahaanPelaksana || '');
   set('acPrNamaPelaksanaTTD', d.ttdNamaPelaksana || d.namaPelaksana);
-  set('acPrJabPelaksanaTTD',  d.ttdJabPelaksana  || d.jabPelaksana);
+  const jabTTDadmin = [d.ttdJabPelaksana || d.jabPelaksana, d.perusahaanPelaksana].filter(Boolean).join(' - ');
+  set('acPrJabPelaksanaTTD',  jabTTDadmin);
   set('acPrNamaPengguna',   d.namaPengguna);
   set('acPrJabPengguna',    d.jabPengguna);
   set('acPrNamaPengawas',   d.namaPengawas);
@@ -1254,19 +1309,21 @@ async function startRegenACPDF() {
     if (ph)  ph.style.display = 'flex';
   }
 
-  const urlsToFetch = [
-    { id:'acPrTTDPelaksana', url: d.ttdPelaksana },
-    { id:'acPrTTDPengguna',  url: d.ttdPengguna  },
-    { id:'acPrTTDPengawas',  url: d.ttdPengawas  },
-    { id:'acImg1', url: d.foto1 },
-    { id:'acImg2', url: d.foto2 },
-    { id:'acImg3', url: d.foto3 },
-    { id:'acImg4', url: d.foto4 },
-    { id:'acImg5', url: d.foto5 },
+  // TTD: deteksi otomatis URL Drive vs nama kunci (dari daftar TTD)
+  const ttdLoaders = [
+    loadTTDIntoEl('acPrTTDPelaksana', d.ttdPelaksana, 'pelaksana'),
+    loadTTDIntoEl('acPrTTDPengguna',  d.ttdPengguna,  'pengguna'),
+    loadTTDIntoEl('acPrTTDPengawas',  d.ttdPengawas,  'pengawas'),
   ];
 
+  // Foto: tetap via GAS proxy
+  const fotoUrls = [
+    { id:'acImg1', url: d.foto1 }, { id:'acImg2', url: d.foto2 },
+    { id:'acImg3', url: d.foto3 }, { id:'acImg4', url: d.foto4 },
+    { id:'acImg5', url: d.foto5 },
+  ];
   let fetched = 0;
-  await Promise.all(urlsToFetch.map(async ({id, url}) => {
+  const fotoLoaders = fotoUrls.map(async ({id, url}) => {
     if (!url || url === '-') return;
     try {
       const resp = await fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(url));
@@ -1275,17 +1332,15 @@ async function startRegenACPDF() {
         const el = document.getElementById(id);
         if (!el) return;
         el.src = data.base64; el.style.display = 'block';
-        if (id.startsWith('acImg')) {
-          const phId = 'acPh' + id.replace('acImg','');
-          const ph = document.getElementById(phId);
-          if (ph) ph.style.display = 'none';
-        }
+        const ph = document.getElementById('acPh' + id.replace('acImg',''));
+        if (ph) ph.style.display = 'none';
         fetched++;
       }
     } catch(_) {}
-  }));
+  });
 
-  setStep('ms2','done', `✅ ${fetched} item dimuat`);
+  await Promise.all([...ttdLoaders, ...fotoLoaders]);
+  setStep('ms2','done', `✅ ${fetched} foto dimuat`);
   await sleep(300);
 
   // Step 3 — cetak
