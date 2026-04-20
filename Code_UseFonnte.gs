@@ -26,6 +26,11 @@ const CONFIG = {
   WA_TOKEN: 'GANTI_DENGAN_TOKEN_FONNTE',
   WA_TUJUAN: '628123456789',
   WA_AKTIF: false,
+
+  // --- Laporan Pemeliharaan/Perbaikan AC ---
+  L_PP_AC_SHEET_NAME: 'L-PP-AC',
+  L_PP_AC_NOMOR_PREFIX: 'KN.01.03/Sarpras/L-PP-AC',
+  L_PP_AC_DRIVE_FOLDER_ID: 'GANTI_DENGAN_FOLDER_ID_L_PP_AC',
 };
 
 // ================================================
@@ -49,6 +54,10 @@ function doGet(e) {
     result = getBASuratList();
   } else if (action === 'getPhoto') {
     result = getPhotoBase64(e.parameter.url);
+  } else if (action === 'getNomorLaporanAC') {
+    result = getNomorLaporanAC();
+  } else if (action === 'getLaporanACList') {
+    result = getLaporanACList();
   } else {
     result = { error: 'Action tidak dikenal.' };
   }
@@ -74,6 +83,8 @@ function doPost(e) {
     result = handleSubmit(payload);
   } else if (action === 'submitBA') {
     result = handleSubmitBA(payload);
+  } else if (action === 'submitLaporanAC') {
+    result = handleSubmitLaporanAC(payload);
   } else {
     result = { status: 'error', error: 'Action tidak dikenal.' };
   }
@@ -683,6 +694,169 @@ function handleSubmitBA(d) {
       status: 'ok',
       message: 'Berita Acara berhasil disimpan.',
       folder: subFolder.getUrl(),
+    };
+  } catch (err) {
+    return { status: 'error', error: err.message };
+  }
+}
+
+// ============================================================
+//  GET NOMOR LAPORAN PEMELIHARAAN/PERBAIKAN AC
+// ============================================================
+function getNomorLaporanAC() {
+  const tahun = new Date().getFullYear();
+  try {
+    const ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.L_PP_AC_SHEET_NAME);
+    if (!sheet) throw new Error('Sheet "' + CONFIG.L_PP_AC_SHEET_NAME + '" tidak ditemukan.');
+
+    const lastRow = sheet.getLastRow();
+    let urut = 1;
+    if (lastRow > 1) {
+      const nomorList = sheet.getRange(2, 2, lastRow - 1, 1).getValues().flat();
+      const count = nomorList.filter(n => n && String(n).includes('/' + tahun)).length;
+      urut = count + 1;
+    }
+    const urutStr = String(urut).padStart(3, '0');
+    const nomor   = CONFIG.L_PP_AC_NOMOR_PREFIX + '/' + urutStr + '/' + tahun;
+    return { status: 'ok', urut: urut, nomor: nomor };
+  } catch (err) {
+    return { status: 'error', error: err.message };
+  }
+}
+
+// ============================================================
+//  GET DAFTAR LAPORAN AC (untuk admin)
+//  Kolom: A=No, B=Nomor, C=TglSubmit, D=TglLaporan, E=NoSuratUsulan,
+//         F=NamaBarang, G=Tipe, H=Merek, I=Ruangan, J=NUP,
+//         K=KapasitasAC, L=Jenis1, M=Jenis2, N=Jenis3, O=Jenis4, P=Jenis5,
+//         Q=Deskripsi, R=NamaPelaksana, S=JabPelaksana,
+//         T=TTDNamaPelaksana, U=TTDJabPelaksana,
+//         V=NamaPengguna, W=JabPengguna, X=NamaPengawas,
+//         Y=TTDPelaksana, Z=TTDPengguna, AA=TTDPengawas,
+//         AB=Foto1, AC=Foto2, AD=Foto3, AE=Foto4, AF=Foto5
+// ============================================================
+function getLaporanACList() {
+  try {
+    const ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.L_PP_AC_SHEET_NAME);
+    if (!sheet) throw new Error('Sheet "' + CONFIG.L_PP_AC_SHEET_NAME + '" tidak ditemukan.');
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return { status: 'ok', data: [] };
+
+    const raw  = sheet.getRange(2, 1, lastRow - 1, 32).getValues();
+    const data = raw
+      .filter(r => r[1])
+      .map(r => ({
+        nomor          : String(r[1]  || ''),
+        tanggalLaporan : r[3] ? Utilities.formatDate(new Date(r[3]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
+        noSuratUsulan  : String(r[4]  || ''),
+        namaBarang     : String(r[5]  || ''),
+        tipe           : String(r[6]  || ''),
+        merek          : String(r[7]  || ''),
+        ruangan        : String(r[8]  || ''),
+        nup            : String(r[9]  || ''),
+        kapasitasAC          : String(r[10] || ''),
+        jenisCuci            : String(r[11] || ''),
+        jenisIsiFreon        : String(r[12] || ''),
+        jenisGantiKapasitor  : String(r[13] || ''),
+        jenisGantiModul      : String(r[14] || ''),
+        jenisLainLain        : String(r[15] || ''),
+        deskripsi      : String(r[16] || ''),
+        namaPelaksana  : String(r[17] || ''),
+        jabPelaksana   : String(r[18] || ''),
+        ttdNamaPelaksana: String(r[19] || ''),
+        ttdJabPelaksana : String(r[20] || ''),
+        namaPengguna   : String(r[21] || ''),
+        jabPengguna    : String(r[22] || ''),
+        namaPengawas   : String(r[23] || ''),
+        ttdPelaksana   : String(r[24] || '-'),
+        ttdPengguna    : String(r[25] || '-'),
+        ttdPengawas    : String(r[26] || '-'),
+        foto1          : String(r[27] || '-'),
+        foto2          : String(r[28] || '-'),
+        foto3          : String(r[29] || '-'),
+        foto4          : String(r[30] || '-'),
+        foto5          : String(r[31] || '-'),
+      }))
+      .reverse();
+    return { status: 'ok', count: data.length, data: data };
+  } catch (err) {
+    return { status: 'error', error: err.message };
+  }
+}
+
+// ============================================================
+//  HANDLE SUBMIT LAPORAN PEMELIHARAAN/PERBAIKAN AC
+// ============================================================
+function handleSubmitLaporanAC(d) {
+  try {
+    const timestamp   = new Date();
+    const namaFolder  = d.nomor + ' - ' + (d.ttdNamaPelaksana || d.namaPelaksana || 'AC');
+    const parentFolder = DriveApp.getFolderById(CONFIG.L_PP_AC_DRIVE_FOLDER_ID);
+    const subFolder    = parentFolder.createFolder(namaFolder);
+
+    // Upload foto (base64 → Drive)
+    const foto1 = uploadFoto(subFolder, d.foto1, 'Foto1_NUP');
+    const foto2 = uploadFoto(subFolder, d.foto2, 'Foto2_Merek');
+    const foto3 = uploadFoto(subFolder, d.foto3, 'Foto3_Sebelum');
+    const foto4 = uploadFoto(subFolder, d.foto4, 'Foto4_Pekerjaan1');
+    const foto5 = uploadFoto(subFolder, d.foto5, 'Foto5_Pekerjaan2');
+
+    // Upload TTD (base64 PNG dari canvas)
+    const ttdPelaksana = uploadFoto(subFolder, d.ttdPelaksana, 'TTD_Pelaksana');
+    const ttdPengguna  = uploadFoto(subFolder, d.ttdPengguna,  'TTD_Pengguna');
+    const ttdPengawas  = uploadFoto(subFolder, d.ttdPengawas,  'TTD_Pengawas');
+
+    // Append ke sheet L-PP-AC
+    const ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.L_PP_AC_SHEET_NAME);
+    if (!sheet) throw new Error('Sheet "' + CONFIG.L_PP_AC_SHEET_NAME + '" tidak ditemukan.');
+
+    const noUrut = sheet.getLastRow();
+    sheet.appendRow([
+      noUrut,                        // A: No
+      d.nomor,                       // B: Nomor Laporan
+      timestamp,                     // C: Tanggal Submit
+      d.tanggalLaporan,              // D: Tanggal Laporan
+      d.noSuratUsulan || '',         // E: No Surat Usulan
+      d.namaBarang,                  // F: Nama Barang
+      d.tipe        || '',           // G: Tipe
+      d.merek,                       // H: Merek
+      d.ruangan,                     // I: Ruangan
+      d.nup,                         // J: NUP
+      d.kapasitasAC,                           // K: Kapasitas AC
+      d.jenisCuci           ? 'Ya' : '',       // L: Cuci
+      d.jenisIsiFreon       ? 'Ya' : '',       // M: Isi Freon
+      d.jenisGantiKapasitor ? 'Ya' : '',       // N: Ganti Kapasitor
+      d.jenisGantiModul     ? 'Ya' : '',       // O: Ganti Modul
+      d.jenisLainLain       || '',             // P: Lain-lain (teks)
+      d.deskripsi   || '',           // Q: Deskripsi
+      d.namaPelaksana,               // R: Nama Pelaksana (di badan surat)
+      d.jabPelaksana,                // S: Jabatan Pelaksana (di badan surat)
+      d.ttdNamaPelaksana || d.namaPelaksana, // T: Nama Pelaksana (di TTD)
+      d.ttdJabPelaksana  || d.jabPelaksana,  // U: Jabatan Pelaksana (di TTD)
+      d.namaPengguna,                // V: Nama Pengguna
+      d.jabPengguna || '',           // W: Jabatan Pengguna
+      d.namaPengawas,                // X: Nama Pengawas
+      ttdPelaksana,                  // Y: TTD Pelaksana (URL)
+      ttdPengguna,                   // Z: TTD Pengguna (URL)
+      ttdPengawas,                   // AA: TTD Pengawas (URL)
+      foto1,                         // AB: Foto 1 NUP
+      foto2,                         // AC: Foto 2 Merek
+      foto3,                         // AD: Foto 3 Sebelum
+      foto4,                         // AE: Foto 4 Pekerjaan 1
+      foto5,                         // AF: Foto 5 Pekerjaan 2
+    ]);
+
+    const newRow = sheet.getLastRow();
+    sheet.getRange(newRow, 3).setNumberFormat('dd/mm/yyyy hh:mm:ss');
+    sheet.getRange(newRow, 4).setNumberFormat('dd/mm/yyyy');
+
+    return {
+      status  : 'ok',
+      message : 'Laporan AC berhasil disimpan.',
+      folder  : subFolder.getUrl(),
     };
   } catch (err) {
     return { status: 'error', error: err.message };

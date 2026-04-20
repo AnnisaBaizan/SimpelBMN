@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laporan Pemeliharaan/Perbaikan AC — BMN</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 13px; background: #f0f2f5; color: #222; }
+
+    /* ===== HEADER ===== */
+    .app-header {
+      background: #1a3a5c; color: #fff; padding: 12px 24px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    }
+    .app-header h1 { font-size: 16px; font-weight: 700; }
+    .app-header small { font-size: 11px; opacity: .75; }
+    .app-header .hdr-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    .btn-nav {
+      color: rgba(255,255,255,.8); text-decoration: none; font-size: 12px;
+      padding: 5px 12px; border: 1px solid rgba(255,255,255,.3); border-radius: 4px;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,.1); }
+
+    /* ===== LAYOUT ===== */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 430px 1fr;
+      gap: 0;
+      height: calc(100vh - 50px);
+      overflow: hidden;
+    }
+
+    /* ===== FORM PANEL ===== */
+    .form-panel {
+      background: #fff; overflow-y: auto;
+      border-right: 1px solid #dde; padding: 20px 22px 60px;
+    }
+    .form-panel h2 {
+      font-size: 13px; font-weight: 700; color: #1a3a5c;
+      margin-bottom: 14px; border-bottom: 2px solid #1a3a5c; padding-bottom: 6px;
+    }
+    .form-section { margin-bottom: 18px; }
+    .form-section h3 {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: #888; margin-bottom: 10px;
+    }
+    .form-row { margin-bottom: 10px; }
+    label { display: block; font-size: 11px; font-weight: 600; color: #444; margin-bottom: 3px; }
+    label span.req { color: #c0392b; }
+    input[type=text], input[type=date], select, textarea {
+      width: 100%; padding: 7px 10px; border: 1px solid #ccc;
+      border-radius: 4px; font-size: 12px; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #1a3a5c; }
+    input[readonly] { background: #f5f5f5; color: #666; }
+    textarea { resize: vertical; min-height: 70px; }
+
+    /* Jenis Pemeliharaan checklist */
+    .checklist-group { display: flex; flex-direction: column; gap: 7px; }
+    .check-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 400; color: #333; cursor: pointer;
+    }
+    .check-item input[type=checkbox] {
+      width: 15px; height: 15px; cursor: pointer; accent-color: #1a3a5c; flex-shrink: 0;
+    }
+
+    /* Foto grid */
+    .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .photo-item { min-width: 0; overflow: hidden; }
+    .photo-item label { margin-bottom: 4px; font-size: 10px; }
+    .photo-item input[type=file] {
+      width: 100%; max-width: 100%; font-size: 11px;
+      padding: 5px; border: 1px dashed #aaa;
+      border-radius: 4px; background: #fafafa; cursor: pointer;
+    }
+    .photo-thumb { width: 100%; max-height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; display: none; margin-top: 4px; }
+
+    /* TTD section */
+    .ttd-section {
+      border: 1px solid #d6eaf8; border-radius: 6px;
+      padding: 12px; margin-bottom: 10px; background: #f8fafc;
+    }
+    .ttd-section h4 { font-size: 11px; font-weight: 700; color: #1a3a5c; margin-bottom: 8px; }
+    .ttd-preview-wrap { margin-top: 8px; text-align: center; }
+    .ttd-preview-img {
+      max-width: 100%; max-height: 80px; border: 1px solid #ddd;
+      border-radius: 4px; display: none; margin: 0 auto;
+    }
+    .ttd-status { font-size: 10px; color: #888; margin-top: 3px; }
+    .ttd-status.signed { color: #27ae60; font-weight: 700; }
+    .btn-ttd {
+      display: inline-block; padding: 6px 14px; background: #1a3a5c; color: #fff;
+      border: none; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;
+    }
+    .btn-ttd:hover { background: #0f2640; }
+    .btn-clear-ttd {
+      display: none; padding: 4px 10px; background: #e74c3c; color: #fff;
+      border: none; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 6px;
+    }
+
+    /* Buttons */
+    .btn-group { display: flex; gap: 8px; margin-top: 18px; }
+    .btn { flex: 1; padding: 10px; border: none; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-submit { background: #1a3a5c; color: #fff; }
+    .btn-submit:hover { background: #0f2640; }
+    .btn-print  { background: #27ae60; color: #fff; }
+    .btn-print:hover  { background: #1e8449; }
+    .btn-reset  { background: #e74c3c; color: #fff; }
+    .btn-reset:hover  { background: #c0392b; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Status bar */
+    .status-bar {
+      display: none; padding: 9px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-bottom: 12px;
+    }
+    .status-bar.info    { display: block; background: #d6eaf8; color: #1a3a5c; }
+    .status-bar.success { display: block; background: #d5f5e3; color: #1e8449; }
+    .status-bar.error   { display: block; background: #fdecea; color: #c0392b; }
+    .status-bar.loading { display: block; background: #fef9e7; color: #b7950b; }
+
+    /* ===== PREVIEW PANEL ===== */
+    .preview-panel {
+      background: #888; overflow-y: auto; padding: 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .preview-label {
+      color: #fff; font-size: 11px; opacity: .7; text-align: center;
+      width: 100%; padding-bottom: 4px;
+    }
+
+    /* ===== SURAT PREVIEW ===== */
+    .surat-wrapper {
+      width: 794px; background: #fff; font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt; padding: 40px 56px; box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+    .kop-img { width: 100%; display: block; }
+    .kop-placeholder {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      border: 2px solid #1a3a5c; border-radius: 6px; padding: 12px; margin-bottom: 8px; color: #1a3a5c;
+    }
+    .kop-placeholder .kop-nama { font-weight: 700; font-size: 14px; }
+    .kop-line { border: none; border-top: 3px solid #000; margin: 6px 0 12px; }
+
+    .surat-judul  { font-size: 13pt; font-weight: bold; text-align: center; text-transform: uppercase; text-decoration: underline; margin-bottom: 4px; }
+    .surat-nomor  { font-size: 12pt; text-align: center; margin-bottom: 18px; }
+    .surat-pembuka { text-align: justify; line-height: 1.8; margin-bottom: 14px; font-size: 12pt; }
+
+    .identitas-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12pt; }
+    .identitas-table td { padding: 1px 0; vertical-align: top; }
+    .identitas-table td:first-child { width: 120px; }
+    .identitas-table td:nth-child(2) { width: 12px; }
+    .identitas-table .disebut { font-weight: bold; padding-top: 4px; }
+
+    .telah-para { text-align: justify; line-height: 1.8; margin-bottom: 12px; font-size: 12pt; }
+
+    .detail-list { list-style: none; padding: 0; margin: 0 0 14px; font-size: 12pt; }
+    .detail-list li { display: flex; margin-bottom: 3px; }
+    .detail-list li .dl-dash { min-width: 18px; }
+    .detail-list li .dl-key  { min-width: 230px; }
+    .detail-list li .dl-sep  { min-width: 14px; }
+    .detail-list li .dl-val  { flex: 1; text-align: justify; }
+    .jenis-sub-list { padding-left: 262px; }
+    .jenis-sub-item { display: flex; margin-bottom: 2px; }
+    .jenis-sub-item .dl-dash { min-width: 18px; }
+
+    /* Kapasitas options */
+    .kap-opt { display: inline; }
+    .kap-opt.aktif { text-decoration: underline; font-weight: bold; }
+
+    /* Jenis options per row */
+    .jenis-opt { display: inline; }
+    .jenis-opt.aktif { text-decoration: underline; font-weight: bold; }
+
+    .surat-penutup { text-align: justify; line-height: 1.5; margin-bottom: 10px; font-size: 12pt; }
+
+    .ttd-area { margin-top: 16px; font-size: 12pt; }
+    .ttd-top-row { display: flex; justify-content: space-between; margin-bottom: 24px; }
+    .ttd-col { width: 44%; text-align: center; }
+    .ttd-col .jabatan-ttd { margin-bottom: 4px; }
+    .ttd-img-wrap { min-height: 80px; display: flex; align-items: center; justify-content: center; }
+    .ttd-img { max-width: 160px; max-height: 80px; display: none; }
+    .ttd-nama-line { border-bottom: 1px solid #000; min-width: 180px; min-height: 24px; margin: 0 auto 4px; }
+    .ttd-bottom-row { text-align: center; margin-top: 0; }
+    .ttd-bottom-row .ttd-col { display: inline-block; }
+
+    /* ===== LAMPIRAN FOTO ===== */
+    .lampiran-title { font-size: 12pt; font-weight: bold; text-decoration: underline; text-align: center; margin-bottom: 14px; }
+    .foto-item { margin-bottom: 14px; page-break-inside: avoid; }
+    .foto-item.first { border-top: none; }
+    .foto-caption { font-size: 11pt; font-weight: bold; border-bottom: 1px solid #999; padding-bottom: 4px; margin-bottom: 6px; }
+    .foto-placeholder { min-height: 120px; border: 1px dashed #aaa; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 10pt; }
+
+    /* ===== MODAL TTD (CANVAS) ===== */
+    .ttd-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.6); z-index: 9000;
+      align-items: center; justify-content: center;
+    }
+    .ttd-modal-overlay.show { display: flex; }
+    .ttd-modal-box {
+      background: #fff; border-radius: 10px; padding: 20px;
+      width: 95vw; max-width: 600px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    }
+    .ttd-modal-title { font-size: 14px; font-weight: 700; color: #1a3a5c; margin-bottom: 12px; }
+    #ttdCanvas {
+      width: 100%; height: 220px; border: 2px dashed #1a3a5c;
+      border-radius: 6px; cursor: crosshair; display: block;
+      touch-action: none;
+    }
+    .ttd-modal-hint { font-size: 11px; color: #888; margin-top: 6px; margin-bottom: 12px; }
+    .ttd-modal-actions { display: flex; gap: 8px; }
+    .btn-ttd-save  { flex: 1; padding: 10px; background: #27ae60; color: #fff; border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-ttd-clear { flex: 1; padding: 10px; background: #f39c12; color: #fff; border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-ttd-cancel{ flex: 1; padding: 10px; background: #95a5a6; color: #fff; border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+    /* ===== MODAL LOADING ===== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.55); z-index: 9999;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 10px; padding: 32px;
+      width: 320px; max-width: 95vw; box-shadow: 0 8px 32px rgba(0,0,0,.25); text-align: center;
+    }
+    .modal-spinner {
+      width: 48px; height: 48px; border: 5px solid #e0e6ef;
+      border-top-color: #1a3a5c; border-radius: 50%;
+      animation: spin .8s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-title { font-size: 15px; font-weight: 700; color: #1a3a5c; margin-bottom: 12px; }
+    .modal-steps-list { text-align: left; margin: 0; padding: 0; list-style: none; }
+    .step-item { font-size: 12px; color: #888; display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+    .step-item.active { color: #1a3a5c; font-weight: 700; }
+    .step-item.done   { color: #27ae60; }
+    .step-icon { width: 18px; text-align: center; }
+
+    /* ===== PRINT ===== */
+    @media print {
+      @page { size: 215mm 330mm; margin: 18mm 20mm; }
+      body { overflow: visible !important; }
+      .app-header, .form-panel, .preview-label { display: none !important; }
+      .main-layout { display: block !important; height: auto !important; overflow: visible !important; }
+      .preview-panel { background: none !important; padding: 0 !important; overflow: visible !important; height: auto !important; display: block !important; }
+      .surat-wrapper { width: 100% !important; box-shadow: none !important; padding: 0 !important; page-break-after: always; overflow: visible !important; }
+      .foto-item { page-break-inside: avoid; }
+      .ttd-modal-overlay, .modal-overlay { display: none !important; }
+    }
+
+    @media screen and (max-width: 900px) {
+      body { overflow-x: hidden; }
+      .main-layout { grid-template-columns: 1fr; height: auto; overflow: visible; }
+      .preview-panel { display: block; height: auto; overflow: hidden; padding: 12px 0; }
+      .surat-wrapper { transform-origin: top left; }
+      .form-panel { padding-bottom: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div>
+      <h1>❄️ Laporan Pemeliharaan/Perbaikan Air Conditioner — BMN</h1>
+      <small>Instalasi Sarana Prasarana — Isi form kiri → Preview kanan → Submit / Cetak</small>
+    </div>
+    <div class="hdr-right">
+      <a href="index.html" class="btn-nav">← Beranda</a>
+      <a href="admin.html" class="btn-nav">⚙️ Admin</a>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <!-- ====================================================== -->
+    <!--  FORM PANEL                                            -->
+    <!-- ====================================================== -->
+    <div class="form-panel">
+      <h2>Form Laporan Pemeliharaan/Perbaikan AC</h2>
+
+      <div id="statusBar" class="status-bar"></div>
+
+      <!-- INFO SURAT -->
+      <div class="form-section">
+        <h3>Info Laporan</h3>
+        <div class="form-row">
+          <label>Nomor Laporan</label>
+          <input type="text" id="nomorLaporan" readonly placeholder="Mengambil nomor…" />
+        </div>
+        <div class="form-row">
+          <label>Tanggal Laporan <span class="req">*</span></label>
+          <input type="date" id="tanggalLaporan" oninput="onTanggalChange()" />
+        </div>
+        <div class="form-row">
+          <label>No Surat Usulan (Jika Ada)</label>
+          <input type="text" id="noSuratUsulan" placeholder="Kosongkan jika tidak ada" oninput="syncPreview()" />
+        </div>
+      </div>
+
+      <!-- IDENTITAS PELAKSANA -->
+      <div class="form-section">
+        <h3>Identitas Pelaksana Pekerjaan</h3>
+        <div class="form-row">
+          <label>Nama Pelaksana <span class="req">*</span></label>
+          <input type="text" id="namaPelaksana" placeholder="Nama lengkap" oninput="syncPreview()" />
+        </div>
+        <div class="form-row">
+          <label>Jabatan Pelaksana <span class="req">*</span></label>
+          <input type="text" id="jabPelaksana" placeholder="Jabatan" oninput="syncPreview()" />
+        </div>
+      </div>
+
+      <!-- DETAIL BARANG -->
+      <div class="form-section">
+        <h3>Detail Barang</h3>
+        <div class="form-row">
+          <label>Nama Barang <span class="req">*</span></label>
+          <input type="text" id="namaBarang" placeholder="Contoh: Air Conditioner" oninput="syncPreview()" />
+        </div>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <label>Merek <span class="req">*</span></label>
+            <input type="text" id="merek" placeholder="Contoh: Daikin" oninput="syncPreview()" />
+          </div>
+          <div>
+            <label>Tipe</label>
+            <input type="text" id="tipe" placeholder="Contoh: FT-25JXV" oninput="syncPreview()" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Ruangan (Sesuai DBR) <span class="req">*</span></label>
+          <input type="text" id="ruangan" placeholder="Contoh: Ruang Rapat Lt.2" oninput="syncPreview()" />
+        </div>
+        <div class="form-row">
+          <label>NUP BMN <span class="req">*</span></label>
+          <input type="text" id="nup" placeholder="Contoh: 0001" oninput="syncPreview()" />
+        </div>
+        <div class="form-row">
+          <label>Kapasitas AC <span class="req">*</span></label>
+          <select id="kapasitasAC" onchange="syncPreview()">
+            <option value="">— Pilih kapasitas —</option>
+            <option value="½">½ PK</option>
+            <option value="¾">¾ PK</option>
+            <option value="1">1 PK</option>
+            <option value="1½">1½ PK</option>
+            <option value="2">2 PK</option>
+            <option value="2½">2½ PK</option>
+            <option value="3">3 PK</option>
+            <option value="5">5 PK</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- JENIS PEMELIHARAAN -->
+      <div class="form-section">
+        <h3>Jenis Pemeliharaan/Perbaikan</h3>
+        <p style="font-size:11px;color:#888;margin-bottom:8px;">Centang semua yang dilakukan (minimal 1)</p>
+
+        <div class="checklist-group">
+          <label class="check-item">
+            <input type="checkbox" id="jenisCuci" onchange="onJenisChange()"> Cuci
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="jenisIsiFreon" onchange="onJenisChange()"> Isi Freon
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="jenisGantiKapasitor" onchange="onJenisChange()"> Ganti Kapasitor
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="jenisGantiModul" onchange="onJenisChange()"> Ganti Modul
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="jenisLainLainCb" onchange="onJenisChange()"> Lain-lain
+          </label>
+        </div>
+
+        <!-- Textarea muncul hanya jika Lain-lain dicentang -->
+        <div id="wrapLainLain" style="display:none;margin-top:10px;">
+          <label>Keterangan Lain-lain <span class="req">*</span></label>
+          <textarea id="jenisLainLain" rows="2" placeholder="Tuliskan jenis pekerjaan lainnya…" oninput="syncPreview()"></textarea>
+        </div>
+
+        <div class="form-row" style="margin-top:10px;">
+          <label>Deskripsi (Jika Ada)</label>
+          <textarea id="deskripsi" rows="3" placeholder="Keterangan tambahan, spesifikasi suku cadang, dsb…" oninput="syncPreview()"></textarea>
+        </div>
+      </div>
+
+      <!-- FOTO -->
+      <div class="form-section">
+        <h3>Foto-Foto</h3>
+        <div class="photo-grid">
+          <div class="photo-item">
+            <label>📸 1. Foto NUP Barang</label>
+            <input type="file" id="foto1" accept="image/*" onchange="handleFoto(this,'thumb1','prev1','ph1')" />
+            <img id="thumb1" class="photo-thumb" />
+          </div>
+          <div class="photo-item">
+            <label>📸 2. Foto Merek/Tipe</label>
+            <input type="file" id="foto2" accept="image/*" onchange="handleFoto(this,'thumb2','prev2','ph2')" />
+            <img id="thumb2" class="photo-thumb" />
+          </div>
+          <div class="photo-item">
+            <label>📸 3. Foto (Sebelum / Spare Part)</label>
+            <input type="file" id="foto3" accept="image/*" onchange="handleFoto(this,'thumb3','prev3','ph3')" />
+            <img id="thumb3" class="photo-thumb" />
+          </div>
+          <div class="photo-item">
+            <label>📸 4. Foto Pekerjaan 1</label>
+            <input type="file" id="foto4" accept="image/*" onchange="handleFoto(this,'thumb4','prev4','ph4')" />
+            <img id="thumb4" class="photo-thumb" />
+          </div>
+          <div class="photo-item" style="grid-column:1/-1;">
+            <label>📸 5. Foto Pekerjaan 2</label>
+            <input type="file" id="foto5" accept="image/*" onchange="handleFoto(this,'thumb5','prev5','ph5')" />
+            <img id="thumb5" class="photo-thumb" />
+          </div>
+        </div>
+      </div>
+
+      <!-- PENANDATANGAN -->
+      <div class="form-section">
+        <h3>Penandatangan</h3>
+
+        <!-- Pelaksana Pekerjaan -->
+        <div class="ttd-section">
+          <h4>Pelaksana Pekerjaan</h4>
+          <div class="form-row">
+            <label>Nama <span class="req">*</span></label>
+            <input type="text" id="ttdNamaPelaksana" placeholder="Nama lengkap" oninput="syncPreview()" />
+          </div>
+          <div class="form-row">
+            <label>Jabatan <span class="req">*</span></label>
+            <input type="text" id="ttdJabPelaksana" placeholder="Jabatan" oninput="syncPreview()" />
+          </div>
+          <div class="ttd-preview-wrap">
+            <button class="btn-ttd" onclick="openTTD('pelaksana')">✍️ Tanda Tangan</button>
+            <button class="btn-clear-ttd" id="clearTTD_pelaksana" onclick="clearTTD('pelaksana')">✕ Hapus</button>
+            <div>
+              <img id="previewTTD_pelaksana" class="ttd-preview-img" />
+              <div class="ttd-status" id="statusTTD_pelaksana">Belum ditandatangani</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pengguna BMN -->
+        <div class="ttd-section">
+          <h4>Pengguna Barang Milik Negara</h4>
+          <div class="form-row">
+            <label>Nama <span class="req">*</span></label>
+            <input type="text" id="namaPengguna" placeholder="Nama lengkap" oninput="syncPreview()" />
+          </div>
+          <div class="form-row">
+            <label>Jabatan <span style="color:#888;font-weight:400">(opsional)</span></label>
+            <input type="text" id="jabPengguna" placeholder="Jabatan (opsional)" oninput="syncPreview()" />
+          </div>
+          <div class="ttd-preview-wrap">
+            <button class="btn-ttd" onclick="openTTD('pengguna')">✍️ Tanda Tangan</button>
+            <button class="btn-clear-ttd" id="clearTTD_pengguna" onclick="clearTTD('pengguna')">✕ Hapus</button>
+            <div>
+              <img id="previewTTD_pengguna" class="ttd-preview-img" />
+              <div class="ttd-status" id="statusTTD_pengguna">Belum ditandatangani</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pengawas: pilih dari daftar TTD Sarpras -->
+        <div class="ttd-section">
+          <h4>Pengawas — Instalasi Sarana Prasarana</h4>
+          <div class="form-row">
+            <label>Pilih Pengawas <span class="req">*</span></label>
+            <select id="selectPengawas" onchange="onPengawasChange()">
+              <option value="">— Pilih nama pengawas —</option>
+            </select>
+          </div>
+          <div id="wrapPreviewPengawas" style="display:none;margin-top:8px;text-align:center;">
+            <img id="previewTTD_pengawas" style="max-width:100%;max-height:90px;border:1px solid #ddd;border-radius:4px;" />
+            <div style="font-size:10px;color:#27ae60;font-weight:600;margin-top:3px;">✅ TTD dimuat otomatis (hitam-putih)</div>
+          </div>
+          <div id="wrapLoadingPengawas" style="display:none;margin-top:8px;font-size:11px;color:#b7950b;">⏳ Memproses TTD…</div>
+        </div>
+      </div>
+
+      <!-- TOMBOL AKSI -->
+      <div class="btn-group">
+        <button class="btn btn-submit" id="btnSubmit" onclick="submitForm()">🚀 Submit</button>
+        <button class="btn btn-print"  onclick="window.print()">🖨️ Cetak</button>
+        <button class="btn btn-reset"  onclick="resetForm()">🔄 Reset</button>
+      </div>
+    </div><!-- /form-panel -->
+
+    <!-- ====================================================== -->
+    <!--  PREVIEW PANEL                                         -->
+    <!-- ====================================================== -->
+    <div class="preview-panel">
+      <div class="preview-label">Preview — Halaman 1 (Laporan)</div>
+
+      <!-- SURAT WRAPPER HALAMAN 1 -->
+      <div class="surat-wrapper" id="suratPage1">
+        <img class="kop-img" src="KOP.png" onerror="this.style.display='none';document.getElementById('kopFallback').style.display='flex'" />
+        <div id="kopFallback" class="kop-placeholder" style="display:none">
+          <div>
+            <div class="kop-nama">Politeknik Kesehatan Palembang</div>
+            <div style="font-size:11px;color:#555;">Instalasi Sarana Prasarana</div>
+          </div>
+        </div>
+        <hr class="kop-line" />
+
+        <div class="surat-judul">Laporan Pelaksanaan Pekerjaan Pemeliharaan/Perbaikan Air Conditioner</div>
+        <div class="surat-nomor">NOMOR: <span id="pvNomor">…………………………</span></div>
+
+        <p class="surat-pembuka">
+          Pada hari ini, <strong id="pvHari">…………</strong> tanggal <strong id="pvTanggalTerbilang">…………………………………</strong> bulan <strong id="pvBulan">…………</strong> tahun <strong id="pvTahun">………………………………</strong>, saya yang bertanda tangan di bawah ini:
+        </p>
+
+        <table class="identitas-table">
+          <tr>
+            <td>Nama</td><td>:</td>
+            <td id="pvNamaPelaksana">……………………………………………</td>
+          </tr>
+          <tr>
+            <td>Jabatan</td><td>:</td>
+            <td id="pvJabPelaksana">……………………………………………</td>
+          </tr>
+          <tr>
+            <td colspan="3" class="disebut">Disebut Pihak yang Malaksanakan Pekerjaan</td>
+          </tr>
+        </table>
+
+        <p class="telah-para">
+          Telah selesai melakukan pemeliharaan/perbaikan air conditioner, sesuai dengan ketentuan sebagai berikut:
+        </p>
+
+        <ul class="detail-list">
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">No Surat Usulan (Jika Ada)</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvNoUsulan">……………………………</span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Nama Barang</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvNamaBarang">……………………………</span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Tipe</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvTipe">……………………………</span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Merek</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvMerek">……………………………</span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Ruangan (Sesuai DBR)</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvRuangan">……………………………</span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">NUP</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvNup">……………………………</span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Kapasitas AC</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val">
+              <span id="pvKap_half"  class="kap-opt">½</span> /
+              <span id="pvKap_3q"   class="kap-opt">¾</span> /
+              <span id="pvKap_1"    class="kap-opt">1</span> /
+              <span id="pvKap_1h"   class="kap-opt">1½</span> /
+              <span id="pvKap_2"    class="kap-opt">2</span> /
+              <span id="pvKap_2h"   class="kap-opt">2½</span> /
+              <span id="pvKap_3"    class="kap-opt">3</span> /
+              <span id="pvKap_5"    class="kap-opt">5</span>
+              PK
+            </span>
+          </li>
+          <li id="pvJenisRow" style="align-items:flex-start;">
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Jenis Pemeliharaan/Perbaikan</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val">
+              <div id="pvJenisList">……………………………</div>
+            </span>
+          </li>
+          <li id="pvDeskripsiRow">
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Deskripsi (Jika Ada)</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvDeskripsi" style="white-space:pre-line">……………………………</span>
+          </li>
+          <!-- <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Foto-Foto</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val">
+              <div>– Foto NUP Barang</div>
+              <div>– Foto Merek / Tipe</div>
+              <div>– Foto (Sebelum / Spare Part)</div>
+              <div>– Foto Pekerjaan 1</div>
+              <div>– Foto Pekerjaan 2</div>
+            </span>
+          </li> -->
+        </ul>
+
+        <p class="surat-penutup">
+          Demikian laporan pemeliharaan/perbaikan air conditioner ini dibuat.<br>
+          Atas perhatiannya, kami ucapkan terima kasih.
+        </p>
+
+        <div class="ttd-area">
+          <div style="text-align:right;margin-bottom:16px;">
+            Palembang, <span id="pvTanggalTTD">…………………………</span>
+          </div>
+          <div class="ttd-top-row">
+            <!-- Kiri: Pengguna -->
+            <div class="ttd-col">
+              <div class="jabatan-ttd">Pengguna</div>
+              <div class="jabatan-ttd" id="pvJabPenggunaLabel" style="font-size:10pt;"> </div>
+              <div class="ttd-img-wrap">
+                <img id="pvTTDPengguna" class="ttd-img" />
+              </div>
+              <div class="ttd-nama-line" id="pvNamaPengguna">……………………………………</div>
+            </div>
+            <!-- Kanan: Pelaksana -->
+            <div class="ttd-col">
+              <div class="jabatan-ttd">Pelaksana</div>
+              <div class="jabatan-ttd" id="pvJabPelaksanaSub" style="font-size:10pt;">……………………</div>
+              <div class="ttd-img-wrap">
+                <img id="pvTTDPelaksana" class="ttd-img" />
+              </div>
+              <div class="ttd-nama-line" id="pvNamaPelaksanaTTD">……………………………………</div>
+            </div>
+          </div>
+          <div class="ttd-bottom-row">
+            <div class="ttd-col">
+              <div>Pengawas,</div>
+              <div>Instalasi Sarana Prasarana</div>
+              <div class="ttd-img-wrap">
+                <img id="pvTTDPengawas" class="ttd-img" />
+              </div>
+              <div class="ttd-nama-line" id="pvNamaPengawas">……………………………………</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /surat page 1 -->
+
+      <div class="preview-label" style="margin-top:8px;">Preview — Halaman 2 (Lampiran Foto)</div>
+
+      <!-- SURAT WRAPPER HALAMAN 2 (FOTO) -->
+      <div class="surat-wrapper" id="suratPage2">
+        <img class="kop-img" src="KOP.png" onerror="this.style.display='none'" />
+        <hr class="kop-line" />
+        <div class="lampiran-title">
+          LAMPIRAN FOTO<br>
+          <span style="font-size:10pt;font-weight:normal">Nomor: <span id="pvNomorLampiran">…………………………</span></span>
+        </div>
+
+        <div class="foto-item first" id="itemFoto1">
+          <div class="foto-caption">1. Foto NUP Barang</div>
+          <img id="prev1" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph1">[ Belum ada foto ]</div>
+        </div>
+        <div class="foto-item" id="itemFoto2">
+          <div class="foto-caption">2. Foto Merek / Tipe</div>
+          <img id="prev2" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph2">[ Belum ada foto ]</div>
+        </div>
+        <div class="foto-item" id="itemFoto3">
+          <div class="foto-caption">3. Foto (Sebelum / Spare Part)</div>
+          <img id="prev3" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph3">[ Belum ada foto ]</div>
+        </div>
+        <div class="foto-item" id="itemFoto4">
+          <div class="foto-caption">4. Foto Pekerjaan 1</div>
+          <img id="prev4" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph4">[ Belum ada foto ]</div>
+        </div>
+        <div class="foto-item" id="itemFoto5">
+          <div class="foto-caption">5. Foto Pekerjaan 2</div>
+          <img id="prev5" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph5">[ Belum ada foto ]</div>
+        </div>
+      </div><!-- /surat page 2 -->
+    </div><!-- /preview-panel -->
+  </div><!-- /main-layout -->
+
+  <!-- ====================================================== -->
+  <!--  MODAL TTD (CANVAS)                                    -->
+  <!-- ====================================================== -->
+  <div class="ttd-modal-overlay" id="ttdModal">
+    <div class="ttd-modal-box">
+      <div class="ttd-modal-title" id="ttdModalTitle">✍️ Tanda Tangan</div>
+      <canvas id="ttdCanvas"></canvas>
+      <div class="ttd-modal-hint">Tanda tangan di area di atas. Gunakan jari (HP) atau mouse.</div>
+      <div class="ttd-modal-actions">
+        <button class="btn-ttd-save"   onclick="saveTTD()">✅ Simpan</button>
+        <button class="btn-ttd-clear"  onclick="clearCanvas()">🔄 Ulangi</button>
+        <button class="btn-ttd-cancel" onclick="closeTTDModal()">✕ Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!--  MODAL LOADING                                         -->
+  <!-- ====================================================== -->
+  <div class="modal-overlay" id="loadingModal">
+    <div class="modal-box">
+      <div class="modal-spinner"></div>
+      <div class="modal-title">Memproses Laporan AC…</div>
+      <ul class="modal-steps-list">
+        <li class="step-item" id="step1"><span class="step-icon">⏳</span> Validasi data</li>
+        <li class="step-item" id="step2"><span class="step-icon">⏳</span> Simpan ke Google Sheets</li>
+        <li class="step-item" id="step3"><span class="step-icon">⏳</span> Upload foto ke Google Drive</li>
+        <li class="step-item" id="step4"><span class="step-icon">⏳</span> Upload tanda tangan</li>
+        <li class="step-item" id="step5"><span class="step-icon">⏳</span> Selesai</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const GAS_URL = '__GAS_URL__';
+
+    // ===== TTD SARPRAS (embed saat build, diproses B&W di browser) =====
+    const TTD_SAPRAS_RAW = __TTD_SAPRAS__;   // { "Sukiman": "data:image/png;base64,...", ... }
+    const TTD_SAPRAS_CACHE = {};              // hasil proses B&W disimpan di sini
+
+    // ===== STATE =====
+    let nomorData = null;
+    const fotoData = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null };
+    const ttdData  = { pelaksana:null, pengguna:null, pengawas:null };
+    let currentTTDTarget = null;
+    let isDrawing = false;
+    let ctx = null;
+
+    // Kapasitas map: select value → preview element id
+    const KAP_MAP = {
+      '½':'pvKap_half', '¾':'pvKap_3q', '1':'pvKap_1',
+      '1½':'pvKap_1h', '2':'pvKap_2', '2½':'pvKap_2h',
+      '3':'pvKap_3', '5':'pvKap_5'
+    };
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().slice(0,10);
+      document.getElementById('tanggalLaporan').value = today;
+      onTanggalChange();
+      fetchNomor();
+      initPengawasList();
+    });
+
+    // ===== INISIALISASI DROPDOWN PENGAWAS =====
+    function initPengawasList() {
+      const sel = document.getElementById('selectPengawas');
+      const names = Object.keys(TTD_SAPRAS_RAW).sort();
+      if (names.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = ''; opt.textContent = '(tidak ada data TTD Sarpras)'; opt.disabled = true;
+        sel.appendChild(opt);
+        return;
+      }
+      names.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    }
+
+    // ===== PROSES TTD → HITAM-PUTIH + HAPUS BACKGROUND =====
+    // Algoritma: luminansi > threshold → transparan, sisanya → hitam solid
+    function processToBlackWhite(dataUrl, callback) {
+      const img = new Image();
+      img.onload = () => {
+        const c   = document.createElement('canvas');
+        c.width   = img.naturalWidth;
+        c.height  = img.naturalHeight;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        const id   = ctx.getImageData(0, 0, c.width, c.height);
+        const data = id.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+          // Hitung luminansi (persepsi manusia)
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          if (a < 30 || lum > 210) {
+            // Piksel transparan atau terang/putih → hapus (transparan)
+            data[i+3] = 0;
+          } else {
+            // Piksel gelap → hitam solid
+            data[i] = 0; data[i+1] = 0; data[i+2] = 0;
+            data[i+3] = 255;
+          }
+        }
+
+        ctx.putImageData(id, 0, 0);
+        callback(c.toDataURL('image/png'));
+      };
+      img.src = dataUrl;
+    }
+
+    // ===== HANDLER CHECKLIST JENIS PEMELIHARAAN =====
+    function onJenisChange() {
+      const lainLainChecked = document.getElementById('jenisLainLainCb').checked;
+      document.getElementById('wrapLainLain').style.display = lainLainChecked ? 'block' : 'none';
+      if (!lainLainChecked) document.getElementById('jenisLainLain').value = '';
+      syncPreview();
+    }
+
+    // Helper: kumpulkan semua jenis yang dicentang
+    function getJenisChecked() {
+      const list = [];
+      if (document.getElementById('jenisCuci')?.checked)           list.push('Cuci');
+      if (document.getElementById('jenisIsiFreon')?.checked)       list.push('Isi Freon');
+      if (document.getElementById('jenisGantiKapasitor')?.checked) list.push('Ganti Kapasitor');
+      if (document.getElementById('jenisGantiModul')?.checked)     list.push('Ganti Modul');
+      if (document.getElementById('jenisLainLainCb')?.checked) {
+        const txt = document.getElementById('jenisLainLain')?.value?.trim();
+        list.push(txt ? 'Lain-lain: ' + txt : 'Lain-lain');
+      }
+      return list;
+    }
+
+    // ===== HANDLER PILIH PENGAWAS =====
+    function onPengawasChange() {
+      const name = document.getElementById('selectPengawas').value;
+
+      if (!name) {
+        ttdData.pengawas = null;
+        document.getElementById('wrapPreviewPengawas').style.display = 'none';
+        syncPreview();
+        return;
+      }
+
+      // Gunakan cache jika sudah diproses
+      if (TTD_SAPRAS_CACHE[name]) {
+        applyPengawasTTD(name, TTD_SAPRAS_CACHE[name]);
+        return;
+      }
+
+      // Proses B&W terlebih dahulu
+      document.getElementById('wrapLoadingPengawas').style.display = 'block';
+      document.getElementById('wrapPreviewPengawas').style.display = 'none';
+
+      processToBlackWhite(TTD_SAPRAS_RAW[name], processed => {
+        TTD_SAPRAS_CACHE[name] = processed;
+        document.getElementById('wrapLoadingPengawas').style.display = 'none';
+        applyPengawasTTD(name, processed);
+      });
+    }
+
+    function applyPengawasTTD(name, processedUrl) {
+      ttdData.pengawas = processedUrl;
+      const img = document.getElementById('previewTTD_pengawas');
+      img.src = processedUrl;
+      document.getElementById('wrapPreviewPengawas').style.display = 'block';
+      syncPreview();
+    }
+
+    // ===== FETCH NOMOR =====
+    async function fetchNomor(msg = '⏳ Mengambil nomor laporan dari server…') {
+      setStatus('loading', msg);
+      try {
+        const r = await fetch(GAS_URL + '?action=getNomorLaporanAC');
+        const d = await r.json();
+        if (d.status === 'ok') {
+          nomorData = d;
+          document.getElementById('nomorLaporan').value = d.nomor;
+          syncPreview();
+          setStatus('success', '✅ Nomor Laporan: ' + d.nomor);
+        } else {
+          setStatus('error', '⚠️ Gagal ambil nomor: ' + d.error);
+        }
+      } catch (e) {
+        setStatus('error', '⚠️ Tidak dapat terhubung ke server: ' + e.message);
+      }
+    }
+
+    // ===== FOTO HANDLER =====
+    function handleFoto(input, thumbId, prevId, phId) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const b64 = e.target.result;
+        fotoData[input.id] = b64;
+        const thumb = document.getElementById(thumbId);
+        if (thumb) { thumb.src = b64; thumb.style.display = 'block'; }
+        const prev = document.getElementById(prevId);
+        const ph   = document.getElementById(phId);
+        if (prev) { prev.src = b64; prev.style.display = 'block'; }
+        if (ph)   ph.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ===== TANGGAL TERBILANG =====
+    const SATUAN = ['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan',
+      'sepuluh','sebelas','dua belas','tiga belas','empat belas','lima belas','enam belas',
+      'tujuh belas','delapan belas','sembilan belas','dua puluh'];
+    const PULUHAN = ['','','dua puluh','tiga puluh'];
+
+    function angkaTerbilang(n) {
+      if (n <= 20) return SATUAN[n];
+      const p = Math.floor(n / 10), s = n % 10;
+      return (PULUHAN[p] || '') + (s ? ' ' + SATUAN[s] : '');
+    }
+
+    function tahunTerbilang(y) {
+      const ribuan = Math.floor(y / 1000), sisa = y % 1000;
+      const ratus  = Math.floor(sisa / 100), sisaRatus = sisa % 100;
+      let hasil = '';
+      if (ribuan)    hasil += angkaTerbilang(ribuan) + ' ribu';
+      if (ratus)     hasil += ' ' + angkaTerbilang(ratus) + ' ratus';
+      if (sisaRatus) hasil += ' ' + angkaTerbilang(sisaRatus);
+      return hasil.trim();
+    }
+
+    const HARI_ID  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const BULAN_ID = ['','januari','februari','maret','april','mei','juni',
+                      'juli','agustus','september','oktober','november','desember'];
+
+    function onTanggalChange() {
+      const val = document.getElementById('tanggalLaporan').value;
+      if (!val) return;
+      const [y, m, d] = val.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      document.getElementById('pvHari').textContent             = HARI_ID[dateObj.getDay()];
+      document.getElementById('pvTanggalTerbilang').textContent = angkaTerbilang(d);
+      document.getElementById('pvBulan').textContent            = BULAN_ID[m];
+      document.getElementById('pvTahun').textContent            = tahunTerbilang(y);
+      const tglFormatted = d + ' ' + BULAN_ID[m].charAt(0).toUpperCase() + BULAN_ID[m].slice(1) + ' ' + y;
+      document.getElementById('pvTanggalTTD').textContent       = tglFormatted;
+    }
+
+    // ===== SYNC PREVIEW =====
+    function syncPreview() {
+      const g = id => document.getElementById(id)?.value?.trim() || '';
+
+      const nomor = g('nomorLaporan');
+      document.getElementById('pvNomor').textContent          = nomor || '…………………………';
+      document.getElementById('pvNomorLampiran').textContent  = nomor || '…………………………';
+
+      document.getElementById('pvNoUsulan').textContent   = g('noSuratUsulan') || '……………………………';
+      document.getElementById('pvNamaBarang').textContent = g('namaBarang')    || '……………………………';
+      document.getElementById('pvTipe').textContent       = g('tipe')          || '……………………………';
+      document.getElementById('pvMerek').textContent      = g('merek')         || '……………………………';
+      document.getElementById('pvRuangan').textContent    = g('ruangan')       || '……………………………';
+      document.getElementById('pvNup').textContent        = g('nup')           || '……………………………';
+      document.getElementById('pvDeskripsi').textContent  = g('deskripsi')     || '……………………………';
+
+      // Pelaksana di body surat
+      document.getElementById('pvNamaPelaksana').textContent   = g('namaPelaksana') || '……………………………………';
+      document.getElementById('pvJabPelaksana').textContent    = g('jabPelaksana')  || '……………………………………';
+      // Pelaksana di TTD
+      document.getElementById('pvNamaPelaksanaTTD').textContent = g('ttdNamaPelaksana') || g('namaPelaksana') || '……………………………………';
+      document.getElementById('pvJabPelaksanaSub').textContent  = g('ttdJabPelaksana')  || g('jabPelaksana')  || '……………………';
+      // Pengguna
+      document.getElementById('pvNamaPengguna').textContent    = g('namaPengguna')  || '……………………………………';
+      document.getElementById('pvJabPenggunaLabel').textContent = g('jabPengguna') ? g('jabPengguna') : '';
+      // Pengawas (dari select, bukan input teks)
+      const selPengawas = document.getElementById('selectPengawas');
+      const namaPengawasVal = selPengawas.value || '';
+      document.getElementById('pvNamaPengawas').textContent = namaPengawasVal || '……………………………………';
+
+      // Kapasitas AC
+      const kap = g('kapasitasAC');
+      Object.values(KAP_MAP).forEach(id => document.getElementById(id)?.classList.remove('aktif'));
+      if (kap && KAP_MAP[kap]) document.getElementById(KAP_MAP[kap])?.classList.add('aktif');
+
+      // Jenis Pemeliharaan checklist
+      const jenisList = document.getElementById('pvJenisList');
+      const jenisPicked = getJenisChecked();
+      jenisList.innerHTML = jenisPicked.length
+        ? jenisPicked.map(j => '– ' + j).join('<br>')
+        : '……………………………';
+
+      // TTD images di preview surat
+      const ttdMap = {
+        pelaksana: 'pvTTDPelaksana',
+        pengguna : 'pvTTDPengguna',
+        pengawas : 'pvTTDPengawas'
+      };
+      Object.entries(ttdMap).forEach(([k, pvId]) => {
+        const img = document.getElementById(pvId);
+        if (!img) return;
+        if (ttdData[k]) { img.src = ttdData[k]; img.style.display = 'block'; }
+        else             { img.style.display = 'none'; }
+      });
+
+      scalePreviews();
+    }
+
+    // ===== SCALE PREVIEW MOBILE =====
+    function scalePreviews() {
+      if (window.innerWidth >= 900) {
+        document.querySelectorAll('.surat-wrapper').forEach(el => { el.style.transform = ''; el.style.marginBottom = ''; });
+        return;
+      }
+      const scale = window.innerWidth / 794;
+      document.querySelectorAll('.surat-wrapper').forEach(el => {
+        el.style.transform = '';
+        const h = el.offsetHeight;
+        el.style.transform = `scale(${scale})`;
+        el.style.marginBottom = `${h * scale - h}px`;
+      });
+    }
+    window.addEventListener('resize', scalePreviews);
+
+    // ===== TTD CANVAS MODAL =====
+    function openTTD(target) {
+      currentTTDTarget = target;
+      const titles = {
+        pelaksana : 'TTD — Pelaksana Pekerjaan',
+        pengguna  : 'TTD — Pengguna BMN',
+        pengawas  : 'TTD — Pengawas Instalasi Sarana Prasarana'
+      };
+      document.getElementById('ttdModalTitle').textContent = '✍️ ' + titles[target];
+      document.getElementById('ttdModal').classList.add('show');
+
+      const canvas = document.getElementById('ttdCanvas');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width  = rect.width  || 560;
+      canvas.height = rect.height || 220;
+      ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      bindCanvas(canvas);
+    }
+
+    function bindCanvas(canvas) {
+      const clone = canvas.cloneNode(true);
+      canvas.parentNode.replaceChild(clone, canvas);
+      const c = document.getElementById('ttdCanvas');
+      ctx = c.getContext('2d');
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+      const getPos = ev => {
+        const r = c.getBoundingClientRect();
+        const src = ev.touches ? ev.touches[0] : ev;
+        return { x: (src.clientX - r.left) * (c.width / r.width), y: (src.clientY - r.top) * (c.height / r.height) };
+      };
+      const start = ev => { ev.preventDefault(); isDrawing = true; const p = getPos(ev); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+      const draw  = ev => { ev.preventDefault(); if (!isDrawing) return; const p = getPos(ev); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+      const stop  = ()  => { isDrawing = false; };
+
+      c.addEventListener('mousedown',  start);
+      c.addEventListener('mousemove',  draw);
+      c.addEventListener('mouseup',    stop);
+      c.addEventListener('mouseleave', stop);
+      c.addEventListener('touchstart', start, { passive: false });
+      c.addEventListener('touchmove',  draw,  { passive: false });
+      c.addEventListener('touchend',   stop);
+    }
+
+    function clearCanvas() {
+      const c = document.getElementById('ttdCanvas');
+      if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+    }
+
+    function saveTTD() {
+      const c   = document.getElementById('ttdCanvas');
+      const b64 = c.toDataURL('image/png');
+      ttdData[currentTTDTarget] = b64;
+
+      const pvMap = { pelaksana:'pvTTDPelaksana', pengguna:'pvTTDPengguna', pengawas:'pvTTDPengawas' };
+      const pvImg = document.getElementById(pvMap[currentTTDTarget]);
+      if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
+
+      const formImg = document.getElementById('previewTTD_' + currentTTDTarget);
+      if (formImg) { formImg.src = b64; formImg.style.display = 'block'; }
+
+      const statusEl = document.getElementById('statusTTD_' + currentTTDTarget);
+      if (statusEl) { statusEl.textContent = '✅ Sudah ditandatangani'; statusEl.classList.add('signed'); }
+
+      const clearBtn = document.getElementById('clearTTD_' + currentTTDTarget);
+      if (clearBtn) clearBtn.style.display = 'inline-block';
+
+      closeTTDModal();
+    }
+
+    function closeTTDModal() {
+      document.getElementById('ttdModal').classList.remove('show');
+      currentTTDTarget = null;
+    }
+
+    function clearTTD(target) {
+      ttdData[target] = null;
+      const pvMap = { pelaksana:'pvTTDPelaksana', pengguna:'pvTTDPengguna', pengawas:'pvTTDPengawas' };
+      const pvImg = document.getElementById(pvMap[target]);
+      if (pvImg) pvImg.style.display = 'none';
+      const formImg = document.getElementById('previewTTD_' + target);
+      if (formImg) { formImg.style.display = 'none'; formImg.src = ''; }
+      const statusEl = document.getElementById('statusTTD_' + target);
+      if (statusEl) { statusEl.textContent = 'Belum ditandatangani'; statusEl.classList.remove('signed'); }
+      const clearBtn = document.getElementById('clearTTD_' + target);
+      if (clearBtn) clearBtn.style.display = 'none';
+    }
+
+    // ===== SUBMIT =====
+    async function submitForm() {
+      if (!nomorData) {
+        setStatus('error', '❌ Nomor laporan belum berhasil diambil. Coba refresh halaman.');
+        return;
+      }
+      const g = id => document.getElementById(id)?.value?.trim() || '';
+
+      // Validasi wajib
+      const required = {
+        'Tanggal Laporan'    : g('tanggalLaporan'),
+        'Nama Barang'        : g('namaBarang'),
+        'Merek'              : g('merek'),
+        'Ruangan'            : g('ruangan'),
+        'NUP'                : g('nup'),
+        'Kapasitas AC'       : g('kapasitasAC'),
+        'Nama Pelaksana'     : g('namaPelaksana'),
+        'Jabatan Pelaksana'  : g('jabPelaksana'),
+        'Nama Pelaksana TTD' : g('ttdNamaPelaksana'),
+        'Jabatan Pelaksana TTD': g('ttdJabPelaksana'),
+        'Nama Pengguna'      : g('namaPengguna'),
+        'Pengawas'           : document.getElementById('selectPengawas').value,
+      };
+      for (const [k, v] of Object.entries(required)) {
+        if (!v) {
+          setStatus('error', '❌ Field "' + k + '" wajib diisi.');
+          document.getElementById('statusBar').scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+      }
+      // Validasi checklist jenis
+      if (getJenisChecked().length === 0) {
+        setStatus('error', '❌ Pilih minimal 1 jenis pemeliharaan/perbaikan.');
+        document.getElementById('statusBar').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      if (document.getElementById('jenisLainLainCb').checked && !g('jenisLainLain')) {
+        setStatus('error', '❌ Keterangan "Lain-lain" wajib diisi jika dipilih.');
+        document.getElementById('statusBar').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      ['step1','step2','step3','step4','step5'].forEach(id => setModalStep(id, '', '⏳'));
+      showModal();
+
+      setModalStep('step1', 'active', '🔄');
+      await sleep(300);
+      setModalStep('step1', 'done', '✅');
+
+      setModalStep('step2', 'active', '🔄');
+      setModalStep('step3', 'active', '🔄');
+      setModalStep('step4', 'active', '🔄');
+
+      const payload = {
+        action          : 'submitLaporanAC',
+        nomor           : g('nomorLaporan'),
+        urut            : nomorData.urut,
+        tanggalLaporan  : g('tanggalLaporan'),
+        noSuratUsulan   : g('noSuratUsulan'),
+        namaBarang      : g('namaBarang'),
+        merek           : g('merek'),
+        tipe            : g('tipe'),
+        ruangan         : g('ruangan'),
+        nup             : g('nup'),
+        kapasitasAC          : g('kapasitasAC'),
+        jenisCuci            : document.getElementById('jenisCuci').checked,
+        jenisIsiFreon        : document.getElementById('jenisIsiFreon').checked,
+        jenisGantiKapasitor  : document.getElementById('jenisGantiKapasitor').checked,
+        jenisGantiModul      : document.getElementById('jenisGantiModul').checked,
+        jenisLainLain        : document.getElementById('jenisLainLainCb').checked ? g('jenisLainLain') : '',
+        deskripsi            : g('deskripsi'),
+        namaPelaksana   : g('namaPelaksana'),
+        jabPelaksana    : g('jabPelaksana'),
+        ttdNamaPelaksana: g('ttdNamaPelaksana'),
+        ttdJabPelaksana : g('ttdJabPelaksana'),
+        namaPengguna    : g('namaPengguna'),
+        jabPengguna     : g('jabPengguna'),
+        namaPengawas    : document.getElementById('selectPengawas').value,
+        ttdPelaksana    : ttdData.pelaksana || '',
+        ttdPengguna     : ttdData.pengguna  || '',
+        ttdPengawas     : ttdData.pengawas  || '',
+        foto1           : fotoData.foto1 || '',
+        foto2           : fotoData.foto2 || '',
+        foto3           : fotoData.foto3 || '',
+        foto4           : fotoData.foto4 || '',
+        foto5           : fotoData.foto5 || '',
+      };
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 90000);
+        const resp = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: controller.signal });
+        clearTimeout(timeout);
+        const result = await resp.json();
+
+        if (result.status === 'ok') {
+          setModalStep('step2', 'done', '✅');
+          setModalStep('step3', 'done', '✅');
+          setModalStep('step4', 'done', '✅');
+          setModalStep('step5', 'done', '✅');
+          await sleep(600);
+          hideModal();
+          setStatus('success', '✅ Laporan berhasil disimpan! Klik Reset untuk mengisi laporan baru.', true);
+          const origTitle = document.title;
+          document.title = 'L-PP-AC_' + (payload.nomor || '').replace(/\//g, '-');
+          window.print();
+          setTimeout(() => { document.title = origTitle; }, 2000);
+        } else {
+          throw new Error(result.error || 'Unknown error');
+        }
+      } catch (e) {
+        hideModal();
+        setStatus('error', '❌ Gagal submit: ' + (e.name === 'AbortError' ? 'Timeout (90s). Cek koneksi atau ukuran foto/TTD.' : e.message));
+        btn.disabled = false;
+      }
+    }
+
+    // ===== RESET =====
+    function resetForm() {
+      if (!confirm('Reset semua isian? Data yang belum di-submit akan hilang.')) return;
+      ['namaBarang','merek','tipe','ruangan','nup','noSuratUsulan','deskripsi',
+       'namaPelaksana','jabPelaksana','ttdNamaPelaksana','ttdJabPelaksana',
+       'namaPengguna','jabPengguna'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('kapasitasAC').value = '';
+      ['jenisCuci','jenisIsiFreon','jenisGantiKapasitor','jenisGantiModul','jenisLainLainCb'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = false;
+      });
+      document.getElementById('jenisLainLain').value = '';
+      document.getElementById('wrapLainLain').style.display = 'none';
+
+      for (let i = 1; i <= 5; i++) {
+        const inp = document.getElementById('foto' + i);
+        if (inp) inp.value = '';
+        fotoData['foto' + i] = null;
+        const thumb = document.getElementById('thumb' + i);
+        if (thumb) { thumb.style.display = 'none'; thumb.src = ''; }
+        const prev = document.getElementById('prev' + i);
+        const ph   = document.getElementById('ph' + i);
+        if (prev) { prev.src = ''; prev.style.display = 'none'; }
+        if (ph)   ph.style.display = 'flex';
+      }
+      ['pelaksana','pengguna'].forEach(t => clearTTD(t));
+      // Reset pengawas (dari select, bukan canvas)
+      document.getElementById('selectPengawas').value = '';
+      ttdData.pengawas = null;
+      document.getElementById('wrapPreviewPengawas').style.display = 'none';
+      const pvTTDPengawas = document.getElementById('pvTTDPengawas');
+      if (pvTTDPengawas) pvTTDPengawas.style.display = 'none';
+      nomorData = null;
+      syncPreview();
+      fetchNomor('ℹ️ Form direset — mengambil nomor baru dari server…');
+      document.getElementById('btnSubmit').disabled = false;
+    }
+
+    // ===== HELPERS =====
+    function showModal()  { document.getElementById('loadingModal').classList.add('show'); }
+    function hideModal()  { document.getElementById('loadingModal').classList.remove('show'); }
+    function setModalStep(id, status, icon) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'step-item ' + status;
+      el.querySelector('.step-icon').textContent = icon;
+    }
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    function setStatus(type, msg, persistent = false) {
+      const el = document.getElementById('statusBar');
+      el.style.display = '';
+      el.className = 'status-bar ' + type;
+      el.textContent = msg;
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (type === 'success' && !persistent) setTimeout(() => { el.style.display = 'none'; }, 10000);
+    }
+  </script>
+</body>
+</html>

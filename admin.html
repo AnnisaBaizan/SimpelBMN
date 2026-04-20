@@ -184,8 +184,9 @@
     body { background: #fff; }
     .app-header, .admin-wrap { display: none !important; }
     .print-area { display: none !important; }
-    body.print-usulan #printArea   { display: block !important; }
-    body.print-ba     #printAreaBA { display: block !important; }
+    body.print-usulan #printArea    { display: block !important; }
+    body.print-ba     #printAreaBA  { display: block !important; }
+    body.print-ac     #printAreaAC  { display: block !important; }
     .surat-wrapper { width: 100%; box-shadow: none; padding: 0; margin: 0; page-break-after: always; break-after: page; }
     .surat-wrapper.lampiran { page-break-after: auto; break-after: auto; }
     .foto-item { page-break-inside: avoid; }
@@ -228,6 +229,7 @@
     <div class="tab-bar">
       <button class="tab-btn active" id="tabBtnUsulan" onclick="switchTab('usulan')">📋 Surat Usulan (PP)</button>
       <button class="tab-btn"        id="tabBtnBA"     onclick="switchTab('ba')">📝 Berita Acara (BA-PP)</button>
+      <button class="tab-btn"        id="tabBtnAC"     onclick="switchTab('ac')">❄️ Laporan AC (L-PP-AC)</button>
     </div>
 
     <!-- TAB: USULAN PP -->
@@ -305,6 +307,45 @@
           <span class="foto-status" id="baFotoStatus"></span>
         </div>
         <div class="status-bar" id="baStatusBar"></div>
+      </div>
+    </div>
+
+    <!-- TAB: LAPORAN AC -->
+    <div class="tab-content" id="tabAC">
+      <div class="filter-grid">
+        <div>
+          <label>Cari Nama Pelaksana</label>
+          <input type="text" id="filterACNama" placeholder="Ketik nama…" oninput="renderACTable()" />
+        </div>
+        <div>
+          <label>Cari Nomor / Barang / NUP</label>
+          <input type="text" id="filterACQ" placeholder="Ketik kata kunci…" oninput="renderACTable()" />
+        </div>
+        <div>
+          <label>Filter Bulan Laporan</label>
+          <input type="month" id="filterACBulan" onchange="renderACTable()" />
+        </div>
+        <div><button class="btn-reset-filter" onclick="resetACFilter()">Reset Filter</button></div>
+      </div>
+      <div class="surat-table-wrap">
+        <table class="surat-list">
+          <thead><tr>
+            <th>Tanggal Laporan</th><th>Nomor Laporan</th><th>Pelaksana</th>
+            <th>Nama Barang</th><th>Kapasitas AC</th><th>NUP</th><th>No Usulan</th>
+          </tr></thead>
+          <tbody id="acTableBody">
+            <tr><td colspan="7" class="empty-state">⏳ Memuat data laporan AC…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="detail-panel" id="acDetailPanel">
+        <h3>❄️ Detail Laporan AC Terpilih</h3>
+        <div class="detail-grid" id="acDetailGrid"></div>
+        <div class="action-row">
+          <button class="btn btn-pdf" id="btnRegenAC" onclick="startRegenACPDF()">🖨️ Cetak / Simpan PDF</button>
+          <span class="foto-status" id="acFotoStatus"></span>
+        </div>
+        <div class="status-bar" id="acStatusBar"></div>
       </div>
     </div>
 
@@ -507,6 +548,88 @@
   </div>
 </div>
 
+<!-- PRINT AREA LAPORAN AC -->
+<div class="print-area" id="printAreaAC">
+  <div class="surat-wrapper">
+    <img class="kop-img" src="KOP.png" onerror="this.style.display='none'" />
+    <div class="kop-line"></div>
+    <div class="surat-judul">Laporan Pemeliharaan/Perbaikan Air Conditioner</div>
+    <div class="surat-nomor">NOMOR: <span id="acPrNomor"></span></div>
+    <div class="surat-pembuka">Yang bertanda tangan di bawah ini:</div>
+    <table class="identitas-table">
+      <tr><td>Nama</td><td>:</td><td class="nilai" id="acPrNamaPelaksana"></td></tr>
+      <tr><td>Jabatan</td><td>:</td><td class="nilai" id="acPrJabPelaksana"></td></tr>
+    </table>
+    <div style="margin-bottom:8px">Dengan ini melaporkan telah selesai melaksanakan pemeliharaan/perbaikan Air Conditioner (AC) dengan rincian sebagai berikut:</div>
+    <table class="detail-table">
+      <tr><td>No Surat Usulan</td><td>:</td><td class="nilai" id="acPrNoUsulan"></td></tr>
+      <tr><td>Nama Barang</td><td>:</td><td class="nilai" id="acPrNamaBarang"></td></tr>
+      <tr><td>Tipe</td><td>:</td><td class="nilai" id="acPrTipe"></td></tr>
+      <tr><td>Merek</td><td>:</td><td class="nilai" id="acPrMerek"></td></tr>
+      <tr><td>Ruangan (Sesuai DBR)</td><td>:</td><td class="nilai" id="acPrRuangan"></td></tr>
+      <tr><td>NUP</td><td>:</td><td class="nilai" id="acPrNup"></td></tr>
+      <tr><td>Kapasitas AC</td><td>:</td><td class="nilai" id="acPrKapasitas"></td></tr>
+      <tr>
+        <td style="vertical-align:top">Jenis Pemeliharaan/Perbaikan</td><td style="vertical-align:top">:</td>
+        <td class="nilai" id="acPrJenis" style="white-space:pre-wrap"></td>
+      </tr>
+      <tr><td style="vertical-align:top">Deskripsi</td><td style="vertical-align:top">:</td><td class="nilai" id="acPrDeskripsi" style="white-space:pre-wrap"></td></tr>
+    </table>
+    <div class="surat-penutup">
+      Demikian laporan pemeliharaan/perbaikan Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.
+    </div>
+    <div style="text-align:right;margin-bottom:16px;font-size:12pt">Palembang, <span id="acPrTanggal"></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;font-size:12pt;margin-bottom:24px;">
+      <div class="ttd-block" style="width:30%;text-align:center">
+        <div>Yang Mengawasi,</div>
+        <div id="acPrJabPengawas" style="margin-bottom:4px;font-size:11pt"></div>
+        <div class="ttd-img-wrap">
+          <img id="acPrTTDPengawas" style="max-width:150px;max-height:65px;display:none" />
+        </div>
+        <div style="border-bottom:1px solid #000;padding:1px 0;min-height:20px;" id="acPrNamaPengawas"></div>
+      </div>
+      <div class="ttd-block" style="width:30%;text-align:center">
+        <div>Yang Melaksanakan,</div>
+        <div id="acPrJabPelaksanaTTD" style="margin-bottom:4px;font-size:11pt"></div>
+        <div class="ttd-img-wrap">
+          <img id="acPrTTDPelaksana" style="max-width:150px;max-height:65px;display:none" />
+        </div>
+        <div style="border-bottom:1px solid #000;padding:1px 0;min-height:20px;" id="acPrNamaPelaksanaTTD"></div>
+      </div>
+      <div class="ttd-block" style="width:30%;text-align:center">
+        <div>Pengguna BMN,</div>
+        <div id="acPrJabPengguna" style="margin-bottom:4px;font-size:11pt"></div>
+        <div class="ttd-img-wrap">
+          <img id="acPrTTDPengguna" style="max-width:150px;max-height:65px;display:none" />
+        </div>
+        <div style="border-bottom:1px solid #000;padding:1px 0;min-height:20px;" id="acPrNamaPengguna"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lampiran Foto Laporan AC -->
+  <div class="surat-wrapper lampiran">
+    <div class="lampiran-title">LAMPIRAN FOTO<br>
+      <span style="font-size:10pt;font-weight:normal">Nomor: <span id="acPrNomorLampiran"></span></span>
+    </div>
+    <div class="foto-item"><div class="foto-caption">1. Foto NUP Barang</div>
+      <img id="acImg1" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="acPh1">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">2. Foto Merek/Tipe Barang</div>
+      <img id="acImg2" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="acPh2">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">3. Foto Sebelum / Spare Part</div>
+      <img id="acImg3" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="acPh3">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">4. Foto Pekerjaan 1</div>
+      <img id="acImg4" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="acPh4">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption">5. Foto Pekerjaan 2</div>
+      <img id="acImg5" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="acPh5">[ Foto tidak tersedia ]</div></div>
+  </div>
+</div>
+
 <!-- LOADING MODAL -->
 <div class="modal-overlay" id="loadingModal">
   <div class="modal-box">
@@ -554,14 +677,18 @@ function showPanel() {
 // ===== TAB SWITCH =====
 let activeTab = 'usulan';
 let baLoaded  = false;
+let acLoaded  = false;
 
 function switchTab(tab) {
   activeTab = tab;
   document.getElementById('tabBtnUsulan').className = 'tab-btn' + (tab === 'usulan' ? ' active' : '');
   document.getElementById('tabBtnBA').className     = 'tab-btn' + (tab === 'ba'     ? ' active' : '');
+  document.getElementById('tabBtnAC').className     = 'tab-btn' + (tab === 'ac'     ? ' active' : '');
   document.getElementById('tabUsulan').className    = 'tab-content' + (tab === 'usulan' ? ' active' : '');
   document.getElementById('tabBA').className        = 'tab-content' + (tab === 'ba'     ? ' active' : '');
+  document.getElementById('tabAC').className        = 'tab-content' + (tab === 'ac'     ? ' active' : '');
   if (tab === 'ba' && !baLoaded) loadBASuratList();
+  if (tab === 'ac' && !acLoaded) loadLaporanACList();
 }
 
 // DATA
@@ -974,6 +1101,207 @@ async function startRegenBAPDF() {
   setTimeout(() => {
     document.title = origTitle;
     document.body.classList.remove('print-ba');
+    btn.disabled = false;
+  }, 2000);
+}
+
+// ===== LAPORAN AC =====
+let allAC     = [];
+let selectedAC = null;
+
+async function loadLaporanACList() {
+  try {
+    const resp = await fetch(GAS_URL + '?action=getLaporanACList');
+    const data = await resp.json();
+    if (data.status !== 'ok') throw new Error(data.error);
+    allAC = data.data;
+    acLoaded = true;
+    renderACTable();
+  } catch(e) {
+    document.getElementById('acTableBody').innerHTML =
+      `<tr><td colspan="7" class="empty-state">❌ Gagal memuat: ${e.message}</td></tr>`;
+  }
+}
+
+function renderACTable() {
+  const qNama  = document.getElementById('filterACNama').value.toLowerCase();
+  const qQ     = document.getElementById('filterACQ').value.toLowerCase();
+  const qBulan = document.getElementById('filterACBulan').value;
+
+  const filtered = allAC.filter(r => {
+    if (qNama  && !r.namaPelaksana.toLowerCase().includes(qNama)) return false;
+    if (qQ && ![r.nomor, r.namaBarang, r.nup, r.noSuratUsulan, r.kapasitasAC]
+               .some(v => (v||'').toLowerCase().includes(qQ))) return false;
+    if (qBulan && !r.tanggalLaporan.startsWith(qBulan)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('acTableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data yang cocok</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(r => {
+    const idx = allAC.indexOf(r);
+    return `<tr onclick="selectACRow(${idx})" id="acrow_${idx}">
+      <td>${formatTanggal(r.tanggalLaporan)}</td>
+      <td style="font-family:monospace;font-size:11px">${r.nomor}</td>
+      <td><strong>${r.namaPelaksana}</strong></td>
+      <td>${r.namaBarang}</td>
+      <td>${r.kapasitasAC || '-'}</td>
+      <td>${r.nup}</td>
+      <td style="font-size:11px">${r.noSuratUsulan || '-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function resetACFilter() {
+  ['filterACNama','filterACQ','filterACBulan'].forEach(id => document.getElementById(id).value = '');
+  renderACTable();
+}
+
+function buildJenisList(d) {
+  const items = [];
+  if (d.jenisCuci          === 'Ya' || d.jenisCuci          === true) items.push('Cuci');
+  if (d.jenisIsiFreon       === 'Ya' || d.jenisIsiFreon       === true) items.push('Isi Freon');
+  if (d.jenisGantiKapasitor === 'Ya' || d.jenisGantiKapasitor === true) items.push('Ganti Kapasitor');
+  if (d.jenisGantiModul     === 'Ya' || d.jenisGantiModul     === true) items.push('Ganti Modul');
+  if (d.jenisLainLain) items.push('Lain-lain: ' + d.jenisLainLain);
+  return items.length ? items.join('\n') : '-';
+}
+
+function selectACRow(idx) {
+  document.querySelectorAll('#acTableBody tr.selected').forEach(el => el.classList.remove('selected'));
+  const rowEl = document.getElementById('acrow_' + idx);
+  if (rowEl) rowEl.classList.add('selected');
+  selectedAC = allAC[idx];
+  const d = selectedAC;
+
+  document.getElementById('acDetailGrid').innerHTML = `
+    <div class="dl">Nomor Laporan</div>   <div class="dv">${d.nomor}</div>
+    <div class="dl">Tanggal Laporan</div> <div class="dv">${formatTanggal(d.tanggalLaporan)}</div>
+    <div class="dl">No Surat Usulan</div> <div class="dv">${d.noSuratUsulan || '-'}</div>
+    <div class="dl">Nama Barang</div>     <div class="dv">${d.namaBarang}</div>
+    <div class="dl">Tipe</div>            <div class="dv">${d.tipe}</div>
+    <div class="dl">Merek</div>           <div class="dv">${d.merek}</div>
+    <div class="dl">Ruangan</div>         <div class="dv">${d.ruangan}</div>
+    <div class="dl">NUP BMN</div>         <div class="dv">${d.nup}</div>
+    <div class="dl">Kapasitas AC</div>    <div class="dv">${d.kapasitasAC || '-'}</div>
+    <div class="dl">Jenis Pekerjaan</div> <div class="dv" style="white-space:pre-wrap">${buildJenisList(d)}</div>
+    <div class="dl">Deskripsi</div>       <div class="dv" style="white-space:pre-wrap">${d.deskripsi || '-'}</div>
+    <div class="dl">Pelaksana</div>       <div class="dv">${d.namaPelaksana} — ${d.jabPelaksana}</div>
+    <div class="dl">Pengguna</div>        <div class="dv">${d.namaPengguna} — ${d.jabPengguna}</div>
+    <div class="dl">Pengawas</div>        <div class="dv">${d.namaPengawas}</div>
+  `;
+  const fotoAda = [d.foto1,d.foto2,d.foto3,d.foto4,d.foto5].filter(f=>f&&f!=='-').length;
+  const ttdAda  = [d.ttdPelaksana,d.ttdPengguna,d.ttdPengawas].filter(f=>f&&f!=='-').length;
+  document.getElementById('acFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
+  document.getElementById('acStatusBar').style.display = 'none';
+  document.getElementById('acDetailPanel').style.display = 'block';
+  document.getElementById('btnRegenAC').disabled = false;
+}
+
+// ===== REGEN LAPORAN AC PDF =====
+async function startRegenACPDF() {
+  if (!selectedAC) return;
+  const d = selectedAC;
+  const btn = document.getElementById('btnRegenAC');
+  btn.disabled = true;
+  ['ms1','ms2','ms3'].forEach(id => setStep(id,'','⏳'));
+  showModal();
+
+  // Step 1 — data
+  setStep('ms1','active','🔄');
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val||''; };
+
+  set('acPrNomor',          d.nomor);
+  set('acPrNomorLampiran',  d.nomor);
+  set('acPrNamaBarang',     d.namaBarang);
+  set('acPrTipe',           d.tipe);
+  set('acPrMerek',          d.merek);
+  set('acPrRuangan',        d.ruangan);
+  set('acPrNup',            d.nup);
+  set('acPrKapasitas',      d.kapasitasAC || '-');
+  set('acPrNoUsulan',       d.noSuratUsulan || '-');
+  set('acPrDeskripsi',      d.deskripsi || '');
+  set('acPrJenis',          buildJenisList(d));
+  set('acPrNamaPelaksana',  d.namaPelaksana);
+  set('acPrJabPelaksana',   d.jabPelaksana);
+  set('acPrNamaPelaksanaTTD', d.ttdNamaPelaksana || d.namaPelaksana);
+  set('acPrJabPelaksanaTTD',  d.ttdJabPelaksana  || d.jabPelaksana);
+  set('acPrNamaPengguna',   d.namaPengguna);
+  set('acPrJabPengguna',    d.jabPengguna);
+  set('acPrNamaPengawas',   d.namaPengawas);
+  set('acPrJabPengawas',    'Pengawas Sarpras');
+  set('acPrTanggal',        formatTanggal(d.tanggalLaporan));
+
+  // Reset TTD images
+  ['acPrTTDPelaksana','acPrTTDPengguna','acPrTTDPengawas'].forEach(id => {
+    const el = document.getElementById(id); if(el){ el.src=''; el.style.display='none'; }
+  });
+
+  await sleep(300);
+  setStep('ms1','done','✅');
+
+  // Step 2 — foto & TTD
+  setStep('ms2','active','🔄');
+
+  // Reset foto slots
+  for (let i = 1; i <= 5; i++) {
+    const img = document.getElementById('acImg' + i);
+    const ph  = document.getElementById('acPh'  + i);
+    if (img) { img.src=''; img.style.display='none'; }
+    if (ph)  ph.style.display = 'flex';
+  }
+
+  const urlsToFetch = [
+    { id:'acPrTTDPelaksana', url: d.ttdPelaksana },
+    { id:'acPrTTDPengguna',  url: d.ttdPengguna  },
+    { id:'acPrTTDPengawas',  url: d.ttdPengawas  },
+    { id:'acImg1', url: d.foto1 },
+    { id:'acImg2', url: d.foto2 },
+    { id:'acImg3', url: d.foto3 },
+    { id:'acImg4', url: d.foto4 },
+    { id:'acImg5', url: d.foto5 },
+  ];
+
+  let fetched = 0;
+  await Promise.all(urlsToFetch.map(async ({id, url}) => {
+    if (!url || url === '-') return;
+    try {
+      const resp = await fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(url));
+      const data = await resp.json();
+      if (data.status === 'ok' && data.base64) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.src = data.base64; el.style.display = 'block';
+        if (id.startsWith('acImg')) {
+          const phId = 'acPh' + id.replace('acImg','');
+          const ph = document.getElementById(phId);
+          if (ph) ph.style.display = 'none';
+        }
+        fetched++;
+      }
+    } catch(_) {}
+  }));
+
+  setStep('ms2','done', `✅ ${fetched} item dimuat`);
+  await sleep(300);
+
+  // Step 3 — cetak
+  setStep('ms3','active','🔄');
+  await sleep(400);
+  setStep('ms3','done','✅');
+  await sleep(400);
+  hideModal();
+
+  const origTitle = document.title;
+  document.title  = 'L-PP-AC_' + d.nomor.replace(/\//g,'-');
+  document.body.classList.add('print-ac');
+  window.print();
+  setTimeout(() => {
+    document.title = origTitle;
+    document.body.classList.remove('print-ac');
     btn.disabled = false;
   }, 2000);
 }
