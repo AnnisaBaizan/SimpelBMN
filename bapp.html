@@ -1211,8 +1211,10 @@
         ttdPelaksana  : ttdData.pelaksana || '',
         ttdPengawas   : ttdData.pengawas  || '',
         ttdPengguna   : ttdData.pengguna  || '',
-        foto1         : fotoData.foto1 || '',
-        foto2         : fotoData.foto2 || '',
+        // Kalau user upload foto baru → pakai base64 (GAS akan upload ke Drive)
+        // Kalau tidak → pakai Drive URL dari surat usulan (GAS simpan langsung, tidak re-upload)
+        foto1         : fotoData.foto1 || autoFotoUrls.foto1 || '',
+        foto2         : fotoData.foto2 || autoFotoUrls.foto2 || '',
         foto3         : fotoData.foto3 || '',
         foto4         : fotoData.foto4 || '',
         foto5         : fotoData.foto5 || '',
