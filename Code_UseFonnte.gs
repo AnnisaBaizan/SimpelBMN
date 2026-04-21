@@ -185,7 +185,7 @@ function getSuratList() {
     const lastRow = sheet.getLastRow();
     if (lastRow < 2) return { status: 'ok', data: [] };
 
-    const raw = sheet.getRange(2, 1, lastRow - 1, 26).getValues();
+    const raw = sheet.getRange(2, 1, lastRow - 1, 28).getValues();
     const data = raw
       .filter(r => r[1])
       .map(r => ({
@@ -211,6 +211,8 @@ function getSuratList() {
         ttdPengirim     : String(r[21] || '-'),
         namaPenerima    : String(r[22] || ''),
         nipPenerima     : String(r[23] || ''),
+        jenisSurat      : String(r[26] || 'umum'),
+        ruanganSesudah  : String(r[27] || ''),
       }))
       .reverse();
     return { status: 'ok', count: data.length, data: data };
@@ -299,6 +301,8 @@ function handleSubmit(d) {
       d.nipPenerima  || '',            // X: NIP Penerima
       'Menunggu Tindak Lanjut',        // Y: Status
       '',                              // Z: Keterangan
+      d.jenisSurat   || 'umum',        // AA: Jenis Surat
+      d.ruanganSesudah || '',          // AB: Ruangan Sesudah (DBR)
     ]);
 
     // Format kolom tanggal submit
@@ -886,10 +890,11 @@ function setupSheetHeaders() {
       'Nama Pengusul', 'NIP', 'Jabatan', 'Unit/Bagian',
       'Nama Barang', 'Merek', 'Tipe', 'Ruangan (DBR)', 'NUP BMN',
       'Kondisi', 'Keluhan',
-      'Link Foto NUP', 'Link Foto Merek', 'Link Foto Kerusakan',
-      'Link Foto Keseluruhan', 'Link Foto Lain-lain',
+      'Link Foto NUP', 'Link Foto Merek', 'Link Foto Kerusakan/Sblm Pemindahan',
+      'Link Foto Keseluruhan', 'Link Foto Lain-lain/Ssdh Pemindahan',
       'TTD Penerima (Link Drive)', 'TTD Pengirim (Link Drive)',
       'Nama Penerima', 'NIP Penerima', 'Status', 'Keterangan',
+      'Jenis Surat', 'Ruangan Sesudah (DBR)',
     ],
 
     // ── Sheet 2: BA-PP (A–AB = 28 kolom) ─────────────────────

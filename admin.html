@@ -357,7 +357,7 @@
   <div class="surat-wrapper">
     <img class="kop-img" src="KOP.png" onerror="this.style.display='none'" />
     <div class="kop-line"></div>
-    <div class="surat-judul">Surat Usulan Perbaikan Barang Milik Negara</div>
+    <div class="surat-judul" id="prJudul">Surat Usulan Perbaikan/Pemeliharaan/Penggantian Barang Milik Negara</div>
     <div class="surat-nomor">NOMOR: <span id="prNomor"></span></div>
     <div class="surat-tujuan">
       <p>Yth. Kepala Instalasi Sarana Prasarana</p><p>di Palembang</p>
@@ -369,25 +369,30 @@
       <tr><td>Jabatan</td><td>:</td><td class="nilai" id="prJabatan"></td></tr>
       <tr><td>Bagian</td><td>:</td><td class="nilai" id="prBagian"></td></tr>
     </table>
-    <div style="margin-bottom:8px">Dengan ini mengajukan usulan perbaikan/pemeliharaan Barang Milik Negara (BMN) sebagai berikut:</div>
+    <div style="margin-bottom:8px" id="prDetailIntro">Dengan ini mengajukan usulan perbaikan/pemeliharaan/penggantian Barang Milik Negara (BMN) sebagai berikut:</div>
     <table class="detail-table">
       <tr><td>Nama Barang</td><td>:</td><td class="nilai" id="prNamaBarang"></td></tr>
       <tr><td>Tipe</td><td>:</td><td class="nilai" id="prTipe"></td></tr>
       <tr><td>Merek</td><td>:</td><td class="nilai" id="prMerek"></td></tr>
-      <tr><td>Ruangan (Sesuai DBR)</td><td>:</td><td class="nilai" id="prRuangan"></td></tr>
+      <tr><td id="prRuanganLabel">Ruangan (Sesuai DBR)</td><td>:</td><td class="nilai" id="prRuangan"></td></tr>
+      <tr id="prRowRuanganSesudah" style="display:none">
+        <td>Ruangan <strong>Sesudah</strong> (Sesuai DBR)</td><td>:</td><td class="nilai" id="prRuanganSesudah"></td>
+      </tr>
       <tr><td>NUP</td><td>:</td><td class="nilai" id="prNup"></td></tr>
       <tr>
         <td>Kondisi (Sesuai Status BMN)</td><td>:</td>
         <td class="nilai">
           <span id="prKondisiRR" class="kondisi-option">Rusak Ringan</span> &nbsp;/&nbsp;
           <span id="prKondisiRB" class="kondisi-option">Rusak Berat</span>
+          <span id="prKondisiBaikSep" style="display:none">&nbsp;/&nbsp;</span>
+          <span id="prKondisiBaik" class="kondisi-option" style="display:none">Baik</span>
         </td>
       </tr>
       <tr><td>Keluhan</td><td>:</td><td class="nilai" id="prKeluhan" style="white-space:pre-wrap"></td></tr>
       <tr><td>Foto (NUP, Merek/Tipe)</td><td>:</td><td class="nilai">(Terlampir)</td></tr>
     </table>
-    <div class="surat-penutup">
-      Demikian usulan perbaikan Barang Milik Negara ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.
+    <div class="surat-penutup" id="prPenutup">
+      Demikian usulan perbaikan/pemeliharaan/penggantian Barang Milik Negara ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.
     </div>
     <div style="text-align:right;margin-bottom:8px">
       <span id="prKota">Palembang</span>, <span id="prTanggal"></span>
@@ -428,7 +433,7 @@
       <div class="foto-placeholder-print" id="phMerek">[ Foto tidak tersedia ]</div>
     </div>
     <div class="foto-item">
-      <div class="foto-caption">3. Foto Kerusakan</div>
+      <div class="foto-caption" id="captionKerusakanPr">3. Foto Kerusakan</div>
       <img id="imgKerusakan" src="" style="display:none;width:100%;height:auto" />
       <div class="foto-placeholder-print" id="phKerusakan">[ Foto tidak tersedia ]</div>
     </div>
@@ -438,7 +443,7 @@
       <div class="foto-placeholder-print" id="phKeseluruhan">[ Foto tidak tersedia ]</div>
     </div>
     <div class="foto-item">
-      <div class="foto-caption">5. Foto Lain-lain</div>
+      <div class="foto-caption" id="captionLainLainPr">5. Foto Lain-lain</div>
       <img id="imgLainLain" src="" style="display:none;width:100%;height:auto" />
       <div class="foto-placeholder-print" id="phLainLain">[ Foto tidak tersedia ]</div>
     </div>
@@ -863,6 +868,32 @@ async function startRegenPDF() {
   // Step 1 — data surat
   setStep('ms1', 'active', '🔄');
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val || ''; };
+  // Jenis surat config
+  const PR_JENIS = {
+    'umum': {
+      judul: 'Surat Usulan Perbaikan/Pemeliharaan/Penggantian Barang Milik Negara',
+      intro: 'Dengan ini mengajukan usulan perbaikan/pemeliharaan/penggantian Barang Milik Negara (BMN) sebagai berikut:',
+      penutup: 'Demikian usulan perbaikan/pemeliharaan/penggantian Barang Milik Negara ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.',
+      ruanganLabel: 'Ruangan (Sesuai DBR)', showBaik: false, showRuanganSesudah: false,
+      fotoKerusakan: 'Foto Kerusakan', fotoLainLain: 'Foto Lain-lain',
+    },
+    'ac-perbaikan': {
+      judul: 'Surat Usulan Perbaikan/Pemeliharaan Air Conditioner (AC)',
+      intro: 'Dengan ini mengajukan usulan perbaikan/pemeliharaan Air Conditioner (AC) sebagai berikut:',
+      penutup: 'Demikian usulan perbaikan/pemeliharaan Air Conditioner (AC) ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.',
+      ruanganLabel: 'Ruangan (Sesuai DBR)', showBaik: false, showRuanganSesudah: false,
+      fotoKerusakan: 'Foto Kerusakan', fotoLainLain: 'Foto Lain-lain',
+    },
+    'ac-pemindahan': {
+      judul: 'Surat Usulan Pemindahan Air Conditioner',
+      intro: 'Dengan ini mengajukan usulan Pemindahan Air Conditioner sebagai berikut:',
+      penutup: 'Demikian usulan perbaikan/pemeliharaan/penggantian Air Conditioner ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.',
+      ruanganLabel: 'Ruangan Sebelum (Sesuai DBR)', showBaik: true, showRuanganSesudah: true,
+      fotoKerusakan: 'Foto BMN dan Ruangan Sebelum Pemindahan', fotoLainLain: 'Foto BMN dan Ruangan Sesudah Pemindahan',
+    },
+  };
+  const prCfg = PR_JENIS[d.jenisSurat] || PR_JENIS['umum'];
+
   set('prNomor', d.nomor);       set('prNomorLampiran', d.nomor);
   set('prNama', d.nama);         set('prNamaTtd', d.nama);
   set('prNip',  d.nip);          set('prNipTtd',  d.nip);
@@ -876,8 +907,27 @@ async function startRegenPDF() {
   set('prRuangan', d.ruangan);   set('prNup', d.nup);
   set('prKeluhan', d.keluhan);   set('prKota', 'Palembang');
   set('prTanggal', formatTanggal(d.tanggalSurat));
+
+  // Dynamic per jenis surat
+  set('prJudul',       prCfg.judul);
+  set('prDetailIntro', prCfg.intro);
+  set('prPenutup',     prCfg.penutup);
+  const prRuanganLbl = document.getElementById('prRuanganLabel');
+  if (prRuanganLbl) prRuanganLbl.innerHTML = prCfg.ruanganLabel;
+  const prRowRS = document.getElementById('prRowRuanganSesudah');
+  if (prRowRS) prRowRS.style.display = prCfg.showRuanganSesudah ? '' : 'none';
+  set('prRuanganSesudah', d.ruanganSesudah || '');
+  const prBaikSep  = document.getElementById('prKondisiBaikSep');
+  const prBaikSpan = document.getElementById('prKondisiBaik');
+  if (prBaikSep)  prBaikSep.style.display  = prCfg.showBaik ? '' : 'none';
+  if (prBaikSpan) prBaikSpan.style.display = prCfg.showBaik ? '' : 'none';
   document.getElementById('prKondisiRR').className = 'kondisi-option' + (d.kondisi === 'Rusak Ringan' ? ' aktif' : '');
   document.getElementById('prKondisiRB').className = 'kondisi-option' + (d.kondisi === 'Rusak Berat'  ? ' aktif' : '');
+  if (prBaikSpan) prBaikSpan.className = 'kondisi-option' + (d.kondisi === 'Baik' ? ' aktif' : '');
+  const prCapKer  = document.getElementById('captionKerusakanPr');
+  if (prCapKer)  prCapKer.textContent  = '3. ' + prCfg.fotoKerusakan;
+  const prCapLain = document.getElementById('captionLainLainPr');
+  if (prCapLain) prCapLain.textContent = '5. ' + prCfg.fotoLainLain;
   await sleep(300);
   setStep('ms1', 'done', '✅');
 

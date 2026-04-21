@@ -716,6 +716,12 @@
       .form-panel { padding-bottom: 40px; }
     }
 
+    /* ===== ASET MANUAL LINK ===== */
+    .aset-manual-link {
+      display: inline; font-size: 11px; color: #1a3a5c; text-decoration: underline;
+      cursor: pointer; background: none; border: none; padding: 0; text-align: left;
+    }
+
     /* ===== JENIS SURAT RADIO ===== */
     .jenis-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
     .jenis-group label { display: flex; align-items: center; gap: 6px; font-weight: normal; font-size: 12px; cursor: pointer; padding: 6px 10px; border: 1px solid #dde; border-radius: 4px; transition: background .15s; }
@@ -819,17 +825,16 @@
               </select>
             </div>
           </div>
-          <!-- Manual mode: nama input visible -->
+          <!-- Manual mode: nama + NIP visible; list mode: hidden, auto-filled -->
           <div id="wrapFields_penerima" style="display:none">
             <div class="form-row">
               <label>Nama Penerima</label>
               <input type="text" id="namaPenerima" placeholder="Nama lengkap penerima" oninput="updatePreview()" />
             </div>
-          </div>
-          <!-- NIP: always shown -->
-          <div class="form-row">
-            <label>NIP Penerima</label>
-            <input type="text" id="nipPenerima" placeholder="19XXXXXX XXXXXX X XXX" oninput="updatePreview()" />
+            <div class="form-row">
+              <label>NIP Penerima</label>
+              <input type="text" id="nipPenerima" placeholder="19XXXXXX XXXXXX X XXX" oninput="updatePreview()" />
+            </div>
           </div>
           <!-- Manual mode: canvas button -->
           <div id="wrapMode_penerima_manual" style="display:none">
@@ -945,6 +950,11 @@
           style="display:none;padding:8px;background:#fdecea;border-radius:4px;color:#c0392b;font-size:12px;margin-bottom:10px;">
         </div>
 
+        <!-- Toggle manual (hanya muncul saat AC type & data sudah dimuat) -->
+        <div id="asetManualToggleWrap" style="display:none;margin-bottom:8px;">
+          <button class="aset-manual-link" onclick="toggleManualMode(event)" id="btnToggleManual">✏️ Isi Data Manual (tidak ada di daftar)</button>
+        </div>
+
         <!-- Dropdown 1: NUP -->
         <div class="form-row" id="rowNup" style="display:none">
           <label>NUP BMN <span class="req">*</span></label>
@@ -990,6 +1000,35 @@
           <input type="text" id="tipeManual" style="display:none" placeholder="Ketik tipe secara manual… (opsional)"
             oninput="selTipe=this.value;document.getElementById('selectedTipe').value=this.value;updatePreview()" />
           <input type="hidden" id="selectedTipe" />
+        </div>
+
+        <!-- Mode manual barang (AC tidak ada di daftar) -->
+        <div id="wrapManualBarang" style="display:none">
+          <div class="form-row">
+            <label>NUP BMN <span class="req">*</span></label>
+            <input type="text" id="nupManualAC" placeholder="Contoh: 0001"
+              oninput="document.getElementById('nup').value=this.value;updatePreview()" />
+          </div>
+          <div class="form-row">
+            <label>Nama Barang <span class="req">*</span></label>
+            <input type="text" id="namaBarangManualAC" placeholder="Contoh: A.C Split"
+              oninput="document.getElementById('namaBarang').value=this.value;updatePreview()" />
+          </div>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div>
+              <label>Merek <span class="req">*</span></label>
+              <input type="text" id="merekManualAC" placeholder="Contoh: Daikin"
+                oninput="document.getElementById('merekTipe').value=this.value;updatePreview()" />
+            </div>
+            <div>
+              <label>Tipe</label>
+              <input type="text" id="tipeManualAC" placeholder="Contoh: FT-25JXV"
+                oninput="selTipe=this.value;document.getElementById('selectedTipe').value=this.value;updatePreview()" />
+            </div>
+          </div>
+          <div style="margin-top:4px;margin-bottom:4px;">
+            <button class="aset-manual-link" onclick="switchBackToDropdown(event)">← Kembali ke pilih dari daftar</button>
+          </div>
         </div>
 
         <div class="form-row">
@@ -1278,6 +1317,12 @@
     const TTD_SAPRAS_RAW = __TTD_SAPRAS__;
     const TTD_SAPRAS_CACHE_P = {};
 
+    // NIP map untuk penerima dari TTDSapras
+    const NIP_SARPRAS = {
+      'Sukiman': '199604082025211060',
+      'Tommy':   '197408082007011032',
+    };
+
     // ===== JENIS SURAT CONFIG =====
     const JENIS_CONFIG = {
       'umum': {
@@ -1311,6 +1356,7 @@
 
     // ===== STATE =====
     let jenisSurat = 'umum';
+    let isManualMode = false;
     let nomorData = null;
     const ttdData = { penerima: null, pengirim: null };
     let currentTTDTarget = null;
@@ -1373,7 +1419,7 @@
         elLoad.style.display = 'none';
         elLoad.textContent = `✅ ${asetData.length} aset BMN dimuat.`;
 
-        // Tampilkan dropdown NUP
+        // Tampilkan dropdown NUP (untuk Umum; AC akan di-set ulang oleh setJenisSurat)
         document.getElementById('rowNup').style.display = 'block';
         buildNupDropdown();
 
@@ -1382,6 +1428,44 @@
         elError.style.display = 'block';
         elError.textContent = '❌ Gagal memuat data aset: ' + e.message;
       }
+    }
+
+    // ===== MANUAL MODE (untuk AC tidak ada di daftar) =====
+    function toggleManualMode(e) {
+      e.preventDefault();
+      if (isManualMode) switchBackToDropdown(e); else activateManualMode();
+    }
+
+    function activateManualMode() {
+      isManualMode = true;
+      ['rowNup','rowNama','rowMerk','rowTipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.style.display = 'none';
+      });
+      document.getElementById('wrapManualBarang').style.display = 'block';
+      const btn = document.getElementById('btnToggleManual');
+      if (btn) btn.textContent = '← Kembali ke pilih dari daftar';
+      updatePreview();
+    }
+
+    function switchBackToDropdown(e) {
+      if (e) e.preventDefault();
+      isManualMode = false;
+      ['nupManualAC','namaBarangManualAC','merekManualAC','tipeManualAC'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      ['nup','namaBarang','merekTipe','selectedTipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      selNup = ''; selNama = ''; selMerk = ''; selTipe = '';
+      document.getElementById('wrapManualBarang').style.display = 'none';
+      document.getElementById('rowNup').style.display = 'block';
+      ['rowNama','rowMerk','rowTipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.style.display = 'none';
+      });
+      const btn = document.getElementById('btnToggleManual');
+      if (btn) btn.textContent = '✏️ Isi Data Manual (tidak ada di daftar)';
+      buildNupDropdown();
+      updatePreview();
     }
 
     // ===== JENIS SURAT =====
@@ -1423,22 +1507,44 @@
       const lblRuangan = document.getElementById('labelRuangan');
       if (lblRuangan) lblRuangan.innerHTML = cfg.ruanganLabel + ' <span class="req">*</span>';
 
-      // Rebuild NUP dropdown with AC-filtered data
+      // Reset aset selections & manual mode
+      if (isManualMode) { isManualMode = false; document.getElementById('wrapManualBarang').style.display = 'none'; }
       selNup = ''; selNama = ''; selMerk = ''; selTipe = '';
-      document.getElementById('namaBarang').value = '';
-      document.getElementById('nup').value = '';
-      document.getElementById('merekTipe').value = '';
-      document.getElementById('selectedTipe').value = '';
-      ['searchNup', 'searchNama', 'searchMerk', 'searchTipe'].forEach(id => {
+      ['nup','namaBarang','merekTipe','selectedTipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      ['searchNup','searchNama','searchMerk','searchTipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      ['nupManualAC','namaBarangManualAC','merekManualAC','tipeManualAC'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
       });
       const manualMerk = document.getElementById('merkManual');
       if (manualMerk) { manualMerk.value = ''; manualMerk.style.display = 'none'; }
       document.getElementById('merkDropdownWrap').style.display = 'block';
-      ['rowNama', 'rowMerk', 'rowTipe'].forEach(id => {
+      ['rowNama','rowMerk','rowTipe'].forEach(id => {
         const el = document.getElementById(id); if (el) el.style.display = 'none';
       });
-      buildNupDropdown();
+
+      // Toggle button: hanya untuk AC
+      const toggleWrap = document.getElementById('asetManualToggleWrap');
+      const btnToggle  = document.getElementById('btnToggleManual');
+      if (cfg.filterAC) {
+        const acItems = getActiveAset();
+        if (acItems.length > 0) {
+          if (toggleWrap) toggleWrap.style.display = 'block';
+          if (btnToggle)  btnToggle.textContent = '✏️ Isi Data Manual (tidak ada di daftar)';
+          document.getElementById('rowNup').style.display = 'block';
+          buildNupDropdown();
+        } else {
+          if (toggleWrap) toggleWrap.style.display = 'none';
+          activateManualMode();
+        }
+      } else {
+        if (toggleWrap) toggleWrap.style.display = 'none';
+        document.getElementById('rowNup').style.display = 'block';
+        buildNupDropdown();
+      }
 
       updatePreview();
     }
@@ -1753,6 +1859,7 @@
       const name = sel.value;
       if (!name) return;
       document.getElementById('namaPenerima').value = name;
+      document.getElementById('nipPenerima').value = NIP_SARPRAS[name] || '';
       updatePreview();
       const statusEl = document.getElementById('statusTTD_penerima');
       if (statusEl) statusEl.textContent = '⏳ Memuat TTD…';
@@ -2029,7 +2136,12 @@
       document.getElementById('kotaSurat').value = 'Palembang';
       document.querySelector('input[name=kondisi][value="Rusak Ringan"]').checked = true;
 
-      // Reset jenis surat
+      // Reset jenis surat & manual mode
+      isManualMode = false;
+      document.getElementById('wrapManualBarang').style.display = 'none';
+      ['nupManualAC','namaBarangManualAC','merekManualAC','tipeManualAC'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
       jenisSurat = 'umum';
       document.querySelector('input[name=jenisSurat][value="umum"]').checked = true;
       setJenisSurat('umum');
