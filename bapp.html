@@ -1121,15 +1121,15 @@
     }
 
     // ===== TTD PENGAWAS (dari daftar Sarpras, jabatan otomatis) =====
-    const JAB_PENGAWAS = { 'Rahmad Aswin Juliansyah': 'Kepala Instalasi Sarana Prasarana' };
-    const JAB_PENGAWAS_DEFAULT = 'Staff Instalasi Sarana Prasarana';
+    const JAB_SARPRAS = { 'Rahmad Aswin Juliansyah': 'Kepala Instalasi Sarana Prasarana' };
+    const JAB_SARPRAS_DEFAULT = 'Staff Instalasi Sarana Prasarana';
 
     async function onSelectTTDPengawas() {
       const sel  = document.getElementById('selectTTD_pengawas');
       const name = sel ? sel.value : '';
       clearTTD('pengawas');
       document.getElementById('namaPengawas').value = name;
-      document.getElementById('jabPengawas').value  = name ? (JAB_PENGAWAS[name] || JAB_PENGAWAS_DEFAULT) : '';
+      document.getElementById('jabPengawas').value  = name ? (JAB_SARPRAS[name] || JAB_SARPRAS_DEFAULT) : '';
       syncPreview();
       if (!name) return;
       const loadEl = document.getElementById('loadingTTD_pengawas');
@@ -1161,8 +1161,15 @@
       const name = sel ? sel.value : '';
       clearTTD(target);
       const nameEl = document.getElementById('namaPengguna');
-      if (!name) { if (nameEl) { nameEl.value = ''; syncPreview(); } return; }
-      if (nameEl) { nameEl.value = name; syncPreview(); }
+      const jabEl  = document.getElementById('jabPengguna');
+      if (!name) {
+        if (nameEl) nameEl.value = '';
+        if (jabEl)  jabEl.value  = '';
+        syncPreview(); return;
+      }
+      if (nameEl) nameEl.value = name;
+      if (jabEl)  jabEl.value  = JAB_SARPRAS[name] || JAB_SARPRAS_DEFAULT;
+      syncPreview();
       const loadEl = document.getElementById('loadingTTD_' + target);
       if (loadEl) loadEl.style.display = 'block';
       try {
