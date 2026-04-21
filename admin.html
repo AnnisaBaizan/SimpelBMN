@@ -670,7 +670,9 @@ function loadTTDIntoEl(elId, val, pool) {
   }
 
   // Nama kunci — load dari path file TTD di project (di-copy ke dist/ saat build)
-  const dir = pool === 'pelaksana' ? 'TTDPelaksana' : 'TTDSapras';
+  const dir = pool === 'pelaksana' ? 'TTDPelaksana'
+            : pool === 'pengguna'  ? 'TTDAtasanLangsung'
+            :                        'TTDSapras';
   const imgPath = dir + '/' + val + '.png';
   const cacheKey = pool + ':' + val;
 
