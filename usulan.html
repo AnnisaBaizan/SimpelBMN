@@ -1526,7 +1526,7 @@
         const el = document.getElementById(id); if (el) el.style.display = 'none';
       });
 
-      // Toggle button: hanya untuk AC
+      // Toggle button: tampil untuk semua jenis surat
       const toggleWrap = document.getElementById('asetManualToggleWrap');
       const btnToggle  = document.getElementById('btnToggleManual');
       if (cfg.filterAC) {
@@ -1541,7 +1541,8 @@
           activateManualMode();
         }
       } else {
-        if (toggleWrap) toggleWrap.style.display = 'none';
+        if (toggleWrap) toggleWrap.style.display = 'block';
+        if (btnToggle)  btnToggle.textContent = '✏️ Isi Data Manual (tidak ada di daftar)';
         document.getElementById('rowNup').style.display = 'block';
         buildNupDropdown();
       }

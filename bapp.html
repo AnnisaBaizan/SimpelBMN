@@ -146,6 +146,12 @@
       padding: 7px 10px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;
     }
     .dropdown-item:hover { background: #f0f7ff; }
+    .dropdown-item.no-result { color: #aaa; font-style: italic; cursor: default; }
+    .aset-manual-link {
+      background: none; border: none; color: #0066cc; cursor: pointer;
+      font-size: 12px; padding: 0; text-decoration: underline;
+    }
+    .aset-manual-link:hover { color: #004499; }
 
     /* ===== PREVIEW PANEL ===== */
     .preview-panel {
@@ -353,27 +359,87 @@
       <!-- DETAIL BARANG -->
       <div class="form-section">
         <h3>Detail Barang</h3>
-        <div class="form-row">
-          <label>Nama Barang <span class="req">*</span></label>
-          <input type="text" id="namaBarang" placeholder="Contoh: Laptop" oninput="syncPreview()" />
+
+        <!-- Hidden actual value inputs — dibaca oleh submit & preview -->
+        <input type="hidden" id="nup" />
+        <input type="hidden" id="namaBarang" />
+        <input type="hidden" id="merek" />
+        <input type="hidden" id="tipe" />
+
+        <!-- Toggle button -->
+        <div id="asetManualToggleWrap" style="display:none;margin-bottom:8px;">
+          <button class="aset-manual-link" onclick="toggleManualMode(event)" id="btnToggleManual">✏️ Isi Data Manual (tidak ada di daftar)</button>
         </div>
-        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div>
+
+        <!-- DROPDOWN MODE (default) -->
+        <div id="wrapDropdownBarang">
+          <div class="form-row" id="rowNup">
+            <label>NUP BMN <span class="req">*</span></label>
+            <div class="searchable-wrap">
+              <input type="text" id="searchNup" placeholder="Cari NUP…" autocomplete="off" />
+              <div class="dropdown-list" id="listNup"></div>
+            </div>
+          </div>
+          <div class="form-row" id="rowNama" style="display:none">
+            <label>Nama Barang <span class="req">*</span></label>
+            <div class="searchable-wrap">
+              <input type="text" id="searchNama" placeholder="Cari nama barang…" autocomplete="off" />
+              <div class="dropdown-list" id="listNama"></div>
+            </div>
+          </div>
+          <div class="form-row" id="rowMerk" style="display:none">
             <label>Merek <span class="req">*</span></label>
-            <input type="text" id="merek" placeholder="Contoh: Dell" oninput="syncPreview()" />
+            <div class="searchable-wrap" id="merkDropdownWrap">
+              <input type="text" id="searchMerk" placeholder="Cari merek…" autocomplete="off" />
+              <div class="dropdown-list" id="listMerk"></div>
+            </div>
+            <input type="text" id="merkManualDrop" placeholder="Ketik merek secara manual…" style="display:none;margin-top:4px;"
+              oninput="document.getElementById('merek').value=this.value;syncPreview()" />
           </div>
-          <div>
-            <label>Tipe</label>
-            <input type="text" id="tipe" placeholder="Contoh: Latitude 5420" oninput="syncPreview()" />
+          <div class="form-row" id="rowTipe" style="display:none">
+            <label>Tipe <span style="color:#888;font-weight:400">(opsional)</span></label>
+            <div class="searchable-wrap" id="tipeDropdownWrap">
+              <input type="text" id="searchTipe" placeholder="Cari tipe…" autocomplete="off" />
+              <div class="dropdown-list" id="listTipe"></div>
+            </div>
+            <input type="text" id="tipeManualDrop" placeholder="Ketik tipe secara manual… (opsional)" style="display:none;margin-top:4px;"
+              oninput="selTipe=this.value;document.getElementById('tipe').value=this.value;syncPreview()" />
+            <input type="hidden" id="selectedTipe" />
           </div>
         </div>
+
+        <!-- MANUAL MODE (tersembunyi, muncul saat toggle) -->
+        <div id="wrapManualBarang" style="display:none">
+          <div class="form-row">
+            <label>NUP BMN <span class="req">*</span></label>
+            <input type="text" id="nupManual" placeholder="Contoh: 0001"
+              oninput="document.getElementById('nup').value=this.value;syncPreview()" />
+          </div>
+          <div class="form-row">
+            <label>Nama Barang <span class="req">*</span></label>
+            <input type="text" id="namaBarangManual" placeholder="Contoh: Laptop"
+              oninput="document.getElementById('namaBarang').value=this.value;syncPreview()" />
+          </div>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div>
+              <label>Merek <span class="req">*</span></label>
+              <input type="text" id="merekManual" placeholder="Contoh: Dell"
+                oninput="document.getElementById('merek').value=this.value;syncPreview()" />
+            </div>
+            <div>
+              <label>Tipe</label>
+              <input type="text" id="tipeManual" placeholder="Contoh: Latitude 5420"
+                oninput="selTipe=this.value;document.getElementById('tipe').value=this.value;syncPreview()" />
+            </div>
+          </div>
+          <div style="margin-top:4px;margin-bottom:4px;">
+            <button class="aset-manual-link" onclick="switchBackToDropdown(event)">← Kembali ke pilih dari daftar</button>
+          </div>
+        </div>
+
         <div class="form-row">
           <label>Ruangan (DBR) <span class="req">*</span></label>
           <input type="text" id="ruangan" placeholder="Contoh: Ruang Rapat Lt.2" oninput="syncPreview()" />
-        </div>
-        <div class="form-row">
-          <label>NUP BMN <span class="req">*</span></label>
-          <input type="text" id="nup" placeholder="Contoh: 0001" oninput="syncPreview()" />
         </div>
         <div class="form-row">
           <label>Lain-lain / No.Inv</label>
@@ -783,6 +849,9 @@
     let baNomorSet    = new Set(); // nomor surat usulan yang sudah punya BA
     let selectedUsulan = null; // data surat usulan yang dipilih
     let autoFotoUrls  = { foto1: null, foto2: null }; // URL Drive dari surat usulan
+    let asetData      = [];    // data aset dari server
+    let isManualMode  = false; // mode input manual barang
+    let selNup = '', selNama = '', selMerk = '', selTipe = '';
     const fotoData    = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null, foto6:null };
     const ttdData     = { pelaksana:null, pengawas:null, pengguna:null };
     const TTD_SAPRAS_RAW = __TTD_SAPRAS__;   // { "Nama": "data:image/png;base64,…" }
@@ -800,6 +869,7 @@
       onTanggalChange();
       fetchNomorBA();
       fetchSuratUsulanList();
+      fetchAset();
       initTTDLists();
     });
 
@@ -854,6 +924,158 @@
       });
     }
 
+    // ===== FETCH ASET & CASCADE DROPDOWN =====
+    async function fetchAset() {
+      try {
+        const r = await fetch(GAS_URL + '?action=getAset');
+        const d = await r.json();
+        if (d.status === 'ok' && (d.data || []).length > 0) {
+          asetData = d.data;
+          buildNupDropdown();
+          document.getElementById('asetManualToggleWrap').style.display = 'block';
+        } else {
+          activateManualMode();
+        }
+      } catch (e) {
+        activateManualMode();
+      }
+    }
+
+    function buildNupDropdown() {
+      const nups = [...new Set(asetData.map(r => r.nup).filter(Boolean))]
+        .sort((a, b) => {
+          const na = parseFloat(a), nb = parseFloat(b);
+          if (!isNaN(na) && !isNaN(nb)) return na - nb;
+          if (!isNaN(na)) return -1; if (!isNaN(nb)) return 1;
+          return a.localeCompare(b);
+        });
+      buildDropdown('searchNup', 'listNup', nups, (val) => {
+        selNup = val; selNama = ''; selMerk = ''; selTipe = '';
+        document.getElementById('nup').value = val;
+        document.getElementById('namaBarang').value = '';
+        document.getElementById('merek').value = '';
+        document.getElementById('tipe').value = '';
+        ['searchNama','searchMerk','searchTipe'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('rowNama').style.display = 'block';
+        ['rowMerk','rowTipe'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+        buildNamaDropdown(); syncPreview();
+      });
+    }
+
+    function buildNamaDropdown() {
+      const names = [...new Set(asetData.filter(r => r.nup === selNup).map(r => r.nama).filter(Boolean))].sort();
+      buildDropdown('searchNama', 'listNama', names, (val) => {
+        selNama = val; selMerk = ''; selTipe = '';
+        document.getElementById('namaBarang').value = val;
+        document.getElementById('merek').value = '';
+        document.getElementById('tipe').value = '';
+        ['searchMerk','searchTipe'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('rowMerk').style.display = 'block';
+        document.getElementById('rowTipe').style.display = 'none';
+        buildMerkDropdown(); syncPreview();
+      });
+    }
+
+    function buildMerkDropdown() {
+      const merks = [...new Set(asetData.filter(r => r.nup === selNup && r.nama === selNama).map(r => r.merk).filter(Boolean))].sort();
+      const wrapEl = document.getElementById('merkDropdownWrap');
+      const manualEl = document.getElementById('merkManualDrop');
+      document.getElementById('merek').value = '';
+      if (merks.length === 0) {
+        wrapEl.style.display = 'none'; manualEl.style.display = 'block'; manualEl.value = '';
+        manualEl.oninput = () => {
+          const val = manualEl.value.trim();
+          document.getElementById('merek').value = val; selMerk = val; syncPreview();
+          if (val.length > 0) buildTipeDropdown();
+        };
+        setTimeout(() => manualEl.focus(), 50);
+      } else {
+        wrapEl.style.display = 'block'; manualEl.style.display = 'none';
+        buildDropdown('searchMerk', 'listMerk', merks, (val) => {
+          selMerk = val; selTipe = '';
+          document.getElementById('merek').value = val;
+          document.getElementById('tipe').value = '';
+          const el = document.getElementById('searchTipe'); if (el) el.value = '';
+          document.getElementById('rowTipe').style.display = 'block';
+          buildTipeDropdown(); syncPreview();
+        });
+      }
+    }
+
+    function buildTipeDropdown() {
+      const types = [...new Set(asetData.filter(r => r.nup === selNup && r.nama === selNama && r.merk === selMerk).map(r => r.tipe).filter(Boolean))].sort();
+      const wrapEl = document.getElementById('tipeDropdownWrap');
+      const manualEl = document.getElementById('tipeManualDrop');
+      document.getElementById('rowTipe').style.display = 'block';
+      if (types.length === 0) {
+        wrapEl.style.display = 'none'; manualEl.style.display = 'block'; manualEl.value = '';
+        selTipe = ''; document.getElementById('tipe').value = ''; syncPreview();
+      } else {
+        wrapEl.style.display = 'block'; manualEl.style.display = 'none';
+        buildDropdown('searchTipe', 'listTipe', types, (val) => {
+          selTipe = val; document.getElementById('tipe').value = val;
+          document.getElementById('selectedTipe').value = val; syncPreview();
+        });
+      }
+    }
+
+    function buildDropdown(searchId, listId, items, onSelect) {
+      const listEl = document.getElementById(listId);
+      const searchEl = document.getElementById(searchId);
+      const newSearch = searchEl.cloneNode(true);
+      searchEl.parentNode.replaceChild(newSearch, searchEl);
+      const freshSearch = document.getElementById(searchId);
+      freshSearch.value = '';
+      function render(filter) {
+        const q = filter.toLowerCase();
+        const matched = items.filter(i => i.toLowerCase().includes(q));
+        listEl.innerHTML = '';
+        if (matched.length === 0) {
+          listEl.innerHTML = '<div class="dropdown-item no-result">— Tidak ditemukan —</div>';
+        } else {
+          matched.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'dropdown-item'; div.textContent = item;
+            div.addEventListener('mousedown', (e) => {
+              e.preventDefault(); freshSearch.value = item; listEl.classList.remove('open'); onSelect(item);
+            });
+            listEl.appendChild(div);
+          });
+        }
+      }
+      render('');
+      freshSearch.addEventListener('focus', () => { render(freshSearch.value); listEl.classList.add('open'); });
+      freshSearch.addEventListener('input', () => { render(freshSearch.value); listEl.classList.add('open'); });
+      freshSearch.addEventListener('blur', () => { setTimeout(() => listEl.classList.remove('open'), 150); });
+    }
+
+    function toggleManualMode(e) {
+      if (e) e.preventDefault();
+      if (isManualMode) switchBackToDropdown(e); else activateManualMode();
+    }
+
+    function activateManualMode() {
+      isManualMode = true;
+      ['rowNup','rowNama','rowMerk','rowTipe'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      document.getElementById('wrapManualBarang').style.display = 'block';
+      const btn = document.getElementById('btnToggleManual');
+      if (btn) btn.textContent = '← Kembali ke pilih dari daftar';
+    }
+
+    function switchBackToDropdown(e) {
+      if (e) e.preventDefault();
+      isManualMode = false;
+      ['nupManual','namaBarangManual','merekManual','tipeManual'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      ['nup','namaBarang','merek','tipe'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      selNup = ''; selNama = ''; selMerk = ''; selTipe = '';
+      document.getElementById('wrapManualBarang').style.display = 'none';
+      document.getElementById('rowNup').style.display = 'block';
+      ['rowNama','rowMerk','rowTipe'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      const btn = document.getElementById('btnToggleManual');
+      if (btn) btn.textContent = '✏️ Isi Data Manual (tidak ada di daftar)';
+      buildNupDropdown(); syncPreview();
+    }
+
     // ===== DASAR SURAT TOGGLE =====
     function onDasarChange(val) {
       document.getElementById('wrapDropdownUsulan').style.display = val === 'ya' ? 'block' : 'none';
@@ -872,12 +1094,15 @@
       if (!s) return;
       selectedUsulan = s;
 
-      // Auto-fill detail barang
+      // Auto-fill detail barang — switch ke manual mode & isi dari data surat
+      activateManualMode();
+      const fillMap = { nupManual: s.nup, namaBarangManual: s.namaBarang, merekManual: s.merek, tipeManual: s.tipe };
+      Object.entries(fillMap).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val || ''; });
+      document.getElementById('nup').value       = s.nup       || '';
       document.getElementById('namaBarang').value = s.namaBarang || '';
-      document.getElementById('merek').value      = s.merek      || '';
-      document.getElementById('tipe').value       = s.tipe       || '';
-      document.getElementById('ruangan').value    = s.ruangan    || '';
-      document.getElementById('nup').value        = s.nup        || '';
+      document.getElementById('merek').value     = s.merek     || '';
+      document.getElementById('tipe').value      = s.tipe      || '';
+      document.getElementById('ruangan').value   = s.ruangan   || '';
 
       // Auto-load foto 1 & 2 (Drive URL)
       autoFotoUrls.foto1 = s.fotoNup   !== '-' ? s.fotoNup   : null;
@@ -890,7 +1115,8 @@
     function clearAutoFill() {
       selectedUsulan = null;
       autoFotoUrls   = { foto1: null, foto2: null };
-      ['namaBarang','merek','tipe','ruangan','nup'].forEach(id => document.getElementById(id).value = '');
+      ['nup','namaBarang','merek','tipe','ruangan'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      ['nupManual','namaBarangManual','merekManual','tipeManual'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
       hideAutoFoto(1); hideAutoFoto(2);
       syncPreview();
     }
@@ -1440,6 +1666,16 @@
       document.querySelector('input[name=dasarSurat][value=tidak]').checked = true;
       onDasarChange('tidak');
       document.getElementById('selectUsulan').value = '';
+
+      // Reset cascade dropdown / manual mode
+      isManualMode = false; selNup = ''; selNama = ''; selMerk = ''; selTipe = '';
+      ['nupManual','namaBarangManual','merekManual','tipeManual'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      document.getElementById('wrapManualBarang').style.display = 'none';
+      document.getElementById('rowNup').style.display = 'block';
+      ['rowNama','rowMerk','rowTipe'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      const resetBtn = document.getElementById('btnToggleManual');
+      if (resetBtn) resetBtn.textContent = '✏️ Isi Data Manual (tidak ada di daftar)';
+      buildNupDropdown();
 
       // Reset foto
       for (let i = 1; i <= 6; i++) {
