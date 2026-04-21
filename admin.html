@@ -400,19 +400,19 @@
     <div class="ttd-row">
       <div class="ttd-col">
         <div style="margin-bottom:4px">Penerima,</div>
-        <div style="display:flex;align-items:center;justify-content:center;">
+        <div style="display:flex;align-items:center;justify-content:center;min-height:70px;">
           <img id="prTTDPenerima" style="max-width:150px;max-height:65px;display:none;" />
         </div>
-        <div class="ttd-nama" style="font-weight:bold;" id="prNamaPenerima"></div>
-        <div class="ttd-nip">NIP. <span id="prNipPenerima"></span></div>
+        <div class="ttd-nama" id="prNamaPenerima">……………………………………</div>
+        <div class="ttd-nip">NIP. <span id="prNipPenerima">……………………………………</span></div>
       </div>
       <div class="ttd-col">
         <div style="margin-bottom:4px">Pengirim,</div>
-        <div style="display:flex;align-items:center;justify-content:center;">
+        <div style="display:flex;align-items:center;justify-content:center;min-height:70px;">
           <img id="prTTDPengirim" style="max-width:150px;max-height:65px;display:none;" />
         </div>
-        <div class="ttd-nama" style="padding-top:0;font-weight:bold;" id="prNamaTtd"></div>
-        <div class="ttd-nip">NIP. <span id="prNipTtd"></span></div>
+        <div class="ttd-nama" id="prNamaTtd">……………………………………</div>
+        <div class="ttd-nip">NIP. <span id="prNipTtd">……………………………………</span></div>
       </div>
     </div>
   </div>
@@ -867,7 +867,7 @@ async function startRegenPDF() {
 
   // Step 1 — data surat
   setStep('ms1', 'active', '🔄');
-  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val || ''; };
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val || '……………………………………'; };
   // Jenis surat config
   const PR_JENIS = {
     'umum': {

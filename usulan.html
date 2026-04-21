@@ -1203,11 +1203,11 @@
             <td>:</td>
             <td class="nilai" id="pvKeluhan" style="white-space:pre-wrap">&nbsp;</td>
           </tr>
-          <tr>
+          <!-- <tr>
             <td>Foto (NUP, Merek/Tipe)</td>
             <td>:</td>
             <td class="nilai">(Terlampir)</td>
-          </tr>
+          </tr> -->
         </table>
 
         <div class="surat-penutup" id="pvPenutup">
@@ -1222,19 +1222,19 @@
         <div class="ttd-row">
           <div class="ttd-col">
             <div class="ttd-label">Penerima,</div>
-            <div style="display:flex;align-items:center;justify-content:center;">
+            <div style="display:flex;align-items:center;justify-content:center;min-height:70px;">
               <img id="pvTTDPenerima" style="max-width:150px;max-height:65px;display:none;" />
             </div>
-            <div class="ttd-nama" style="font-weight:bold;" id="pvNamaPenerima">&nbsp;</div>
-            <div class="ttd-nip">NIP. <span id="pvNipPenerima">&nbsp;</span></div>
+            <div class="ttd-nama" id="pvNamaPenerima">……………………………………</div>
+            <div class="ttd-nip">NIP. <span id="pvNipPenerima">……………………………………</span></div>
           </div>
           <div class="ttd-col">
             <div class="ttd-label">Pengirim,</div>
-            <div style="display:flex;align-items:center;justify-content:center;">
+            <div style="display:flex;align-items:center;justify-content:center;min-height:70px;">
               <img id="pvTTDPengirim" style="max-width:150px;max-height:65px;display:none;" />
             </div>
-            <div class="ttd-nama" style="font-weight:bold;" id="pvNamaTtd">&nbsp;</div>
-            <div class="ttd-nip">NIP. <span id="pvNipTtd">&nbsp;</span></div>
+            <div class="ttd-nama" id="pvNamaTtd">……………………………………</div>
+            <div class="ttd-nip">NIP. <span id="pvNipTtd">……………………………………</span></div>
           </div>
         </div>
       </div>
@@ -1724,7 +1724,7 @@
 
     function updatePreview() {
       const g = id => document.getElementById(id)?.value || '';
-      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '\u00a0'; };
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '……………………………………'; };
 
       const nomor = g('nomorSurat').replace('Mengambil…', '') || '…………………………………';
       set('pvNomor', nomor);
