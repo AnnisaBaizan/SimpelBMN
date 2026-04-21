@@ -442,20 +442,7 @@
         <!-- Yang Malaksanakan/Menerima -->
         <div class="ttd-section">
           <h4>Yang Malaksanakan/Menerima Pekerjaan</h4>
-          <div class="ttd-mode-toggle">
-            <button class="btn-ttd-mode active" id="modeBtn_pelaksana_list" onclick="setTTDMode('pelaksana','list')">🗂️ Pilih dari Daftar</button>
-            <button class="btn-ttd-mode" id="modeBtn_pelaksana_manual" onclick="setTTDMode('pelaksana','manual')">✍️ Gambar Manual</button>
-          </div>
-          <div id="wrapMode_pelaksana_list">
-            <select id="selectTTD_pelaksana" onchange="onSelectTTD('pelaksana')">
-              <option value="">— Pilih nama —</option>
-            </select>
-            <div id="loadingTTD_pelaksana" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
-          </div>
-          <div id="wrapMode_pelaksana_manual" style="display:none;margin-top:6px;">
-            <button class="btn-ttd" onclick="openTTD('pelaksana')">✍️ Tanda Tangan</button>
-          </div>
-          <div class="form-row" style="margin-top:8px;">
+          <div class="form-row">
             <label>Nama <span class="req">*</span></label>
             <input type="text" id="namaPelaksana" placeholder="Nama lengkap" oninput="syncPreview()" />
           </div>
@@ -463,7 +450,8 @@
             <label>Jabatan <span class="req">*</span></label>
             <input type="text" id="jabPelaksana" placeholder="Jabatan" oninput="syncPreview()" />
           </div>
-          <div class="ttd-preview-wrap" style="margin-top:4px;">
+          <div class="ttd-preview-wrap">
+            <button class="btn-ttd" onclick="openTTD('pelaksana')">✍️ Tanda Tangan</button>
             <button class="btn-clear-ttd" id="clearTTD_pelaksana" onclick="clearTTD('pelaksana')">✕ Hapus</button>
             <div>
               <img id="previewTTD_pelaksana" class="ttd-preview-img" />
@@ -475,16 +463,13 @@
         <!-- Yang Mengawasi/Menyerahkan -->
         <div class="ttd-section">
           <h4>Yang Mengawasi/Menyerahkan Pekerjaan</h4>
-          <div class="form-row">
-            <label>Nama <span class="req">*</span></label>
-            <input type="text" id="namaPengawas" placeholder="Nama lengkap" oninput="syncPreview()" />
-          </div>
-          <div class="form-row">
-            <label>Jabatan <span class="req">*</span></label>
-            <input type="text" id="jabPengawas" placeholder="Jabatan" oninput="syncPreview()" />
-          </div>
-          <div class="ttd-preview-wrap">
-            <button class="btn-ttd" onclick="openTTD('pengawas')">✍️ Tanda Tangan</button>
+          <select id="selectTTD_pengawas" onchange="onSelectTTDPengawas()">
+            <option value="">— Pilih nama —</option>
+          </select>
+          <div id="loadingTTD_pengawas" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
+          <input type="hidden" id="namaPengawas" />
+          <input type="hidden" id="jabPengawas" />
+          <div class="ttd-preview-wrap" style="margin-top:8px;">
             <button class="btn-clear-ttd" id="clearTTD_pengawas" onclick="clearTTD('pengawas')">✕ Hapus</button>
             <div>
               <img id="previewTTD_pengawas" class="ttd-preview-img" />
@@ -509,13 +494,15 @@
           <div id="wrapMode_pengguna_manual" style="display:none;margin-top:6px;">
             <button class="btn-ttd" onclick="openTTD('pengguna')">✍️ Tanda Tangan</button>
           </div>
-          <div class="form-row" style="margin-top:8px;">
-            <label>Nama</label>
-            <input type="text" id="namaPengguna" placeholder="Nama lengkap" oninput="syncPreview()" />
-          </div>
-          <div class="form-row">
-            <label>Jabatan</label>
-            <input type="text" id="jabPengguna" placeholder="Jabatan" oninput="syncPreview()" />
+          <div id="wrapFields_pengguna" style="display:none;margin-top:8px;">
+            <div class="form-row">
+              <label>Nama</label>
+              <input type="text" id="namaPengguna" placeholder="Nama lengkap" oninput="syncPreview()" />
+            </div>
+            <div class="form-row">
+              <label>Jabatan</label>
+              <input type="text" id="jabPengguna" placeholder="Jabatan" oninput="syncPreview()" />
+            </div>
           </div>
           <div class="ttd-preview-wrap" style="margin-top:4px;">
             <button class="btn-clear-ttd" id="clearTTD_pengguna" onclick="clearTTD('pengguna')">✕ Hapus</button>
@@ -1079,8 +1066,8 @@
     // ===== TTD LIST INIT =====
     function initTTDLists() {
       const entries = {
-        selectTTD_pelaksana: TTD_SAPRAS_RAW,
-        selectTTD_pengguna:  TTD_ATASAN_RAW,
+        selectTTD_pengawas: TTD_SAPRAS_RAW,
+        selectTTD_pengguna: TTD_ATASAN_RAW,
       };
       Object.entries(entries).forEach(([selId, raw]) => {
         const sel = document.getElementById(selId);
@@ -1093,7 +1080,7 @@
       });
     }
 
-    // ===== TTD MODE TOGGLE =====
+    // ===== TTD MODE TOGGLE (hanya untuk pengguna/Atasan Langsung) =====
     function setTTDMode(target, mode) {
       const listWrap   = document.getElementById('wrapMode_' + target + '_list');
       const manualWrap = document.getElementById('wrapMode_' + target + '_manual');
@@ -1103,39 +1090,70 @@
       if (manualWrap) manualWrap.style.display = mode === 'manual' ? 'block' : 'none';
       if (listBtn)    listBtn.classList.toggle('active',   mode === 'list');
       if (manualBtn)  manualBtn.classList.toggle('active', mode === 'manual');
+      // Nama & jabatan hanya tampil di mode manual
+      const wrapFields = document.getElementById('wrapFields_' + target);
+      if (wrapFields) wrapFields.style.display = mode === 'manual' ? 'block' : 'none';
       clearTTD(target);
       if (mode === 'list') {
         const sel = document.getElementById('selectTTD_' + target);
         if (sel) sel.value = '';
-        const nameId = target === 'pelaksana' ? 'namaPelaksana' : 'namaPengguna';
-        const el = document.getElementById(nameId);
-        if (el) { el.value = ''; syncPreview(); }
+        ['namaPengguna','jabPengguna'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        syncPreview();
       }
     }
 
-    // ===== TTD FROM FOLDER =====
+    // ===== TTD PENGAWAS (dari daftar Sarpras, jabatan otomatis) =====
+    const JAB_PENGAWAS = { 'Rahmad Aswin Juliansyah': 'Kepala Instalasi Sarana Prasarana' };
+    const JAB_PENGAWAS_DEFAULT = 'Staff Instalasi Sarana Prasarana';
+
+    async function onSelectTTDPengawas() {
+      const sel  = document.getElementById('selectTTD_pengawas');
+      const name = sel ? sel.value : '';
+      clearTTD('pengawas');
+      document.getElementById('namaPengawas').value = name;
+      document.getElementById('jabPengawas').value  = name ? (JAB_PENGAWAS[name] || JAB_PENGAWAS_DEFAULT) : '';
+      syncPreview();
+      if (!name) return;
+      const loadEl = document.getElementById('loadingTTD_pengawas');
+      if (loadEl) loadEl.style.display = 'block';
+      try {
+        let b64 = TTD_SAPRAS_CACHE[name];
+        if (!b64) { b64 = await imgToBase64BW(TTD_SAPRAS_RAW[name]); TTD_SAPRAS_CACHE[name] = b64; }
+        ttdData.pengawas = b64;
+        const pvImg = document.getElementById('pvTTDPengawas');
+        if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
+        const formImg = document.getElementById('previewTTD_pengawas');
+        if (formImg) { formImg.src = b64; formImg.style.display = 'block'; }
+        const statusEl = document.getElementById('statusTTD_pengawas');
+        if (statusEl) { statusEl.textContent = '✅ TTD: ' + name; statusEl.classList.add('signed'); }
+        const clearBtn = document.getElementById('clearTTD_pengawas');
+        if (clearBtn) clearBtn.style.display = 'inline-block';
+      } catch (e) {
+        const statusEl = document.getElementById('statusTTD_pengawas');
+        if (statusEl) statusEl.textContent = '⚠️ Gagal: ' + e.message;
+      } finally {
+        if (loadEl) loadEl.style.display = 'none';
+      }
+      syncPreview();
+    }
+
+    // ===== TTD PENGGUNA/ATASAN LANGSUNG (dari daftar) =====
     async function onSelectTTD(target) {
       const sel  = document.getElementById('selectTTD_' + target);
       const name = sel ? sel.value : '';
       clearTTD(target);
-
-      const nameId = target === 'pelaksana' ? 'namaPelaksana' : 'namaPengguna';
-      const nameEl = document.getElementById(nameId);
+      const nameEl = document.getElementById('namaPengguna');
       if (!name) { if (nameEl) { nameEl.value = ''; syncPreview(); } return; }
-
       if (nameEl) { nameEl.value = name; syncPreview(); }
-
-      const raw    = target === 'pelaksana' ? TTD_SAPRAS_RAW   : TTD_ATASAN_RAW;
-      const cache  = target === 'pelaksana' ? TTD_SAPRAS_CACHE : TTD_ATASAN_CACHE;
       const loadEl = document.getElementById('loadingTTD_' + target);
       if (loadEl) loadEl.style.display = 'block';
-
       try {
-        let b64 = cache[name];
-        if (!b64) { b64 = await imgToBase64BW(raw[name]); cache[name] = b64; }
+        let b64 = TTD_ATASAN_CACHE[name];
+        if (!b64) { b64 = await imgToBase64BW(TTD_ATASAN_RAW[name]); TTD_ATASAN_CACHE[name] = b64; }
         ttdData[target] = b64;
-        const pvMap = { pelaksana:'pvTTDPelaksana', pengguna:'pvTTDPengguna' };
-        const pvImg = document.getElementById(pvMap[target]);
+        const pvImg = document.getElementById('pvTTDPengguna');
         if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
         const formImg = document.getElementById('previewTTD_' + target);
         if (formImg) { formImg.src = b64; formImg.style.display = 'block'; }
@@ -1145,7 +1163,7 @@
         if (clearBtn) clearBtn.style.display = 'inline-block';
       } catch (e) {
         const statusEl = document.getElementById('statusTTD_' + target);
-        if (statusEl) statusEl.textContent = '⚠️ Gagal memuat TTD: ' + e.message;
+        if (statusEl) statusEl.textContent = '⚠️ Gagal: ' + e.message;
       } finally {
         if (loadEl) loadEl.style.display = 'none';
       }
@@ -1415,8 +1433,11 @@
       }
       // Reset TTD
       ['pelaksana','pengawas','pengguna'].forEach(t => clearTTD(t));
-      setTTDMode('pelaksana', 'list');
-      setTTDMode('pengguna',  'list');
+      setTTDMode('pengguna', 'list');
+      const selPengawas = document.getElementById('selectTTD_pengawas');
+      if (selPengawas) selPengawas.value = '';
+      document.getElementById('namaPengawas').value = '';
+      document.getElementById('jabPengawas').value  = '';
       nomorData = null;
       syncPreview();
       fetchNomorBA('ℹ️ Form direset — mengambil nomor BA baru dari server…');
