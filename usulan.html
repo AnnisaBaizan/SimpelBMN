@@ -786,11 +786,11 @@
         <div class="ttd-section">
           <h4>Penerima</h4>
           <div class="form-row">
-            <label>Nama Penerima <span class="req">*</span></label>
+            <label>Nama Penerima</label>
             <input type="text" id="namaPenerima" placeholder="Nama lengkap penerima" oninput="syncPreview()" />
           </div>
           <div class="form-row">
-            <label>NIP Penerima <span class="req">*</span></label>
+            <label>NIP Penerima</label>
             <input type="text" id="nipPenerima" placeholder="19XXXXXX XXXXXX X XXX" oninput="syncPreview()" />
           </div>
           <div class="ttd-preview-wrap">
@@ -1643,7 +1643,6 @@
 
       const g = id => document.getElementById(id)?.value?.trim() || '';
       const required = {
-        'Nama Penerima': g('namaPenerima'), 'NIP Penerima': g('nipPenerima'),
         'Nama': g('nama'), 'NIP': g('nip'), 'Jabatan': g('jabatan'), 'Bagian': g('bagian'),
         'NUP': g('nup'), 'Nama Barang': g('namaBarang'), 'Merek': g('merekTipe'),
         'Ruangan': g('ruangan'), 'Keluhan': g('keluhan'), 'Tanggal': g('tanggalSurat')
