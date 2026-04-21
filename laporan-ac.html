@@ -950,9 +950,15 @@
         const r = await fetch(GAS_URL + '?action=getSuratUsulanList');
         const d = await r.json();
         if (d.status === 'ok') {
-          suratUsulanACDB = (d.data || []).filter(s =>
-            s.jenisSurat === 'ac-perbaikan' || s.jenisSurat === 'ac-pemindahan'
-          );
+          suratUsulanACDB = (d.data || []).filter(s => {
+            if (s.jenisSurat === 'ac-perbaikan' || s.jenisSurat === 'ac-pemindahan') return true;
+            // Fallback untuk data lama sebelum kolom jenisSurat ditambahkan
+            if (!s.jenisSurat || s.jenisSurat === 'umum') {
+              const nama = (s.namaBarang || '').toLowerCase();
+              return nama === 'a.c' || nama.includes('a.c') || nama.includes('air conditioner');
+            }
+            return false;
+          });
           buildSelectUsulan();
         }
       } catch (e) { /* non-fatal */ }
