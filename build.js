@@ -35,9 +35,11 @@ function readTTDFolder(dirPath, label) {
 }
 
 // ── TTD Sarpras (Pengawas) ──
-const TTD_SAPRAS_JSON    = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDSapras'),    'Sarpras'));
+const TTD_SAPRAS_JSON    = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDSapras'),         'Sarpras'));
 // ── TTD Pelaksana ──
-const TTD_PELAKSANA_JSON = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDPelaksana'), 'Pelaksana'));
+const TTD_PELAKSANA_JSON = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDPelaksana'),      'Pelaksana'));
+// ── TTD Atasan Langsung ──
+const TTD_ATASAN_JSON    = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDAtasanLangsung'), 'Atasan'));
 
 // ── File HTML yang perlu diproses ──
 const HTML_FILES = ['index.html', 'usulan.html', 'bapp.html', 'admin.html', 'laporan-ac.html'];
@@ -51,6 +53,7 @@ HTML_FILES.forEach(file => {
   content = content.replaceAll('__ADMIN_PASSWORD__', ADMIN_PASSWORD);
   content = content.replaceAll('__TTD_SAPRAS__',     TTD_SAPRAS_JSON);
   content = content.replaceAll('__TTD_PELAKSANA__',  TTD_PELAKSANA_JSON);
+  content = content.replaceAll('__TTD_ATASAN__',     TTD_ATASAN_JSON);
 
   fs.writeFileSync(path.join(DIST, file), content, 'utf8');
   console.log(`✅ ${file} → dist/${file}`);
@@ -67,7 +70,7 @@ ASSETS.forEach(file => {
 });
 
 // Copy TTD folders ke dist/ agar bisa di-load via path relatif di admin
-const TTD_DIRS = ['TTDPelaksana', 'TTDSapras'];
+const TTD_DIRS = ['TTDPelaksana', 'TTDSapras', 'TTDAtasanLangsung'];
 TTD_DIRS.forEach(dir => {
   const srcDir = path.join(SRC, dir);
   const dstDir = path.join(DIST, dir);

@@ -104,6 +104,16 @@
       border: none; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 6px;
     }
 
+    /* TTD mode toggle */
+    .ttd-mode-toggle { display: flex; gap: 4px; margin-bottom: 10px; }
+    .btn-ttd-mode {
+      flex: 1; padding: 5px 8px; border: 1px solid #1a3a5c; border-radius: 4px;
+      background: #fff; color: #1a3a5c; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-ttd-mode.active { background: #1a3a5c; color: #fff; }
+    .btn-ttd-mode:hover:not(.active) { background: #eaf2fb; }
+
     /* Buttons */
     .btn-group { display: flex; gap: 8px; margin-top: 18px; }
     .btn { flex: 1; padding: 10px; border: none; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; }
@@ -432,7 +442,20 @@
         <!-- Yang Malaksanakan/Menerima -->
         <div class="ttd-section">
           <h4>Yang Malaksanakan/Menerima Pekerjaan</h4>
-          <div class="form-row">
+          <div class="ttd-mode-toggle">
+            <button class="btn-ttd-mode active" id="modeBtn_pelaksana_list" onclick="setTTDMode('pelaksana','list')">🗂️ Pilih dari Daftar</button>
+            <button class="btn-ttd-mode" id="modeBtn_pelaksana_manual" onclick="setTTDMode('pelaksana','manual')">✍️ Gambar Manual</button>
+          </div>
+          <div id="wrapMode_pelaksana_list">
+            <select id="selectTTD_pelaksana" onchange="onSelectTTD('pelaksana')">
+              <option value="">— Pilih nama —</option>
+            </select>
+            <div id="loadingTTD_pelaksana" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
+          </div>
+          <div id="wrapMode_pelaksana_manual" style="display:none;margin-top:6px;">
+            <button class="btn-ttd" onclick="openTTD('pelaksana')">✍️ Tanda Tangan</button>
+          </div>
+          <div class="form-row" style="margin-top:8px;">
             <label>Nama <span class="req">*</span></label>
             <input type="text" id="namaPelaksana" placeholder="Nama lengkap" oninput="syncPreview()" />
           </div>
@@ -440,8 +463,7 @@
             <label>Jabatan <span class="req">*</span></label>
             <input type="text" id="jabPelaksana" placeholder="Jabatan" oninput="syncPreview()" />
           </div>
-          <div class="ttd-preview-wrap">
-            <button class="btn-ttd" onclick="openTTD('pelaksana')">✍️ Tanda Tangan</button>
+          <div class="ttd-preview-wrap" style="margin-top:4px;">
             <button class="btn-clear-ttd" id="clearTTD_pelaksana" onclick="clearTTD('pelaksana')">✕ Hapus</button>
             <div>
               <img id="previewTTD_pelaksana" class="ttd-preview-img" />
@@ -471,19 +493,31 @@
           </div>
         </div>
 
-        <!-- Pengguna BMN -->
+        <!-- Atasan Langsung -->
         <div class="ttd-section">
-          <h4>Pengguna Barang Milik Negara — Pengguna Barang Milik Negara</h4>
-          <div class="form-row">
-            <label>Nama <span class="req">*</span></label>
+          <h4>Atasan Langsung</h4>
+          <div class="ttd-mode-toggle">
+            <button class="btn-ttd-mode active" id="modeBtn_pengguna_list" onclick="setTTDMode('pengguna','list')">🗂️ Pilih dari Daftar</button>
+            <button class="btn-ttd-mode" id="modeBtn_pengguna_manual" onclick="setTTDMode('pengguna','manual')">✍️ Gambar Manual</button>
+          </div>
+          <div id="wrapMode_pengguna_list">
+            <select id="selectTTD_pengguna" onchange="onSelectTTD('pengguna')">
+              <option value="">— Pilih nama —</option>
+            </select>
+            <div id="loadingTTD_pengguna" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
+          </div>
+          <div id="wrapMode_pengguna_manual" style="display:none;margin-top:6px;">
+            <button class="btn-ttd" onclick="openTTD('pengguna')">✍️ Tanda Tangan</button>
+          </div>
+          <div class="form-row" style="margin-top:8px;">
+            <label>Nama</label>
             <input type="text" id="namaPengguna" placeholder="Nama lengkap" oninput="syncPreview()" />
           </div>
           <div class="form-row">
-            <label>Jabatan <span class="req">*</span></label>
+            <label>Jabatan</label>
             <input type="text" id="jabPengguna" placeholder="Jabatan" oninput="syncPreview()" />
           </div>
-          <div class="ttd-preview-wrap">
-            <button class="btn-ttd" onclick="openTTD('pengguna')">✍️ Tanda Tangan</button>
+          <div class="ttd-preview-wrap" style="margin-top:4px;">
             <button class="btn-clear-ttd" id="clearTTD_pengguna" onclick="clearTTD('pengguna')">✕ Hapus</button>
             <div>
               <img id="previewTTD_pengguna" class="ttd-preview-img" />
@@ -747,6 +781,10 @@
     let autoFotoUrls  = { foto1: null, foto2: null }; // URL Drive dari surat usulan
     const fotoData    = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null, foto6:null };
     const ttdData     = { pelaksana:null, pengawas:null, pengguna:null };
+    const TTD_SAPRAS_RAW = __TTD_SAPRAS__;   // { "Nama": "data:image/png;base64,…" }
+    const TTD_ATASAN_RAW = __TTD_ATASAN__;   // { "Nama": "data:image/png;base64,…" }
+    const TTD_SAPRAS_CACHE = {};
+    const TTD_ATASAN_CACHE = {};
     let currentTTDTarget = null; // 'pelaksana' | 'pengawas' | 'pengguna'
     let isDrawing = false;
     let ctx = null;
@@ -758,6 +796,7 @@
       onTanggalChange();
       fetchNomorBA();
       fetchSuratUsulanList();
+      initTTDLists();
     });
 
     // ===== FETCH NOMOR BA =====
@@ -1037,6 +1076,103 @@
     }
     window.addEventListener('resize', scalePreviews);
 
+    // ===== TTD LIST INIT =====
+    function initTTDLists() {
+      const entries = {
+        selectTTD_pelaksana: TTD_SAPRAS_RAW,
+        selectTTD_pengguna:  TTD_ATASAN_RAW,
+      };
+      Object.entries(entries).forEach(([selId, raw]) => {
+        const sel = document.getElementById(selId);
+        if (!sel) return;
+        Object.keys(raw).sort().forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          sel.appendChild(opt);
+        });
+      });
+    }
+
+    // ===== TTD MODE TOGGLE =====
+    function setTTDMode(target, mode) {
+      const listWrap   = document.getElementById('wrapMode_' + target + '_list');
+      const manualWrap = document.getElementById('wrapMode_' + target + '_manual');
+      const listBtn    = document.getElementById('modeBtn_' + target + '_list');
+      const manualBtn  = document.getElementById('modeBtn_' + target + '_manual');
+      if (listWrap)   listWrap.style.display   = mode === 'list'   ? 'block' : 'none';
+      if (manualWrap) manualWrap.style.display = mode === 'manual' ? 'block' : 'none';
+      if (listBtn)    listBtn.classList.toggle('active',   mode === 'list');
+      if (manualBtn)  manualBtn.classList.toggle('active', mode === 'manual');
+      clearTTD(target);
+      if (mode === 'list') {
+        const sel = document.getElementById('selectTTD_' + target);
+        if (sel) sel.value = '';
+        const nameId = target === 'pelaksana' ? 'namaPelaksana' : 'namaPengguna';
+        const el = document.getElementById(nameId);
+        if (el) { el.value = ''; syncPreview(); }
+      }
+    }
+
+    // ===== TTD FROM FOLDER =====
+    async function onSelectTTD(target) {
+      const sel  = document.getElementById('selectTTD_' + target);
+      const name = sel ? sel.value : '';
+      clearTTD(target);
+
+      const nameId = target === 'pelaksana' ? 'namaPelaksana' : 'namaPengguna';
+      const nameEl = document.getElementById(nameId);
+      if (!name) { if (nameEl) { nameEl.value = ''; syncPreview(); } return; }
+
+      if (nameEl) { nameEl.value = name; syncPreview(); }
+
+      const raw    = target === 'pelaksana' ? TTD_SAPRAS_RAW   : TTD_ATASAN_RAW;
+      const cache  = target === 'pelaksana' ? TTD_SAPRAS_CACHE : TTD_ATASAN_CACHE;
+      const loadEl = document.getElementById('loadingTTD_' + target);
+      if (loadEl) loadEl.style.display = 'block';
+
+      try {
+        let b64 = cache[name];
+        if (!b64) { b64 = await imgToBase64BW(raw[name]); cache[name] = b64; }
+        ttdData[target] = b64;
+        const pvMap = { pelaksana:'pvTTDPelaksana', pengguna:'pvTTDPengguna' };
+        const pvImg = document.getElementById(pvMap[target]);
+        if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
+        const formImg = document.getElementById('previewTTD_' + target);
+        if (formImg) { formImg.src = b64; formImg.style.display = 'block'; }
+        const statusEl = document.getElementById('statusTTD_' + target);
+        if (statusEl) { statusEl.textContent = '✅ TTD: ' + name; statusEl.classList.add('signed'); }
+        const clearBtn = document.getElementById('clearTTD_' + target);
+        if (clearBtn) clearBtn.style.display = 'inline-block';
+      } catch (e) {
+        const statusEl = document.getElementById('statusTTD_' + target);
+        if (statusEl) statusEl.textContent = '⚠️ Gagal memuat TTD: ' + e.message;
+      } finally {
+        if (loadEl) loadEl.style.display = 'none';
+      }
+      syncPreview();
+    }
+
+    function imgToBase64BW(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          const cx = c.getContext('2d');
+          cx.drawImage(img, 0, 0);
+          const d = cx.getImageData(0, 0, c.width, c.height);
+          for (let i = 0; i < d.data.length; i += 4) {
+            const g = 0.299 * d.data[i] + 0.587 * d.data[i+1] + 0.114 * d.data[i+2];
+            d.data[i] = d.data[i+1] = d.data[i+2] = g < 128 ? 0 : 255;
+          }
+          cx.putImageData(d, 0, 0);
+          resolve(c.toDataURL('image/png'));
+        };
+        img.onerror = () => reject(new Error('Gambar tidak dapat dimuat'));
+        img.src = src;
+      });
+    }
+
     // ===== TTD CANVAS MODAL =====
     function openTTD(target) {
       currentTTDTarget = target;
@@ -1153,8 +1289,8 @@
         'Jabatan Pelaksana' : g('jabPelaksana'),
         'Nama Pengawas'     : g('namaPengawas'),
         'Jabatan Pengawas'  : g('jabPengawas'),
-        'Nama Pengguna BMN' : g('namaPengguna'),
-        'Jabatan Pengguna'  : g('jabPengguna'),
+        'Nama Atasan Langsung'    : g('namaPengguna'),
+        'Jabatan Atasan Langsung' : g('jabPengguna'),
       };
       for (const [k, v] of Object.entries(required)) {
         if (!v) { setStatus('error', '❌ Field "' + k + '" wajib diisi.'); document.getElementById('statusBar').scrollIntoView({behavior:'smooth'}); return; }
@@ -1279,6 +1415,8 @@
       }
       // Reset TTD
       ['pelaksana','pengawas','pengguna'].forEach(t => clearTTD(t));
+      setTTDMode('pelaksana', 'list');
+      setTTDMode('pengguna',  'list');
       nomorData = null;
       syncPreview();
       fetchNomorBA('ℹ️ Form direset — mengambil nomor BA baru dari server…');
