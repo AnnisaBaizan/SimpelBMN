@@ -1584,7 +1584,7 @@
     }
 
     function buildNamaDropdown() {
-      const filtered = asetData.filter(r => r.nup === selNup);
+      const filtered = getActiveAset().filter(r => r.nup === selNup);
       const names = [...new Set(filtered.map(r => r.nama).filter(Boolean))].sort();
       buildDropdown('searchNama', 'listNama', names, (val) => {
         selNama = val;
@@ -1603,7 +1603,7 @@
     }
 
     function buildMerkDropdown() {
-      const filtered = asetData.filter(r => r.nup === selNup && r.nama === selNama);
+      const filtered = getActiveAset().filter(r => r.nup === selNup && r.nama === selNama);
       const merks = [...new Set(filtered.map(r => r.merk).filter(Boolean))].sort();
 
       const wrapEl = document.getElementById('merkDropdownWrap');
@@ -1646,7 +1646,7 @@
     }
 
     function buildTipeDropdown() {
-      const filtered = asetData.filter(r => r.nup === selNup && r.nama === selNama && r.merk === selMerk);
+      const filtered = getActiveAset().filter(r => r.nup === selNup && r.nama === selNama && r.merk === selMerk);
       const types = [...new Set(filtered.map(r => r.tipe).filter(Boolean))].sort();
 
       const wrapEl = document.getElementById('tipeDropdownWrap');
