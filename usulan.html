@@ -1419,9 +1419,8 @@
         elLoad.style.display = 'none';
         elLoad.textContent = `✅ ${asetData.length} aset BMN dimuat.`;
 
-        // Tampilkan dropdown NUP (untuk Umum; AC akan di-set ulang oleh setJenisSurat)
-        document.getElementById('rowNup').style.display = 'block';
-        buildNupDropdown();
+        // Inisialisasi dropdown sesuai jenis surat aktif (juga show toggle button)
+        setJenisSurat(jenisSurat);
 
       } catch (e) {
         elLoad.style.display = 'none';
