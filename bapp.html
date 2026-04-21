@@ -463,12 +463,29 @@
         <!-- Yang Mengawasi/Menyerahkan -->
         <div class="ttd-section">
           <h4>Yang Mengawasi/Menyerahkan Pekerjaan</h4>
-          <select id="selectTTD_pengawas" onchange="onSelectTTDPengawas()">
-            <option value="">— Pilih nama —</option>
-          </select>
-          <div id="loadingTTD_pengawas" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
-          <input type="hidden" id="namaPengawas" />
-          <input type="hidden" id="jabPengawas" />
+          <div class="ttd-mode-toggle">
+            <button class="btn-ttd-mode active" id="modeBtn_pengawas_list" onclick="setTTDMode('pengawas','list')">🗂️ Pilih dari Daftar</button>
+            <button class="btn-ttd-mode" id="modeBtn_pengawas_manual" onclick="setTTDMode('pengawas','manual')">✍️ Gambar Manual</button>
+          </div>
+          <div id="wrapMode_pengawas_list">
+            <select id="selectTTD_pengawas" onchange="onSelectTTDPengawas()">
+              <option value="">— Pilih nama —</option>
+            </select>
+            <div id="loadingTTD_pengawas" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
+          </div>
+          <div id="wrapMode_pengawas_manual" style="display:none;margin-top:6px;">
+            <button class="btn-ttd" onclick="openTTD('pengawas')">✍️ Tanda Tangan</button>
+          </div>
+          <div id="wrapFields_pengawas" style="display:none;margin-top:8px;">
+            <div class="form-row">
+              <label>Nama <span class="req">*</span></label>
+              <input type="text" id="namaPengawas" placeholder="Nama lengkap" oninput="syncPreview()" />
+            </div>
+            <div class="form-row">
+              <label>Jabatan <span class="req">*</span></label>
+              <input type="text" id="jabPengawas" placeholder="Jabatan" oninput="syncPreview()" />
+            </div>
+          </div>
           <div class="ttd-preview-wrap" style="margin-top:8px;">
             <button class="btn-clear-ttd" id="clearTTD_pengawas" onclick="clearTTD('pengawas')">✕ Hapus</button>
             <div>
@@ -1097,9 +1114,8 @@
       if (mode === 'list') {
         const sel = document.getElementById('selectTTD_' + target);
         if (sel) sel.value = '';
-        ['namaPengguna','jabPengguna'].forEach(id => {
-          const el = document.getElementById(id); if (el) el.value = '';
-        });
+        const fieldMap = { pengguna: ['namaPengguna','jabPengguna'], pengawas: ['namaPengawas','jabPengawas'] };
+        (fieldMap[target] || []).forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         syncPreview();
       }
     }
@@ -1433,11 +1449,8 @@
       }
       // Reset TTD
       ['pelaksana','pengawas','pengguna'].forEach(t => clearTTD(t));
-      setTTDMode('pengguna', 'list');
-      const selPengawas = document.getElementById('selectTTD_pengawas');
-      if (selPengawas) selPengawas.value = '';
-      document.getElementById('namaPengawas').value = '';
-      document.getElementById('jabPengawas').value  = '';
+      setTTDMode('pengawas', 'list');
+      setTTDMode('pengguna',  'list');
       nomorData = null;
       syncPreview();
       fetchNomorBA('ℹ️ Form direset — mengambil nomor BA baru dari server…');
