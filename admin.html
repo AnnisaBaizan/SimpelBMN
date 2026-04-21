@@ -253,7 +253,7 @@
         <table class="surat-list">
           <thead><tr>
             <th>Tanggal Surat</th><th>Nomor Surat</th><th>Nama Pengaju</th>
-            <th>Bagian/Unit</th><th>Nama Barang</th><th>NUP</th><th>Kondisi</th>
+            <th>Bagian/Unit</th><th>Jenis Surat</th><th>Nama Barang</th><th>NUP</th><th>Kondisi</th>
           </tr></thead>
           <tbody id="suratTableBody">
             <tr><td colspan="7" class="empty-state">⏳ Memuat data arsip…</td></tr>
@@ -759,6 +759,7 @@ function switchTab(tab) {
 // DATA
 let allSurat = [];
 let selectedRow = null;
+const JENIS_LABEL = { 'umum': 'BMN Umum', 'ac-perbaikan': '❄️ AC Perbaikan', 'ac-pemindahan': '🔄 AC Pemindahan' };
 
 async function loadSuratList() {
   try {
@@ -789,18 +790,20 @@ function renderTable() {
 
   const tbody = document.getElementById('suratTableBody');
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data yang cocok</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Tidak ada data yang cocok</td></tr>';
     return;
   }
 
   tbody.innerHTML = filtered.map(r => {
     const idx = allSurat.indexOf(r);
     const bc  = r.kondisi === 'Rusak Berat' ? 'badge-rb' : 'badge-rr';
+    const jenisLabel = JENIS_LABEL[r.jenisSurat] || r.jenisSurat || 'BMN Umum';
     return `<tr onclick="selectRow(${idx})" id="row_${idx}">
       <td>${formatTanggal(r.tanggalSurat)}</td>
       <td style="font-family:monospace;font-size:11px">${r.nomor}</td>
       <td><strong>${r.nama}</strong></td>
       <td>${r.bagian}</td>
+      <td style="white-space:nowrap">${jenisLabel}</td>
       <td>${r.namaBarang}</td>
       <td>${r.nup}</td>
       <td><span class="badge ${bc}">${r.kondisi}</span></td>
@@ -823,6 +826,7 @@ function selectRow(idx) {
 
   document.getElementById('detailGrid').innerHTML = `
     <div class="dl">Nomor Surat</div>   <div class="dv">${d.nomor}</div>
+    <div class="dl">Jenis Surat</div>   <div class="dv">${JENIS_LABEL[d.jenisSurat] || d.jenisSurat || 'BMN Umum'}</div>
     <div class="dl">Tanggal Surat</div> <div class="dv">${formatTanggal(d.tanggalSurat)}</div>
     <div class="dl">Nama Pengaju</div>  <div class="dv">${d.nama}</div>
     <div class="dl">NIP</div>           <div class="dv">${d.nip}</div>
