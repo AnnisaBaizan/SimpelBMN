@@ -548,7 +548,7 @@ function getSuratUsulanList() {
     const lastRow = sheet.getLastRow();
     if (lastRow < 2) return { status: 'ok', data: [] };
 
-    const raw  = sheet.getRange(2, 1, lastRow - 1, 19).getValues();
+    const raw  = sheet.getRange(2, 1, lastRow - 1, 27).getValues();
     const data = raw
       .filter(r => r[1])
       .map(r => ({
@@ -560,6 +560,7 @@ function getSuratUsulanList() {
         nup        : String(r[12] || ''),
         fotoNup    : String(r[15] || '-'),
         fotoMerek  : String(r[16] || '-'),
+        jenisSurat : String(r[26] || 'umum'),
       }))
       .reverse();
     return { status: 'ok', count: data.length, data: data };

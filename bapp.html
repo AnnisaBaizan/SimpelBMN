@@ -367,13 +367,17 @@
         <input type="hidden" id="merek" />
         <input type="hidden" id="tipe" />
 
+        <!-- Loading / error state -->
+        <div id="asetLoading" style="padding:8px;text-align:center;color:#888;font-size:12px;">⏳ Memuat data aset BMN…</div>
+        <div id="asetError" style="display:none;padding:8px;background:#fdecea;border-radius:4px;color:#c0392b;font-size:12px;margin-bottom:8px;"></div>
+
         <!-- Toggle button -->
         <div id="asetManualToggleWrap" style="display:none;margin-bottom:8px;">
           <button class="aset-manual-link" onclick="toggleManualMode(event)" id="btnToggleManual">✏️ Isi Data Manual (tidak ada di daftar)</button>
         </div>
 
-        <!-- DROPDOWN MODE (default) -->
-        <div id="wrapDropdownBarang">
+        <!-- DROPDOWN MODE (default, disembunyikan sampai data siap) -->
+        <div id="wrapDropdownBarang" style="display:none">
           <div class="form-row" id="rowNup">
             <label>NUP BMN <span class="req">*</span></label>
             <div class="searchable-wrap">
@@ -927,17 +931,26 @@
 
     // ===== FETCH ASET & CASCADE DROPDOWN =====
     async function fetchAset() {
+      const elLoad  = document.getElementById('asetLoading');
+      const elError = document.getElementById('asetError');
+      elLoad.style.display = 'block';
+      elError.style.display = 'none';
       try {
         const r = await fetch(GAS_URL + '?action=getAset');
         const d = await r.json();
+        elLoad.style.display = 'none';
         if (d.status === 'ok' && (d.data || []).length > 0) {
           asetData = d.data;
-          buildNupDropdown();
+          document.getElementById('wrapDropdownBarang').style.display = 'block';
           document.getElementById('asetManualToggleWrap').style.display = 'block';
+          buildNupDropdown();
         } else {
           activateManualMode();
         }
       } catch (e) {
+        elLoad.style.display = 'none';
+        elError.style.display = 'block';
+        elError.textContent = '❌ Gagal memuat data aset: ' + e.message;
         activateManualMode();
       }
     }

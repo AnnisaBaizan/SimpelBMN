@@ -332,12 +332,36 @@
           <label>Tanggal Laporan <span class="req">*</span></label>
           <input type="date" id="tanggalLaporan" oninput="onTanggalChange()" />
         </div>
-        <div class="form-row">
-          <label>No Surat Usulan (Jika Ada)</label>
-          <input type="text" id="noSuratUsulan" placeholder="Kosongkan jika tidak ada" oninput="syncPreview()" />
-        </div>
       </div>
 
+      <!-- DASAR SURAT -->
+      <div class="form-section">
+        <h3>Dasar Surat</h3>
+        <div class="form-row">
+          <label>Berdasarkan Surat Usulan PP? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label><input type="radio" name="dasarSurat" value="ya" onchange="onDasarChange('ya')"> Ya</label>
+            <label><input type="radio" name="dasarSurat" value="tidak" onchange="onDasarChange('tidak')" checked> Tidak</label>
+          </div>
+        </div>
+        <!-- Jika Ya: dropdown surat usulan AC -->
+        <div id="wrapDropdownUsulan" style="display:none;">
+          <div id="usulanLoading" style="padding:6px;color:#888;font-size:12px;display:none;">⏳ Memuat daftar surat usulan…</div>
+          <div class="form-row">
+            <label>Pilih Nomor Surat Usulan <span class="req">*</span></label>
+            <select id="selectUsulan" onchange="onSelectUsulan()" style="width:100%">
+              <option value="">— Pilih nomor surat usulan AC —</option>
+            </select>
+          </div>
+        </div>
+        <!-- Jika Tidak: text input -->
+        <div id="wrapInputUsulan" style="display:block;">
+          <div class="form-row">
+            <label>No Surat Usulan (opsional)</label>
+            <input type="text" id="inputNoUsulan" placeholder="Kosongkan jika tidak ada" oninput="syncPreview()" />
+          </div>
+        </div>
+      </div>
 
       <!-- DETAIL BARANG -->
       <div class="form-section">
@@ -890,6 +914,7 @@
     let asetACList = [];   // daftar aset A.C yang sudah difilter dari server
     let selNup  = '', selNama = '', selMerk = '', selTipe = '';
     let isManualMode = false;
+    let suratUsulanACDB = [];  // surat usulan AC (ac-perbaikan / ac-pemindahan)
     const fotoData  = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null };
     const ttdData   = { pelaksana:null, pengguna:null, pengawas:null };
     // ttdIsKey: true = dipilih dari daftar (jangan upload), false = digambar manual (upload)
@@ -914,7 +939,58 @@
       fetchNomor();
       initTTDLists();
       fetchAset();
+      fetchSuratUsulanList();
     });
+
+    // ===== DASAR SURAT (No Surat Usulan AC) =====
+    async function fetchSuratUsulanList() {
+      const elLoad = document.getElementById('usulanLoading');
+      if (elLoad) elLoad.style.display = 'block';
+      try {
+        const r = await fetch(GAS_URL + '?action=getSuratUsulanList');
+        const d = await r.json();
+        if (d.status === 'ok') {
+          suratUsulanACDB = (d.data || []).filter(s =>
+            s.jenisSurat === 'ac-perbaikan' || s.jenisSurat === 'ac-pemindahan'
+          );
+          buildSelectUsulan();
+        }
+      } catch (e) { /* non-fatal */ }
+      finally { if (elLoad) elLoad.style.display = 'none'; }
+    }
+
+    function buildSelectUsulan() {
+      const sel = document.getElementById('selectUsulan');
+      sel.innerHTML = '<option value="">— Pilih nomor surat usulan AC —</option>';
+      suratUsulanACDB.forEach((s, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        const label = s.jenisSurat === 'ac-pemindahan' ? '🔄' : '❄️';
+        opt.textContent = label + ' ' + s.nomor + (s.namaBarang ? ' — ' + s.namaBarang : '');
+        sel.appendChild(opt);
+      });
+    }
+
+    function onDasarChange(val) {
+      document.getElementById('wrapDropdownUsulan').style.display = val === 'ya' ? 'block' : 'none';
+      document.getElementById('wrapInputUsulan').style.display    = val === 'ya' ? 'none'  : 'block';
+      if (val === 'tidak') document.getElementById('selectUsulan').value = '';
+      syncPreview();
+    }
+
+    function onSelectUsulan() {
+      syncPreview();
+    }
+
+    function getNoUsulan() {
+      const dasar = document.querySelector('input[name=dasarSurat]:checked')?.value;
+      if (dasar === 'ya') {
+        const sel = document.getElementById('selectUsulan');
+        const idx = sel.value;
+        return idx !== '' ? (suratUsulanACDB[parseInt(idx)]?.nomor || '') : '';
+      }
+      return document.getElementById('inputNoUsulan')?.value?.trim() || '';
+    }
 
     // ===== SUMBER TTD per target =====
     function getTTDSource(target) {
@@ -1403,7 +1479,7 @@
       document.getElementById('pvNomor').textContent          = nomor || '…………………………';
       document.getElementById('pvNomorLampiran').textContent  = nomor || '…………………………';
 
-      document.getElementById('pvNoUsulan').textContent   = g('noSuratUsulan') || '……………………………';
+      document.getElementById('pvNoUsulan').textContent   = getNoUsulan() || '……………………………';
       document.getElementById('pvNamaBarang').textContent = g('namaBarang')    || '……………………………';
       document.getElementById('pvTipe').textContent       = g('tipe')          || '……………………………';
       document.getElementById('pvMerek').textContent      = g('merek')         || '……………………………';
@@ -1632,7 +1708,7 @@
         nomor           : g('nomorLaporan'),
         urut            : nomorData.urut,
         tanggalLaporan  : g('tanggalLaporan'),
-        noSuratUsulan   : g('noSuratUsulan'),
+        noSuratUsulan   : getNoUsulan(),
         namaBarang      : g('namaBarang'),
         merek           : g('merek'),
         tipe            : g('tipe'),
@@ -1697,7 +1773,14 @@
     // ===== RESET =====
     function resetForm() {
       if (!confirm('Reset semua isian? Data yang belum di-submit akan hilang.')) return;
-      ['namaBarang','merek','tipe','ruangan','nup','noSuratUsulan','deskripsi',
+      // Reset dasar surat
+      document.querySelector('input[name=dasarSurat][value=tidak]').checked = true;
+      onDasarChange('tidak');
+      document.getElementById('selectUsulan').value = '';
+      const elNoUsulan = document.getElementById('inputNoUsulan');
+      if (elNoUsulan) elNoUsulan.value = '';
+
+      ['namaBarang','merek','tipe','ruangan','nup','deskripsi',
        'namaPelaksana','jabPelaksana','perusahaanPelaksana',
        'namaPengguna','jabPengguna'].forEach(id => {
         const el = document.getElementById(id);
