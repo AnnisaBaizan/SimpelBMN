@@ -716,6 +716,16 @@
       .form-panel { padding-bottom: 40px; }
     }
 
+    /* ===== JENIS SURAT RADIO ===== */
+    .jenis-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .jenis-group label { display: flex; align-items: center; gap: 6px; font-weight: normal; font-size: 12px; cursor: pointer; padding: 6px 10px; border: 1px solid #dde; border-radius: 4px; transition: background .15s; }
+    .jenis-group label:has(input:checked) { background: #eaf2fb; border-color: #1a3a5c; font-weight: 600; }
+    .jenis-group input[type=radio] { width: auto; accent-color: #1a3a5c; }
+    /* mode toggle buttons */
+    .mode-btn { flex: 1; padding: 5px 8px; font-size: 11px; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: background .15s; }
+    .mode-btn.active  { background: #1a3a5c; }
+    .mode-btn.inactive { background: #95a5a6; }
+
     /* ===== TTD DIGITAL ===== */
     .ttd-section { border: 1px solid #d6eaf8; border-radius: 6px; padding: 12px; margin-bottom: 10px; background: #f8fafc; }
     .ttd-section h4 { font-size: 11px; font-weight: 700; color: #1a3a5c; margin-bottom: 8px; }
@@ -762,6 +772,16 @@
       <h2>Form Pengisian Surat</h2>
       <div class="status-bar" id="statusBar"></div>
 
+      <!-- Jenis Surat -->
+      <div class="form-section">
+        <h3>Jenis Surat Usulan</h3>
+        <div class="jenis-group">
+          <label><input type="radio" name="jenisSurat" value="umum" checked onchange="setJenisSurat('umum')" /> 📄 Umum / Selain AC</label>
+          <label><input type="radio" name="jenisSurat" value="ac-perbaikan" onchange="setJenisSurat('ac-perbaikan')" /> ❄️ Perbaikan / Pemeliharaan AC</label>
+          <label><input type="radio" name="jenisSurat" value="ac-pemindahan" onchange="setJenisSurat('ac-pemindahan')" /> 🔄 Pemindahan AC</label>
+        </div>
+      </div>
+
       <!-- Nomor Surat -->
       <div class="form-section">
         <h3>Info Surat</h3>
@@ -785,21 +805,43 @@
         <h3>Identitas Penerima</h3>
         <div class="ttd-section">
           <h4>Penerima</h4>
-          <div class="form-row">
-            <label>Nama Penerima</label>
-            <input type="text" id="namaPenerima" placeholder="Nama lengkap penerima" oninput="syncPreview()" />
+          <!-- Mode toggle -->
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <button type="button" id="btnModePenerima_list"   class="mode-btn active"   onclick="setTTDModePenerima('list')">📋 Pilih dari Daftar</button>
+            <button type="button" id="btnModePenerima_manual" class="mode-btn inactive" onclick="setTTDModePenerima('manual')">✍️ Gambar Manual</button>
           </div>
+          <!-- List mode -->
+          <div id="wrapMode_penerima_list">
+            <div class="form-row">
+              <label>Pilih Penerima</label>
+              <select id="selectTTD_penerima" onchange="onSelectTTDPenerima()">
+                <option value="">-- Pilih Penerima --</option>
+              </select>
+            </div>
+          </div>
+          <!-- Manual mode: nama input visible -->
+          <div id="wrapFields_penerima" style="display:none">
+            <div class="form-row">
+              <label>Nama Penerima</label>
+              <input type="text" id="namaPenerima" placeholder="Nama lengkap penerima" oninput="updatePreview()" />
+            </div>
+          </div>
+          <!-- NIP: always shown -->
           <div class="form-row">
             <label>NIP Penerima</label>
-            <input type="text" id="nipPenerima" placeholder="19XXXXXX XXXXXX X XXX" oninput="syncPreview()" />
+            <input type="text" id="nipPenerima" placeholder="19XXXXXX XXXXXX X XXX" oninput="updatePreview()" />
           </div>
-          <div class="ttd-preview-wrap">
-            <button class="btn-ttd" onclick="openTTD('penerima')">✍️ Tanda Tangan</button>
-            <button class="btn-clear-ttd" id="clearTTD_penerima" onclick="clearTTD('penerima')">✕ Hapus</button>
-            <div>
-              <img id="previewTTD_penerima" class="ttd-preview-img" />
-              <div class="ttd-status" id="statusTTD_penerima">Belum ditandatangani</div>
+          <!-- Manual mode: canvas button -->
+          <div id="wrapMode_penerima_manual" style="display:none">
+            <div class="ttd-preview-wrap">
+              <button class="btn-ttd" onclick="openTTD('penerima')">✍️ Tanda Tangan</button>
+              <button class="btn-clear-ttd" id="clearTTD_penerima" onclick="clearTTD('penerima')">✕ Hapus</button>
             </div>
+          </div>
+          <!-- TTD preview shared -->
+          <div class="ttd-preview-wrap" style="margin-top:8px">
+            <img id="previewTTD_penerima" class="ttd-preview-img" />
+            <div class="ttd-status" id="statusTTD_penerima">Belum ditandatangani</div>
           </div>
         </div>
       </div>
@@ -951,14 +993,19 @@
         </div>
 
         <div class="form-row">
-          <label>Ruangan (Sesuai DBR) <span class="req">*</span></label>
+          <label id="labelRuangan">Ruangan (Sesuai DBR) <span class="req">*</span></label>
           <input type="text" id="ruangan" placeholder="Contoh: Ruang Kelas 3.01" />
+        </div>
+        <div class="form-row" id="rowRuanganSesudah" style="display:none">
+          <label>Ruangan Sesudah Pemindahan <span class="req">*</span></label>
+          <input type="text" id="ruanganSesudah" placeholder="Contoh: Ruang Kelas 2.01" oninput="updatePreview()" />
         </div>
         <div class="form-row">
           <label>Kondisi BMN <span class="req">*</span></label>
           <div class="radio-group">
             <label><input type="radio" name="kondisi" value="Rusak Ringan" checked /> Rusak Ringan</label>
             <label><input type="radio" name="kondisi" value="Rusak Berat" /> Rusak Berat</label>
+            <label id="kondisiBaikOption" style="display:none"><input type="radio" name="kondisi" value="Baik" /> Baik</label>
           </div>
         </div>
         <div class="form-row">
@@ -983,7 +1030,7 @@
             <img id="thumbMerek" class="photo-thumb" />
           </div>
           <div class="photo-item">
-            <label>📸 Foto Kerusakan </label>
+            <label id="labelFotoKerusakan">📸 Foto Kerusakan </label>
             <input type="file" id="fotoKerusakan" accept="image/*"
               onchange="handlePhoto(this, 'thumbKerusakan', 'prevKerusakan')" />
             <img id="thumbKerusakan" class="photo-thumb" />
@@ -995,7 +1042,7 @@
             <img id="thumbKeseluruhan" class="photo-thumb" />
           </div>
           <div class="photo-item">
-            <label>📸 Foto Lain-lain</label>
+            <label id="labelFotoLainLain">📸 Foto Lain-lain</label>
             <input type="file" id="fotoLainLain" accept="image/*"
               onchange="handlePhoto(this, 'thumbLainLain', 'prevLainLain')" />
             <img id="thumbLainLain" class="photo-thumb" />
@@ -1031,7 +1078,7 @@
         </div>
         <div class="kop-line"></div>
 
-        <div class="surat-judul">Surat Usulan Perbaikan/Pemeliharaan/Penggantian Barang Milik Negara</div>
+        <div class="surat-judul" id="pvJudul">Surat Usulan Perbaikan/Pemeliharaan/Penggantian Barang Milik Negara</div>
         <div class="surat-nomor">NOMOR: <span id="pvNomor">…………………………………</span></div>
 
         <div class="surat-tujuan">
@@ -1066,7 +1113,7 @@
           </tr>
         </table>
 
-        <div class="detail-intro">
+        <div class="detail-intro" id="pvDetailIntro">
           Dengan ini mengajukan usulan perbaikan/pemeliharaan/penggantian Barang Milik Negara (BMN) sebagai berikut:
         </div>
 
@@ -1087,9 +1134,14 @@
             <td class="nilai" id="pvMerekTipe">&nbsp;</td>
           </tr>
           <tr>
-            <td>Ruangan (Sesuai DBR)</td>
+            <td id="pvRuanganLabel">Ruangan (Sesuai DBR)</td>
             <td>:</td>
             <td class="nilai" id="pvRuangan">&nbsp;</td>
+          </tr>
+          <tr id="pvRowRuanganSesudah" style="display:none">
+            <td>Ruangan <strong>Sesudah</strong> (Sesuai DBR)</td>
+            <td>:</td>
+            <td class="nilai" id="pvRuanganSesudah">&nbsp;</td>
           </tr>
           <tr>
             <td>NUP</td>
@@ -1103,6 +1155,8 @@
               <span id="pvKondisiRR" class="kondisi-option aktif">Rusak Ringan</span>
               &nbsp;/&nbsp;
               <span id="pvKondisiRB" class="kondisi-option">Rusak Berat</span>
+              <span id="pvKondisiBaikSep" style="display:none">&nbsp;/&nbsp;</span>
+              <span id="pvKondisiBaik" class="kondisi-option" style="display:none">Baik</span>
             </td>
           </tr>
           <tr>
@@ -1117,7 +1171,7 @@
           </tr>
         </table>
 
-        <div class="surat-penutup">
+        <div class="surat-penutup" id="pvPenutup">
           Demikian usulan perbaikan/pemeliharaan/penggantian Barang Milik Negara ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti
           sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.
         </div>
@@ -1164,7 +1218,7 @@
         </div>
 
         <div class="foto-item" id="itemKerusakan">
-          <div class="foto-caption">3. Foto Kerusakan</div>
+          <div class="foto-caption" id="captionKerusakan">3. Foto Kerusakan</div>
           <img id="prevKerusakan" src="" style="display:none;width:100%;height:auto;max-width:100%;" />
           <div class="foto-placeholder" id="phKerusakan">[ Belum ada foto Kerusakan ]</div>
         </div>
@@ -1176,7 +1230,7 @@
         </div>
 
         <div class="foto-item" id="itemLainLain">
-          <div class="foto-caption">5. Foto Lain-lain</div>
+          <div class="foto-caption" id="captionLainLain">5. Foto Lain-lain</div>
           <img id="prevLainLain" src="" style="display:none;width:100%;height:auto;max-width:100%;" />
           <div class="foto-placeholder" id="phLainLain">[ Belum ada foto Lain-lain ]</div>
         </div>
@@ -1220,7 +1274,43 @@
     const GAS_URL = '__GAS_URL__';
     // ============================================
 
+    // ===== TTD SAPRAS (for penerima list mode) =====
+    const TTD_SAPRAS_RAW = __TTD_SAPRAS__;
+    const TTD_SAPRAS_CACHE_P = {};
+
+    // ===== JENIS SURAT CONFIG =====
+    const JENIS_CONFIG = {
+      'umum': {
+        judul: 'Surat Usulan Perbaikan/Pemeliharaan/Penggantian Barang Milik Negara',
+        intro: 'Dengan ini mengajukan usulan perbaikan/pemeliharaan/penggantian Barang Milik Negara (BMN) sebagai berikut:',
+        penutup: 'Demikian usulan perbaikan/pemeliharaan/penggantian Barang Milik Negara ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.',
+        ruanganLabel: 'Ruangan (Sesuai DBR)',
+        fotoKerusakan: 'Foto Kerusakan',
+        fotoLainLain: 'Foto Lain-lain',
+        showBaik: false, showRuanganSesudah: false, filterAC: false,
+      },
+      'ac-perbaikan': {
+        judul: 'Surat Usulan Perbaikan/Pemeliharaan Air Conditioner (AC)',
+        intro: 'Dengan ini mengajukan usulan perbaikan/pemeliharaan Air Conditioner (AC) sebagai berikut:',
+        penutup: 'Demikian usulan perbaikan/pemeliharaan Air Conditioner (AC) ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.',
+        ruanganLabel: 'Ruangan (Sesuai DBR)',
+        fotoKerusakan: 'Foto Kerusakan',
+        fotoLainLain: 'Foto Lain-lain',
+        showBaik: false, showRuanganSesudah: false, filterAC: true,
+      },
+      'ac-pemindahan': {
+        judul: 'Surat Usulan Pemindahan Air Conditioner',
+        intro: 'Dengan ini mengajukan usulan Pemindahan Air Conditioner sebagai berikut:',
+        penutup: 'Demikian usulan perbaikan/pemeliharaan/penggantian Air Conditioner ini disampaikan untuk dapat dipertimbangkan dan ditindaklanjuti sebagaimana mestinya. Atas perhatian dan perkenan Bapak/Ibu, kami mengucapkan terima kasih.',
+        ruanganLabel: 'Ruangan Sebelum (Sesuai DBR)',
+        fotoKerusakan: 'Foto BMN dan Ruangan Sebelum Pemindahan',
+        fotoLainLain: 'Foto BMN dan Ruangan Sesudah Pemindahan',
+        showBaik: true, showRuanganSesudah: true, filterAC: true,
+      }
+    };
+
     // ===== STATE =====
+    let jenisSurat = 'umum';
     let nomorData = null;
     const ttdData = { penerima: null, pengirim: null };
     let currentTTDTarget = null;
@@ -1238,6 +1328,8 @@
       fetchNomor();
       fetchAset();
       bindPreview();
+      initTTDPenerima();
+      setTTDModePenerima('list');
     });
 
     // ===== KOP FALLBACK =====
@@ -1281,7 +1373,7 @@
         elLoad.style.display = 'none';
         elLoad.textContent = `✅ ${asetData.length} aset BMN dimuat.`;
 
-        // Tampilkan dropdown Tipe pertama
+        // Tampilkan dropdown NUP
         document.getElementById('rowNup').style.display = 'block';
         buildNupDropdown();
 
@@ -1292,11 +1384,71 @@
       }
     }
 
+    // ===== JENIS SURAT =====
+    function getActiveAset() {
+      const cfg = JENIS_CONFIG[jenisSurat];
+      if (!cfg.filterAC) return asetData;
+      return asetData.filter(item => {
+        const nama = (item.nama || '').trim();
+        return nama === 'A.C' ||
+               nama.toLowerCase().includes('a.c') ||
+               nama.toLowerCase().includes('air conditioner');
+      });
+    }
+
+    function setJenisSurat(val) {
+      jenisSurat = val;
+      const cfg = JENIS_CONFIG[val];
+
+      // Kondisi Baik visibility
+      const baikOpt = document.getElementById('kondisiBaikOption');
+      if (baikOpt) baikOpt.style.display = cfg.showBaik ? '' : 'none';
+      if (!cfg.showBaik) {
+        const baikRadio = document.querySelector('input[name=kondisi][value="Baik"]');
+        if (baikRadio && baikRadio.checked)
+          document.querySelector('input[name=kondisi][value="Rusak Ringan"]').checked = true;
+      }
+
+      // Ruangan Sesudah visibility
+      const rowRS = document.getElementById('rowRuanganSesudah');
+      if (rowRS) rowRS.style.display = cfg.showRuanganSesudah ? '' : 'none';
+
+      // Foto labels
+      const lblKer = document.getElementById('labelFotoKerusakan');
+      if (lblKer) lblKer.textContent = '📸 ' + cfg.fotoKerusakan + ' ';
+      const lblLain = document.getElementById('labelFotoLainLain');
+      if (lblLain) lblLain.textContent = '📸 ' + cfg.fotoLainLain;
+
+      // Ruangan label in form
+      const lblRuangan = document.getElementById('labelRuangan');
+      if (lblRuangan) lblRuangan.innerHTML = cfg.ruanganLabel + ' <span class="req">*</span>';
+
+      // Rebuild NUP dropdown with AC-filtered data
+      selNup = ''; selNama = ''; selMerk = ''; selTipe = '';
+      document.getElementById('namaBarang').value = '';
+      document.getElementById('nup').value = '';
+      document.getElementById('merekTipe').value = '';
+      document.getElementById('selectedTipe').value = '';
+      ['searchNup', 'searchNama', 'searchMerk', 'searchTipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      const manualMerk = document.getElementById('merkManual');
+      if (manualMerk) { manualMerk.value = ''; manualMerk.style.display = 'none'; }
+      document.getElementById('merkDropdownWrap').style.display = 'block';
+      ['rowNama', 'rowMerk', 'rowTipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.style.display = 'none';
+      });
+      buildNupDropdown();
+
+      updatePreview();
+    }
+
     // ===== DROPDOWN HELPERS =====
     // NUP → Nama → Merk → Tipe
     function buildNupDropdown() {
+      const active = getActiveAset();
       // Sort NUP numerik: angka dulu (1,2,3...), sisanya alfabet
-      const nups = [...new Set(asetData.map(r => r.nup).filter(Boolean))]
+      const nups = [...new Set(active.map(r => r.nup).filter(Boolean))]
         .sort((a, b) => {
           const na = parseFloat(a), nb = parseFloat(b);
           if (!isNaN(na) && !isNaN(nb)) return na - nb;
@@ -1457,7 +1609,7 @@
 
     // ===== LIVE PREVIEW BINDING =====
     function bindPreview() {
-      ['nama', 'nip', 'jabatan', 'bagian', 'ruangan', 'keluhan', 'tanggalSurat', 'kotaSurat'].forEach(id => {
+      ['nama', 'nip', 'jabatan', 'bagian', 'ruangan', 'ruanganSesudah', 'keluhan', 'tanggalSurat', 'kotaSurat'].forEach(id => {
         const el = document.getElementById(id);
         if (el) { el.addEventListener('input', updatePreview); el.addEventListener('change', updatePreview); }
       });
@@ -1483,6 +1635,7 @@
       set('pvTipe', selTipe || '\u00a0');
       set('pvMerekTipe', g('merekTipe'));
       set('pvRuangan', g('ruangan'));
+      set('pvRuanganSesudah', g('ruanganSesudah'));
       set('pvNup', g('nup'));
 
       document.getElementById('pvKeluhan').textContent = g('keluhan') || '\u00a0';
@@ -1490,6 +1643,11 @@
       const kondisi = document.querySelector('input[name=kondisi]:checked')?.value || 'Rusak Ringan';
       document.getElementById('pvKondisiRR').className = 'kondisi-option' + (kondisi === 'Rusak Ringan' ? ' aktif' : '');
       document.getElementById('pvKondisiRB').className = 'kondisi-option' + (kondisi === 'Rusak Berat' ? ' aktif' : '');
+      const baikSep  = document.getElementById('pvKondisiBaikSep');
+      const baikSpan = document.getElementById('pvKondisiBaik');
+      if (baikSep)  baikSep.style.display  = JENIS_CONFIG[jenisSurat].showBaik ? '' : 'none';
+      if (baikSpan) baikSpan.style.display = JENIS_CONFIG[jenisSurat].showBaik ? '' : 'none';
+      if (baikSpan) baikSpan.className = 'kondisi-option' + (kondisi === 'Baik' ? ' aktif' : '');
 
       const tgl = g('tanggalSurat');
       if (tgl) {
@@ -1498,6 +1656,24 @@
         set('pvTanggal', d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear());
       }
       set('pvKota', g('kotaSurat') || 'Palembang');
+
+      // Jenis surat dynamic content
+      const cfg = JENIS_CONFIG[jenisSurat];
+      const judul = document.getElementById('pvJudul');
+      if (judul) judul.textContent = cfg.judul;
+      const intro = document.getElementById('pvDetailIntro');
+      if (intro) intro.textContent = cfg.intro;
+      const penutup = document.getElementById('pvPenutup');
+      if (penutup) penutup.textContent = cfg.penutup;
+      const rowRS = document.getElementById('pvRowRuanganSesudah');
+      if (rowRS) rowRS.style.display = cfg.showRuanganSesudah ? '' : 'none';
+      const pvRuanganLabel = document.getElementById('pvRuanganLabel');
+      if (pvRuanganLabel) pvRuanganLabel.innerHTML = cfg.ruanganLabel;
+      const capKer = document.getElementById('captionKerusakan');
+      if (capKer) capKer.textContent = '3. ' + cfg.fotoKerusakan;
+      const capLain = document.getElementById('captionLainLain');
+      if (capLain) capLain.textContent = '5. ' + cfg.fotoLainLain;
+
       scalePreviews();
     }
 
@@ -1551,6 +1727,74 @@
       el.querySelector('.step-icon').textContent = icon;
     }
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ===== TTD PENERIMA (2-mode: list from TTDSapras / manual canvas) =====
+    function initTTDPenerima() {
+      const sel = document.getElementById('selectTTD_penerima');
+      if (!sel) return;
+      Object.keys(TTD_SAPRAS_RAW).sort().forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function setTTDModePenerima(mode) {
+      const isList = mode === 'list';
+      document.getElementById('wrapMode_penerima_list').style.display   = isList ? '' : 'none';
+      document.getElementById('wrapFields_penerima').style.display      = isList ? 'none' : '';
+      document.getElementById('wrapMode_penerima_manual').style.display = isList ? 'none' : '';
+      document.getElementById('btnModePenerima_list').className   = 'mode-btn ' + (isList ? 'active' : 'inactive');
+      document.getElementById('btnModePenerima_manual').className = 'mode-btn ' + (isList ? 'inactive' : 'active');
+    }
+
+    async function onSelectTTDPenerima() {
+      const sel = document.getElementById('selectTTD_penerima');
+      const name = sel.value;
+      if (!name) return;
+      document.getElementById('namaPenerima').value = name;
+      updatePreview();
+      const statusEl = document.getElementById('statusTTD_penerima');
+      if (statusEl) statusEl.textContent = '⏳ Memuat TTD…';
+      if (TTD_SAPRAS_CACHE_P[name]) { setTTDPenerimaBW(TTD_SAPRAS_CACHE_P[name], name); return; }
+      const b64raw = TTD_SAPRAS_RAW[name];
+      if (!b64raw) { if (statusEl) statusEl.textContent = '❌ TTD tidak ditemukan'; return; }
+      const bw = await imgToBase64BW(b64raw);
+      TTD_SAPRAS_CACHE_P[name] = bw;
+      setTTDPenerimaBW(bw, name);
+    }
+
+    function setTTDPenerimaBW(b64, name) {
+      ttdData['penerima'] = b64;
+      const pvImg = document.getElementById('pvTTDPenerima');
+      if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
+      const prevImg = document.getElementById('previewTTD_penerima');
+      if (prevImg) { prevImg.src = b64; prevImg.style.display = 'block'; }
+      const statusEl = document.getElementById('statusTTD_penerima');
+      if (statusEl) { statusEl.textContent = '✅ ' + name; statusEl.classList.add('signed'); }
+    }
+
+    function imgToBase64BW(src) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          const cx = c.getContext('2d');
+          cx.drawImage(img, 0, 0);
+          const d = cx.getImageData(0, 0, c.width, c.height);
+          for (let i = 0; i < d.data.length; i += 4) {
+            const lum = 0.299 * d.data[i] + 0.587 * d.data[i+1] + 0.114 * d.data[i+2];
+            const v = lum < 128 ? 0 : 255;
+            d.data[i] = d.data[i+1] = d.data[i+2] = v;
+          }
+          cx.putImageData(d, 0, 0);
+          resolve(c.toDataURL('image/png'));
+        };
+        img.onerror = () => resolve(src);
+        img.src = src;
+      });
+    }
 
     // ===== TTD DIGITAL =====
     function openTTD(target) {
@@ -1628,6 +1872,12 @@
       if (statusEl) { statusEl.textContent = 'Belum ditandatangani'; statusEl.classList.remove('signed'); }
       const clearBtn = document.getElementById('clearTTD_' + target);
       if (clearBtn) clearBtn.style.display = 'none';
+      if (target === 'penerima') {
+        const sel = document.getElementById('selectTTD_penerima');
+        if (sel) sel.value = '';
+        document.getElementById('namaPenerima').value = '';
+        updatePreview();
+      }
     }
 
     // ===== SUBMIT → KIRIM DATA + DOWNLOAD PDF =====
@@ -1642,11 +1892,13 @@
       }
 
       const g = id => document.getElementById(id)?.value?.trim() || '';
+      const cfg = JENIS_CONFIG[jenisSurat];
       const required = {
         'Nama': g('nama'), 'NIP': g('nip'), 'Jabatan': g('jabatan'), 'Bagian': g('bagian'),
         'NUP': g('nup'), 'Nama Barang': g('namaBarang'), 'Merek': g('merekTipe'),
         'Ruangan': g('ruangan'), 'Keluhan': g('keluhan'), 'Tanggal': g('tanggalSurat')
       };
+      if (cfg.showRuanganSesudah) required['Ruangan Sesudah'] = g('ruanganSesudah');
       for (const [k, v] of Object.entries(required)) {
         if (!v) {
           const msg = `❌ Field "${k}" wajib diisi.`;
@@ -1680,8 +1932,9 @@
         tanggalSurat: g('tanggalSurat'), kota: g('kotaSurat'),
         namaPenerima: g('namaPenerima'), nipPenerima: g('nipPenerima'),
         nama: g('nama'), nip: g('nip'), jabatan: g('jabatan'), bagian: g('bagian'),
+        jenisSurat,
         namaBarang: g('namaBarang'), merek: g('merekTipe'),
-        tipe: selTipe, ruangan: g('ruangan'), nup: g('nup'),
+        tipe: selTipe, ruangan: g('ruangan'), ruanganSesudah: g('ruanganSesudah'), nup: g('nup'),
         kondisi: document.querySelector('input[name=kondisi]:checked')?.value || '',
         keluhan: g('keluhan'),
         fotoNup: photoData.fotoNup || '', fotoMerek: photoData.fotoMerek || '',
@@ -1768,13 +2021,26 @@
     // ===== RESET =====
     function resetForm() {
       if (!confirm('Reset form? Semua data yang belum dikirim akan hilang.')) return;
-      ['nama', 'nip', 'jabatan', 'ruangan', 'keluhan'].forEach(id => {
+      ['nama', 'nip', 'jabatan', 'ruangan', 'ruanganSesudah', 'keluhan'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
       });
       document.getElementById('bagian').value = '';
       document.getElementById('tanggalSurat').valueAsDate = new Date();
       document.getElementById('kotaSurat').value = 'Palembang';
       document.querySelector('input[name=kondisi][value="Rusak Ringan"]').checked = true;
+
+      // Reset jenis surat
+      jenisSurat = 'umum';
+      document.querySelector('input[name=jenisSurat][value="umum"]').checked = true;
+      setJenisSurat('umum');
+
+      // Reset penerima
+      document.getElementById('namaPenerima').value = '';
+      document.getElementById('nipPenerima').value = '';
+      const selPenerima = document.getElementById('selectTTD_penerima');
+      if (selPenerima) selPenerima.value = '';
+      setTTDModePenerima('list');
+      clearTTD('penerima');
 
       // Reset aset selections
       selNup = ''; selNama = ''; selMerk = ''; selTipe = '';
