@@ -558,7 +558,7 @@
   <div class="surat-wrapper">
     <img class="kop-img" src="KOP.png" onerror="this.style.display='none'" />
     <div class="kop-line"></div>
-    <div class="surat-judul">Laporan Pemeliharaan/Perbaikan Air Conditioner</div>
+    <div class="surat-judul" id="acPrJudul">Laporan Pemeliharaan/Perbaikan Air Conditioner</div>
     <div class="surat-nomor">NOMOR: <span id="acPrNomor"></span></div>
     <div class="surat-pembuka">Yang bertanda tangan di bawah ini:</div>
     <table class="identitas-table">
@@ -573,6 +573,7 @@
       <tr><td>Tipe</td><td>:</td><td class="nilai" id="acPrTipe"></td></tr>
       <tr><td>Merek</td><td>:</td><td class="nilai" id="acPrMerek"></td></tr>
       <tr><td>Ruangan (Sesuai DBR)</td><td>:</td><td class="nilai" id="acPrRuangan"></td></tr>
+      <tr id="acPrRowRuanganSesudah" style="display:none;"><td>Ruangan Sesudah Pindah</td><td>:</td><td class="nilai" id="acPrRuanganSesudah"></td></tr>
       <tr><td>NUP</td><td>:</td><td class="nilai" id="acPrNup"></td></tr>
       <tr><td>Kapasitas AC</td><td>:</td><td class="nilai" id="acPrKapasitas"></td></tr>
       <tr>
@@ -581,7 +582,7 @@
       </tr>
       <tr><td style="vertical-align:top">Deskripsi</td><td style="vertical-align:top">:</td><td class="nilai" id="acPrDeskripsi" style="white-space:pre-wrap"></td></tr>
     </table>
-    <div class="surat-penutup">
+    <div class="surat-penutup" id="acPrPenutup">
       Demikian laporan pemeliharaan/perbaikan Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.
     </div>
     <div style="text-align:right;margin-bottom:16px;font-size:12pt">Palembang, <span id="acPrTanggal"></span></div>
@@ -628,7 +629,7 @@
     <div class="foto-item"><div class="foto-caption">2. Foto Merek/Tipe Barang</div>
       <img id="acImg2" src="" style="display:none;width:100%;height:auto" />
       <div class="foto-placeholder-print" id="acPh2">[ Foto tidak tersedia ]</div></div>
-    <div class="foto-item"><div class="foto-caption">3. Foto Sebelum / Spare Part</div>
+    <div class="foto-item"><div class="foto-caption" id="acPrCap3">3. Foto Sebelum / Spare Part</div>
       <img id="acImg3" src="" style="display:none;width:100%;height:auto" />
       <div class="foto-placeholder-print" id="acPh3">[ Foto tidak tersedia ]</div></div>
     <div class="foto-item"><div class="foto-caption">4. Foto Pekerjaan 1</div>
@@ -637,6 +638,9 @@
     <div class="foto-item"><div class="foto-caption">5. Foto Pekerjaan 2</div>
       <img id="acImg5" src="" style="display:none;width:100%;height:auto" />
       <div class="foto-placeholder-print" id="acPh5">[ Foto tidak tersedia ]</div></div>
+    <div class="foto-item"><div class="foto-caption" id="acPrCap6">6. Foto Lain-lain</div>
+      <img id="acImg6" src="" style="display:none;width:100%;height:auto" />
+      <div class="foto-placeholder-print" id="acPh6">[ Foto tidak tersedia ]</div></div>
   </div>
 </div>
 
@@ -1274,6 +1278,23 @@ function resetACFilter() {
   renderACTable();
 }
 
+const JENIS_LAP_CONFIG_AC = {
+  'ac-perbaikan': {
+    judul   : 'Laporan Pemeliharaan/Perbaikan Air Conditioner',
+    penutup : 'Demikian laporan pemeliharaan/perbaikan Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.',
+    foto3Caption: '3. Foto Sebelum / Spare Part',
+    foto6Caption: '6. Foto Lain-lain',
+    showRuanganSesudah: false,
+  },
+  'ac-pemindahan': {
+    judul   : 'Laporan Pemindahan Air Conditioner',
+    penutup : 'Demikian laporan pemindahan Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.',
+    foto3Caption: '3. Foto AC dan Ruangan Sebelum Pemindahan',
+    foto6Caption: '6. Foto AC dan Ruangan Sesudah Pemindahan',
+    showRuanganSesudah: true,
+  },
+};
+
 function buildJenisList(d) {
   const items = [];
   if (d.jenisCuci          === 'Ya' || d.jenisCuci          === true) items.push('Cuci');
@@ -1291,14 +1312,20 @@ function selectACRow(idx) {
   selectedAC = allAC[idx];
   const d = selectedAC;
 
+  const acLapCfg = JENIS_LAP_CONFIG_AC[d.jenisSurat] || JENIS_LAP_CONFIG_AC['ac-perbaikan'];
+  const ruanganSesudahRow = acLapCfg.showRuanganSesudah
+    ? `<div class="dl">Ruangan Sesudah Pindah</div><div class="dv">${d.ruanganSesudah || '-'}</div>`
+    : '';
   document.getElementById('acDetailGrid').innerHTML = `
     <div class="dl">Nomor Laporan</div>   <div class="dv">${d.nomor}</div>
+    <div class="dl">Jenis Surat</div>     <div class="dv">${acLapCfg.judul}</div>
     <div class="dl">Tanggal Laporan</div> <div class="dv">${formatTanggal(d.tanggalLaporan)}</div>
     <div class="dl">No Surat Usulan</div> <div class="dv">${d.noSuratUsulan || '-'}</div>
     <div class="dl">Nama Barang</div>     <div class="dv">${d.namaBarang}</div>
     <div class="dl">Tipe</div>            <div class="dv">${d.tipe}</div>
     <div class="dl">Merek</div>           <div class="dv">${d.merek}</div>
     <div class="dl">Ruangan</div>         <div class="dv">${d.ruangan}</div>
+    ${ruanganSesudahRow}
     <div class="dl">NUP BMN</div>         <div class="dv">${d.nup}</div>
     <div class="dl">Kapasitas AC</div>    <div class="dv">${d.kapasitasAC || '-'}</div>
     <div class="dl">Jenis Pekerjaan</div> <div class="dv" style="white-space:pre-wrap">${buildJenisList(d)}</div>
@@ -1307,7 +1334,7 @@ function selectACRow(idx) {
     <div class="dl">Pengguna</div>        <div class="dv">${d.namaPengguna} — ${d.jabPengguna}</div>
     <div class="dl">Pengawas</div>        <div class="dv">${d.namaPengawas}</div>
   `;
-  const fotoAda = [d.foto1,d.foto2,d.foto3,d.foto4,d.foto5].filter(f=>f&&f!=='-').length;
+  const fotoAda = [d.foto1,d.foto2,d.foto3,d.foto4,d.foto5,d.foto6].filter(f=>f&&f!=='-').length;
   const ttdAda  = [d.ttdPelaksana,d.ttdPengguna,d.ttdPengawas].filter(f=>f&&f!=='-').length;
   document.getElementById('acFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
   document.getElementById('acStatusBar').style.display = 'none';
@@ -1327,6 +1354,20 @@ async function startRegenACPDF() {
   // Step 1 — data
   setStep('ms1','active','🔄');
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val||''; };
+
+  // Terapkan konfigurasi per jenis surat laporan
+  const acCfg = JENIS_LAP_CONFIG_AC[d.jenisSurat] || JENIS_LAP_CONFIG_AC['ac-perbaikan'];
+  const acJudulEl = document.getElementById('acPrJudul');
+  if (acJudulEl) acJudulEl.textContent = acCfg.judul;
+  const acPenutupEl = document.getElementById('acPrPenutup');
+  if (acPenutupEl) acPenutupEl.textContent = acCfg.penutup;
+  const acCap3El = document.getElementById('acPrCap3');
+  if (acCap3El) acCap3El.textContent = acCfg.foto3Caption;
+  const acCap6El = document.getElementById('acPrCap6');
+  if (acCap6El) acCap6El.textContent = acCfg.foto6Caption;
+  const acRowRS = document.getElementById('acPrRowRuanganSesudah');
+  if (acRowRS) acRowRS.style.display = acCfg.showRuanganSesudah ? '' : 'none';
+  set('acPrRuanganSesudah', d.ruanganSesudah || '');
 
   set('acPrNomor',          d.nomor);
   set('acPrNomorLampiran',  d.nomor);
@@ -1363,7 +1404,7 @@ async function startRegenACPDF() {
   setStep('ms2','active','🔄');
 
   // Reset foto slots
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 6; i++) {
     const img = document.getElementById('acImg' + i);
     const ph  = document.getElementById('acPh'  + i);
     if (img) { img.src=''; img.style.display='none'; }
@@ -1381,7 +1422,7 @@ async function startRegenACPDF() {
   const fotoUrls = [
     { id:'acImg1', url: d.foto1 }, { id:'acImg2', url: d.foto2 },
     { id:'acImg3', url: d.foto3 }, { id:'acImg4', url: d.foto4 },
-    { id:'acImg5', url: d.foto5 },
+    { id:'acImg5', url: d.foto5 }, { id:'acImg6', url: d.foto6 },
   ];
   let fetched = 0;
   const fotoLoaders = fotoUrls.map(async ({id, url}) => {

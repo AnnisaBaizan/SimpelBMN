@@ -9,11 +9,13 @@ Dokumen ini adalah **referensi perencanaan** — belum ada kode yang diubah.
 
 | File | Baris saat ini | Estimasi baris yang bisa dipindah |
 |---|---|---|
-| usulan.html | ~2.212 | ~500 |
+| usulan.html | ~2.214 | ~500 |
 | bapp.html | ~1.739 | ~450 |
-| laporan-ac.html | ~1.974 | ~450 |
-| admin.html | ~1.426 | ~120 |
-| Code_UseFonnte.gs | ~967 | ~25 (uploadFoto) |
+| laporan-ac.html | ~2.073 | ~450 |
+| admin.html | ~1.467 | ~120 |
+| Code_UseFonnte.gs | ~986 | ~25 (uploadFoto) |
+
+> **Update 2026-04-22 (batch 2):** Radio button "Berdasarkan Surat Usulan PP?" sekarang sudah konsisten menggunakan `.radio-group` di bapp.html dan laporan-ac.html → **siap dijadikan component**. Jenis Surat di usulan.html sekarang `<select>` dropdown (bukan radio). `JENIS_LAP_CONFIG` (laporan-ac) dan `JENIS_LAP_CONFIG_AC` (admin) sudah terpisah — kandidat untuk endpoint GAS `getJenisConfig` di fase modularisasi lanjutan.
 
 Pendekatan yang disarankan: tambahkan dua file baru —
 - `shared.css` — CSS bersama (dilink dari semua halaman)

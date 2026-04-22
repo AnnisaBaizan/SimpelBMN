@@ -3,7 +3,9 @@
 Daftar masalah yang ditemukan saat pembacaan seluruh proyek pada 2026-04-22.
 **Tidak ada isu yang langsung diperbaiki di sini** — ini hanya dokumentasi untuk tindak lanjut.
 
-> **Update 2026-04-22:** Issue CRITICAL #1 sudah diperbaiki sekalian saat menambah Foto 6 pada Laporan AC. `getLaporanACList` sekarang membaca 34 kolom (A–AH), foto5 dan foto6 keduanya benar.
+> **Update 2026-04-22 (batch 1):** Issue CRITICAL #1 sudah diperbaiki sekalian saat menambah Foto 6 pada Laporan AC. `getLaporanACList` sekarang membaca 34 kolom (A–AH), foto5 dan foto6 keduanya benar.
+>
+> **Update 2026-04-22 (batch 2):** Issue LOW #10 sudah diperbaiki — `kirimEmailNotifikasi` sekarang menyertakan Jenis Surat dan Ruangan Sesudah Pindah. Email sudah diaktifkan (EMAIL_AKTIF: true, EMAIL_TUJUAN: sarpras@poltekkespalembang.ac.id). Sheet L-PP-AC sekarang 36 kolom (A–AJ) dengan AI=JenisSurat, AJ=RuanganSesudah. `getSuratUsulanList` sekarang mengembalikan `fotoKerusakan` dan `fotoLainLain` untuk auto-fill foto pemindahan.
 
 ---
 
@@ -112,14 +114,10 @@ if (!GAS_URL || GAS_URL.startsWith('__')) {
 
 ## LOW
 
-### 10. Template email notifikasi tidak menyertakan field AC dan Jenis Surat
-**File:** `Code_UseFonnte.gs` · Fungsi `kirimEmailNotifikasi()` (baris 359–448)
+### ~~10. Template email notifikasi tidak menyertakan field AC dan Jenis Surat~~ ✅ DIPERBAIKI
+**File:** `Code_UseFonnte.gs` · Fungsi `kirimEmailNotifikasi()`
 
-Email notifikasi hanya menampilkan field surat umum (nama barang, merek, tipe, kondisi, keluhan). Tidak ada field AC-specific seperti `jenisSurat`, `ruanganSesudah`, atau keterangan jenis surat (Perbaikan vs Pemindahan).
-
-**Dampak:** Tim Sarpras yang menerima email tidak bisa membedakan jenis surat dari email saja.
-
-**Saran perbaikan:** Tambahkan baris "Jenis Surat" di tabel email, dan tampilkan "Ruangan Sesudah" untuk `ac-pemindahan`.
+Email sekarang menyertakan baris "Jenis Surat" (dengan label emoji) dan "Ruangan Sesudah Pindah" (hanya untuk pemindahan). Email diaktifkan ke `sarpras@poltekkespalembang.ac.id`.
 
 ### 11. Komentar `setupSheetHeaders()` menyebut 26 kolom untuk Usulan-PP, padahal 28
 **File:** `Code_UseFonnte.gs` · Baris 888

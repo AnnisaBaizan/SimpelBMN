@@ -7,8 +7,8 @@
 const CONFIG = {
   SPREADSHEET_ID: 'GANTI_DENGAN_SPREADSHEET_ID',       // ID Google Sheets arsip
   DRIVE_FOLDER_ID: 'GANTI_DENGAN_FOLDER_ID',            // ID folder Drive untuk foto
-  EMAIL_TUJUAN: 'sarpras@instansi.go.id',              // Email notifikasi tim Sarpras
-  EMAIL_AKTIF: false,
+  EMAIL_TUJUAN: 'sarpras@poltekkespalembang.ac.id',     // Email notifikasi tim Sarpras
+  EMAIL_AKTIF: true,
   NAMA_INSTANSI: 'Politeknik Kesehatan Palembang',      // Nama instansi di email notif
   NOMOR_PREFIX: 'KN.01.03/Sarpras/PP',                  // Prefix nomor surat usulan
   SHEET_NAME: 'Usulan-PP',                              // Sheet arsip surat usulan
@@ -358,6 +358,12 @@ function uploadFoto(folder, base64String, fileName) {
 // -------- Kirim email notifikasi HTML --------
 function kirimEmailNotifikasi(d, fotoLinks, timestamp) {
   const tgl = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'dd MMMM yyyy HH:mm');
+  const jenisLabel = d.jenisSurat === 'ac-perbaikan' ? '❄️ Perbaikan / Pemeliharaan AC'
+                   : d.jenisSurat === 'ac-pemindahan' ? '🔄 Pemindahan AC'
+                   : '📄 Umum / Selain AC';
+  const ruanganSesudahRow = d.jenisSurat === 'ac-pemindahan' && d.ruanganSesudah
+    ? `<tr style="background:#f5f7fa;"><td style="padding:8px 12px;font-weight:bold;">Ruangan Sesudah Pindah</td><td style="padding:8px 12px;">${d.ruanganSesudah}</td></tr>`
+    : '';
 
   const body = `
   <div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
@@ -372,34 +378,38 @@ function kirimEmailNotifikasi(d, fotoLinks, timestamp) {
           <td style="padding:8px 12px;">${d.nomor}</td>
         </tr>
         <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Jenis Surat</td>
+          <td style="padding:8px 12px;font-weight:bold;">${jenisLabel}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
           <td style="padding:8px 12px;font-weight:bold;">Tanggal Surat</td>
           <td style="padding:8px 12px;">${d.tanggalSurat}</td>
         </tr>
-        <tr style="background:#f5f7fa;">
+        <tr>
           <td style="padding:8px 12px;font-weight:bold;">Nama Pengusul</td>
           <td style="padding:8px 12px;">${d.nama}</td>
         </tr>
-        <tr>
+        <tr style="background:#f5f7fa;">
           <td style="padding:8px 12px;font-weight:bold;">NIP</td>
           <td style="padding:8px 12px;">${d.nip}</td>
         </tr>
-        <tr style="background:#f5f7fa;">
+        <tr>
           <td style="padding:8px 12px;font-weight:bold;">Jabatan</td>
           <td style="padding:8px 12px;">${d.jabatan}</td>
         </tr>
-        <tr>
+        <tr style="background:#f5f7fa;">
           <td style="padding:8px 12px;font-weight:bold;">Unit / Bagian</td>
           <td style="padding:8px 12px;">${d.bagian}</td>
         </tr>
-        <tr style="background:#f5f7fa;">
+        <tr>
           <td style="padding:8px 12px;font-weight:bold;">Nama Barang</td>
           <td style="padding:8px 12px;">${d.namaBarang}</td>
         </tr>
-        <tr>
+        <tr style="background:#f5f7fa;">
           <td style="padding:8px 12px;font-weight:bold;">Merek</td>
           <td style="padding:8px 12px;">${d.merek || '-'}</td>
         </tr>
-        <tr style="background:#f5f7fa;">
+        <tr>
           <td style="padding:8px 12px;font-weight:bold;">Tipe</td>
           <td style="padding:8px 12px;">${d.tipe || '-'}</td>
         </tr>
@@ -407,6 +417,7 @@ function kirimEmailNotifikasi(d, fotoLinks, timestamp) {
           <td style="padding:8px 12px;font-weight:bold;">Ruangan (DBR)</td>
           <td style="padding:8px 12px;">${d.ruangan}</td>
         </tr>
+        ${ruanganSesudahRow}
         <tr>
           <td style="padding:8px 12px;font-weight:bold;">NUP BMN</td>
           <td style="padding:8px 12px;">${d.nup}</td>
@@ -442,7 +453,198 @@ function kirimEmailNotifikasi(d, fotoLinks, timestamp) {
 
   MailApp.sendEmail({
     to: CONFIG.EMAIL_TUJUAN,
-    subject: '[BMN] Usulan Perbaikan Baru — ' + d.nomor + ' — ' + d.nama,
+    subject: '[BMN] Usulan Baru — ' + d.nomor + ' — ' + d.nama,
+    htmlBody: body,
+  });
+}
+
+// -------- Email notifikasi: Berita Acara PP --------
+function kirimEmailNotifikasiBA(d, fotoLinks, timestamp) {
+  const tgl = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'dd MMMM yyyy HH:mm');
+  const body = `
+  <div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
+    <div style="background:#1a3a5c;color:#fff;padding:20px 24px;">
+      <h2 style="margin:0;font-size:16px;">📝 Berita Acara PP Baru</h2>
+      <p style="margin:4px 0 0;font-size:12px;opacity:.8;">${CONFIG.NAMA_INSTANSI} — ${tgl}</p>
+    </div>
+    <div style="padding:20px 24px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;width:35%;">Nomor BA</td>
+          <td style="padding:8px 12px;">${d.nomor}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Tanggal BA</td>
+          <td style="padding:8px 12px;">${d.tanggalBA}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">No Surat Usulan</td>
+          <td style="padding:8px 12px;">${d.noSuratUsulan || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Nama Barang</td>
+          <td style="padding:8px 12px;">${d.namaBarang}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Merek / Tipe</td>
+          <td style="padding:8px 12px;">${d.merek || '-'} / ${d.tipe || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Ruangan (DBR)</td>
+          <td style="padding:8px 12px;">${d.ruangan}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">NUP BMN</td>
+          <td style="padding:8px 12px;">${d.nup}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Kondisi</td>
+          <td style="padding:8px 12px;font-weight:bold;">${d.kondisi || '-'}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;vertical-align:top;">Rincian</td>
+          <td style="padding:8px 12px;">${(d.rincian || '-').replace(/\n/g, '<br>')}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Pelaksana</td>
+          <td style="padding:8px 12px;">${d.namaPelaksana} — ${d.jabPelaksana}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Pengawas</td>
+          <td style="padding:8px 12px;">${d.namaPengawas} — ${d.jabPengawas}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Pengguna BMN</td>
+          <td style="padding:8px 12px;">${d.namaPengguna} — ${d.jabPengguna}</td>
+        </tr>
+      </table>
+      <div style="margin-top:16px;padding:12px;background:#eaf4fb;border-radius:6px;border-left:4px solid #2980b9;">
+        <p style="margin:0 0 8px;font-weight:bold;font-size:13px;">📎 Lampiran Foto:</p>
+        <ul style="margin:0;padding-left:18px;font-size:12px;line-height:2;">
+          <li>Foto NUP: <a href="${fotoLinks.foto1}">${fotoLinks.foto1 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Merek/Tipe: <a href="${fotoLinks.foto2}">${fotoLinks.foto2 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Spare Part: <a href="${fotoLinks.foto3}">${fotoLinks.foto3 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Setelah 1: <a href="${fotoLinks.foto4}">${fotoLinks.foto4 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Setelah 2: <a href="${fotoLinks.foto5}">${fotoLinks.foto5 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Lain-lain: <a href="${fotoLinks.foto6}">${fotoLinks.foto6 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+        </ul>
+      </div>
+      <p style="margin-top:20px;font-size:12px;color:#888;">
+        Email ini dikirim otomatis oleh Sistem BMN — ${CONFIG.NAMA_INSTANSI}.
+      </p>
+    </div>
+  </div>
+  `;
+  MailApp.sendEmail({
+    to: CONFIG.EMAIL_TUJUAN,
+    subject: '[BMN] Berita Acara Baru — ' + d.nomor,
+    htmlBody: body,
+  });
+}
+
+// -------- Email notifikasi: Laporan Pemeliharaan/Perbaikan AC --------
+function kirimEmailNotifikasiLaporanAC(d, fotoLinks, timestamp) {
+  const tgl = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'dd MMMM yyyy HH:mm');
+  const jenisLabel = d.jenisSurat === 'ac-pemindahan'
+    ? '🔄 Pemindahan AC'
+    : '❄️ Perbaikan / Pemeliharaan AC';
+  const jenisPekerjaan = [
+    d.jenisCuci           ? 'Cuci'            : '',
+    d.jenisIsiFreon       ? 'Isi Freon'        : '',
+    d.jenisGantiKapasitor ? 'Ganti Kapasitor'  : '',
+    d.jenisGantiModul     ? 'Ganti Modul'      : '',
+    d.jenisLainLain       ? 'Lain-lain: ' + d.jenisLainLain : '',
+  ].filter(Boolean).join(', ') || '-';
+  const ruanganSesudahRow = d.jenisSurat === 'ac-pemindahan' && d.ruanganSesudah
+    ? `<tr style="background:#f5f7fa;"><td style="padding:8px 12px;font-weight:bold;">Ruangan Sesudah Pindah</td><td style="padding:8px 12px;">${d.ruanganSesudah}</td></tr>`
+    : '';
+
+  const body = `
+  <div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
+    <div style="background:#1a3a5c;color:#fff;padding:20px 24px;">
+      <h2 style="margin:0;font-size:16px;">❄️ Laporan AC Baru</h2>
+      <p style="margin:4px 0 0;font-size:12px;opacity:.8;">${CONFIG.NAMA_INSTANSI} — ${tgl}</p>
+    </div>
+    <div style="padding:20px 24px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;width:35%;">Nomor Laporan</td>
+          <td style="padding:8px 12px;">${d.nomor}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Jenis Surat</td>
+          <td style="padding:8px 12px;font-weight:bold;">${jenisLabel}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Tanggal Laporan</td>
+          <td style="padding:8px 12px;">${d.tanggalLaporan}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">No Surat Usulan</td>
+          <td style="padding:8px 12px;">${d.noSuratUsulan || '-'}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Nama Barang</td>
+          <td style="padding:8px 12px;">${d.namaBarang}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Merek / Tipe</td>
+          <td style="padding:8px 12px;">${d.merek || '-'} / ${d.tipe || '-'}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Ruangan (DBR)</td>
+          <td style="padding:8px 12px;">${d.ruangan}</td>
+        </tr>
+        ${ruanganSesudahRow}
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">NUP BMN</td>
+          <td style="padding:8px 12px;">${d.nup}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Kapasitas AC</td>
+          <td style="padding:8px 12px;">${d.kapasitasAC || '-'} PK</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Jenis Pekerjaan</td>
+          <td style="padding:8px 12px;">${jenisPekerjaan}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;vertical-align:top;">Deskripsi</td>
+          <td style="padding:8px 12px;">${(d.deskripsi || '-').replace(/\n/g, '<br>')}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Pelaksana</td>
+          <td style="padding:8px 12px;">${d.namaPelaksana} — ${d.jabPelaksana}${d.perusahaanPelaksana ? ' (' + d.perusahaanPelaksana + ')' : ''}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Pengawas</td>
+          <td style="padding:8px 12px;">${d.namaPengawas}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Pengguna BMN</td>
+          <td style="padding:8px 12px;">${d.namaPengguna}${d.jabPengguna ? ' — ' + d.jabPengguna : ''}</td>
+        </tr>
+      </table>
+      <div style="margin-top:16px;padding:12px;background:#eaf4fb;border-radius:6px;border-left:4px solid #2980b9;">
+        <p style="margin:0 0 8px;font-weight:bold;font-size:13px;">📎 Lampiran Foto:</p>
+        <ul style="margin:0;padding-left:18px;font-size:12px;line-height:2;">
+          <li>Foto NUP: <a href="${fotoLinks.foto1}">${fotoLinks.foto1 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Merek/Tipe: <a href="${fotoLinks.foto2}">${fotoLinks.foto2 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>${fotoLinks.foto3Label || 'Foto 3'}: <a href="${fotoLinks.foto3}">${fotoLinks.foto3 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Pekerjaan 1: <a href="${fotoLinks.foto4}">${fotoLinks.foto4 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Pekerjaan 2: <a href="${fotoLinks.foto5}">${fotoLinks.foto5 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>${fotoLinks.foto6Label || 'Foto 6'}: <a href="${fotoLinks.foto6}">${fotoLinks.foto6 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+        </ul>
+      </div>
+      <p style="margin-top:20px;font-size:12px;color:#888;">
+        Email ini dikirim otomatis oleh Sistem BMN — ${CONFIG.NAMA_INSTANSI}.
+      </p>
+    </div>
+  </div>
+  `;
+  MailApp.sendEmail({
+    to: CONFIG.EMAIL_TUJUAN,
+    subject: '[BMN] Laporan AC Baru — ' + d.nomor + ' — ' + jenisLabel,
     htmlBody: body,
   });
 }
@@ -558,9 +760,11 @@ function getSuratUsulanList() {
         tipe       : String(r[10] || ''),
         ruangan    : String(r[11] || ''),
         nup        : String(r[12] || ''),
-        fotoNup    : String(r[15] || '-'),
-        fotoMerek  : String(r[16] || '-'),
-        jenisSurat : String(r[26] || 'umum'),
+        fotoNup      : String(r[15] || '-'),
+        fotoMerek    : String(r[16] || '-'),
+        fotoKerusakan: String(r[17] || '-'),  // Foto Sebelum / AC Sebelum Pindah
+        fotoLainLain : String(r[19] || '-'),  // Foto Lain-lain / AC Sesudah Pindah
+        jenisSurat   : String(r[26] || 'umum'),
       }))
       .reverse();
     return { status: 'ok', count: data.length, data: data };
@@ -695,6 +899,10 @@ function handleSubmitBA(d) {
     sheet.getRange(newRow, 3).setNumberFormat('dd/mm/yyyy hh:mm:ss');
     sheet.getRange(newRow, 4).setNumberFormat('dd/mm/yyyy');
 
+    if (CONFIG.EMAIL_AKTIF) {
+      kirimEmailNotifikasiBA(d, { foto1, foto2, foto3, foto4, foto5, foto6 }, timestamp);
+    }
+
     return {
       status: 'ok',
       message: 'Berita Acara berhasil disimpan.',
@@ -739,7 +947,8 @@ function getNomorLaporanAC() {
 //         U=TTDNamaPelaksana, V=TTDJabPelaksana,
 //         W=NamaPengguna, X=JabPengguna, Y=NamaPengawas,
 //         Z=TTDPelaksana, AA=TTDPengguna, AB=TTDPengawas,
-//         AC=Foto1, AD=Foto2, AE=Foto3, AF=Foto4, AG=Foto5, AH=Foto6
+//         AC=Foto1, AD=Foto2, AE=Foto3, AF=Foto4, AG=Foto5, AH=Foto6,
+//         AI=JenisSurat, AJ=RuanganSesudah
 // ============================================================
 function getLaporanACList() {
   try {
@@ -749,7 +958,7 @@ function getLaporanACList() {
     const lastRow = sheet.getLastRow();
     if (lastRow < 2) return { status: 'ok', data: [] };
 
-    const raw  = sheet.getRange(2, 1, lastRow - 1, 34).getValues();
+    const raw  = sheet.getRange(2, 1, lastRow - 1, 36).getValues();
     const data = raw
       .filter(r => r[1])
       .map(r => ({
@@ -785,6 +994,8 @@ function getLaporanACList() {
         foto4                : String(r[31] || '-'),
         foto5                : String(r[32] || '-'),
         foto6                : String(r[33] || '-'),
+        jenisSurat           : String(r[34] || 'ac-perbaikan'),
+        ruanganSesudah       : String(r[35] || ''),
       }))
       .reverse();
     return { status: 'ok', count: data.length, data: data };
@@ -811,10 +1022,10 @@ function handleSubmitLaporanAC(d) {
     }
     const foto1 = resolveAtauUpload(d.foto1, 'Foto1_NUP');
     const foto2 = resolveAtauUpload(d.foto2, 'Foto2_Merek');
-    const foto3 = uploadFoto(subFolder, d.foto3, 'Foto3_Sebelum');
+    const foto3 = resolveAtauUpload(d.foto3, 'Foto3_AC_Sebelum');
     const foto4 = uploadFoto(subFolder, d.foto4, 'Foto4_Pekerjaan1');
     const foto5 = uploadFoto(subFolder, d.foto5, 'Foto5_Pekerjaan2');
-    const foto6 = uploadFoto(subFolder, d.foto6, 'Foto6_LainLain');
+    const foto6 = resolveAtauUpload(d.foto6, 'Foto6_AC_Sesudah');
 
     // TTD: kalau base64 (gambar manual) → upload ke Drive, kalau nama (dari daftar) → simpan langsung
     const ttdPelaksana = d.ttdPelaksana && d.ttdPelaksana.startsWith('data:')
@@ -865,12 +1076,23 @@ function handleSubmitLaporanAC(d) {
       foto3,                                 // AE: Foto 3 Sebelum
       foto4,                                 // AF: Foto 4 Pekerjaan 1
       foto5,                                 // AG: Foto 5 Pekerjaan 2
-      foto6,                                 // AH: Foto 6 Lain-lain
+      foto6,                                 // AH: Foto 6 (Lain-lain / AC Sesudah Pindah)
+      d.jenisSurat      || 'ac-perbaikan',   // AI: Jenis Surat Laporan
+      d.ruanganSesudah  || '',               // AJ: Ruangan Sesudah Pindah
     ]);
 
     const newRow = sheet.getLastRow();
     sheet.getRange(newRow, 3).setNumberFormat('dd/mm/yyyy hh:mm:ss');
     sheet.getRange(newRow, 4).setNumberFormat('dd/mm/yyyy');
+
+    if (CONFIG.EMAIL_AKTIF) {
+      const isPindahan = d.jenisSurat === 'ac-pemindahan';
+      kirimEmailNotifikasiLaporanAC(d, {
+        foto1, foto2, foto3, foto4, foto5, foto6,
+        foto3Label: isPindahan ? 'Foto AC Sebelum Pindah' : 'Foto Sebelum / Spare Part',
+        foto6Label: isPindahan ? 'Foto AC Sesudah Pindah' : 'Foto Lain-lain',
+      }, timestamp);
+    }
 
     return {
       status  : 'ok',
@@ -920,7 +1142,7 @@ function setupSheetHeaders() {
       'Foto 1', 'Foto 2', 'Foto 3', 'Foto 4', 'Foto 5', 'Foto 6',
     ],
 
-    // ── Sheet 3: L-PP-AC (A–AH = 34 kolom) ───────────────────
+    // ── Sheet 3: L-PP-AC (A–AJ = 36 kolom) ───────────────────
     'L-PP-AC': [
       'No', 'Nomor Laporan', 'Tanggal Submit', 'Tanggal Laporan',
       'No Surat Usulan', 'Nama Barang', 'Tipe', 'Merek',
@@ -932,8 +1154,9 @@ function setupSheetHeaders() {
       'Nama Pengguna', 'Jabatan Pengguna', 'Nama Pengawas',
       'TTD Pelaksana', 'TTD Pengguna', 'TTD Pengawas',
       'Foto 1 NUP', 'Foto 2 Merek/Tipe',
-      'Foto 3 Sebelum/Spare Part', 'Foto 4 Pekerjaan', 'Foto 5 Pekerjaan',
-      'Foto 6 Lain-lain',
+      'Foto 3 (Sebelum/Spare Part | AC Sebelum Pindah)', 'Foto 4 Pekerjaan', 'Foto 5 Pekerjaan',
+      'Foto 6 (Lain-lain | AC Sesudah Pindah)',
+      'Jenis Surat Laporan', 'Ruangan Sesudah Pindah',
     ],
   };
 
@@ -964,4 +1187,131 @@ function setupSheetHeaders() {
 
   Logger.log('Setup selesai.');
   SpreadsheetApp.flush();
+}
+
+// ============================================================
+//  TEST KIRIM EMAIL
+//  Jalankan dari Apps Script Editor → pilih fungsi → Run
+//  Pastikan CONFIG.EMAIL_TUJUAN sudah diisi dengan benar.
+// ============================================================
+
+// Test email notifikasi Surat Usulan
+function testEmailUsulan() {
+  const d = {
+    nomor        : 'TEST/SU/001/IV/2026',
+    nama         : 'Budi Santoso',
+    nip          : '198001012005011001',
+    jabatan      : 'Staff Administrasi',
+    bagian       : 'Instalasi Sarana Prasarana',
+    tanggalSurat : '2026-04-22',
+    jenisSurat   : 'ac-perbaikan',
+    namaBarang   : 'A.C Split',
+    merek        : 'Daikin',
+    tipe         : 'FT-25JXV',
+    ruangan      : 'Ruang Rapat Lt.2',
+    ruanganSesudah: '',
+    nup          : '0012',
+    kondisi      : 'Rusak Ringan',
+    keluhan      : 'AC tidak dingin, freon habis.',
+  };
+  const fotoLinks = { nup: '-', merek: '-', kerusakan: '-', keseluruhan: '-', lainlain: '-' };
+  kirimEmailNotifikasi(d, fotoLinks, new Date());
+  Logger.log('✅ Test email Surat Usulan terkirim ke ' + CONFIG.EMAIL_TUJUAN);
+}
+
+// Test email notifikasi Berita Acara PP
+function testEmailBA() {
+  const d = {
+    nomor        : 'TEST/BA/001/IV/2026',
+    tanggalBA    : '2026-04-22',
+    noSuratUsulan: 'TEST/SU/001/IV/2026',
+    namaBarang   : 'A.C Split',
+    merek        : 'Daikin',
+    tipe         : 'FT-25JXV',
+    ruangan      : 'Ruang Rapat Lt.2',
+    nup          : '0012',
+    kondisi      : 'Rusak Ringan',
+    rincian      : 'Isi freon R32, bersihkan filter.',
+    namaPelaksana: 'Heriyanto',
+    jabPelaksana : 'Teknisi',
+    namaPengawas : 'Sukiman',
+    jabPengawas  : 'Pengawas Sarpras',
+    namaPengguna : 'Ani Rahayu',
+    jabPengguna  : 'Kepala Ruangan',
+  };
+  const fotoLinks = { foto1:'-', foto2:'-', foto3:'-', foto4:'-', foto5:'-', foto6:'-' };
+  kirimEmailNotifikasiBA(d, fotoLinks, new Date());
+  Logger.log('✅ Test email Berita Acara terkirim ke ' + CONFIG.EMAIL_TUJUAN);
+}
+
+// Test email notifikasi Laporan AC (Perbaikan)
+function testEmailLaporanACPerbaikan() {
+  const d = {
+    nomor               : 'TEST/L-AC/001/IV/2026',
+    jenisSurat          : 'ac-perbaikan',
+    tanggalLaporan      : '2026-04-22',
+    noSuratUsulan       : 'TEST/SU/001/IV/2026',
+    namaBarang          : 'A.C Split',
+    merek               : 'Daikin',
+    tipe                : 'FT-25JXV',
+    ruangan             : 'Ruang Rapat Lt.2',
+    ruanganSesudah      : '',
+    nup                 : '0012',
+    kapasitasAC         : '1',
+    jenisCuci           : 'Ya',
+    jenisIsiFreon       : 'Ya',
+    jenisGantiKapasitor : '',
+    jenisGantiModul     : '',
+    jenisLainLain       : '',
+    deskripsi           : 'Pengisian freon R32 sebanyak 0.5 kg.',
+    namaPelaksana       : 'Heriyanto',
+    jabPelaksana        : 'Teknisi',
+    perusahaanPelaksana : 'PT. Sumber Tehnik Jaya',
+    namaPengawas        : 'Sukiman',
+    namaPengguna        : 'Ani Rahayu',
+    jabPengguna         : 'Kepala Ruangan',
+  };
+  const fotoLinks = {
+    foto1:'-', foto2:'-', foto3:'-', foto4:'-', foto5:'-', foto6:'-',
+    foto3Label: 'Foto Sebelum / Spare Part',
+    foto6Label: 'Foto Lain-lain',
+  };
+  kirimEmailNotifikasiLaporanAC(d, fotoLinks, new Date());
+  Logger.log('✅ Test email Laporan AC Perbaikan terkirim ke ' + CONFIG.EMAIL_TUJUAN);
+}
+
+// Test email notifikasi Laporan AC (Pemindahan)
+function testEmailLaporanACPemindahan() {
+  const d = {
+    nomor               : 'TEST/L-AC/002/IV/2026',
+    jenisSurat          : 'ac-pemindahan',
+    tanggalLaporan      : '2026-04-22',
+    noSuratUsulan       : 'TEST/SU/002/IV/2026',
+    namaBarang          : 'A.C Split',
+    merek               : 'Panasonic',
+    tipe                : 'CS-YN9WKJ',
+    ruangan             : 'Ruang Dosen Lt.1',
+    ruanganSesudah      : 'Ruang Direktur Lt.3',
+    nup                 : '0005',
+    kapasitasAC         : '¾',
+    jenisCuci           : '',
+    jenisIsiFreon       : '',
+    jenisGantiKapasitor : '',
+    jenisGantiModul     : '',
+    jenisLainLain       : 'Pemindahan unit',
+    deskripsi           : 'Unit dipindahkan atas permintaan pimpinan.',
+    namaPelaksana       : 'Iqbal',
+    jabPelaksana        : 'Teknisi',
+    perusahaanPelaksana : 'PT. Sumber Tehnik Jaya',
+    namaPengawas        : 'Sukiman',
+    namaPengguna        : 'Direktur',
+    jabPengguna         : 'Direktur Poltekkes',
+  };
+  const fotoLinks = {
+    foto1:'-', foto2:'-', foto3:'-', foto4:'-', foto5:'-', foto6:'-',
+    foto3Label: 'Foto AC Sebelum Pindah',
+    foto6Label: 'Foto AC Sesudah Pindah',
+  };
+  kirimEmailNotifikasiLaporanAC(d, fotoLinks, new Date());
+  Logger.log('✅ Test email Laporan AC Pemindahan terkirim ke ' + CONFIG.EMAIL_TUJUAN);
 }

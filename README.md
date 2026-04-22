@@ -199,10 +199,10 @@ Buka `admin.html` → masukkan **password admin** (dikonfigurasi saat deploy).
 ```
 SimpleBMN/
 ├── index.html              #   163 baris — Landing page, navigasi ke 3 form
-├── usulan.html             # 2.212 baris — Form Surat Usulan BMN
+├── usulan.html             # 2.214 baris — Form Surat Usulan BMN
 ├── bapp.html               # 1.739 baris — Form Berita Acara PP
-├── laporan-ac.html         # 1.974 baris — Form Laporan Pemeliharaan AC
-├── admin.html              # 1.426 baris — Panel Admin
+├── laporan-ac.html         # 2.073 baris — Form Laporan Pemeliharaan AC
+├── admin.html              # 1.467 baris — Panel Admin
 ├── build.js                #    87 baris — Build script: inject env + embed TTD base64 → dist/
 ├── vercel.json             #             — Konfigurasi deploy Vercel
 ├── KOP.png                 #             — Kop surat institusi
@@ -216,7 +216,7 @@ SimpleBMN/
 ├── TTDAtasanLangsung/      # TTD Atasan Langsung / Pengguna BMN (untuk bapp.html)
 │   └── (nama).png
 │
-├── Code_UseFonnte.gs       #   967 baris — Google Apps Script, backend API utama
+├── Code_UseFonnte.gs       # 1.190 baris — Google Apps Script, backend API utama
 ├── Code_MetaWA.gs          #   370 baris — Alternatif notif WA via Meta API
 ├── Code_callMeBot.gs       #   335 baris — Alternatif notif WA via CallMeBot
 ├── Template_Spreadsheet_BMN.xlsx  # Template Google Sheets

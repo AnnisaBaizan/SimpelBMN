@@ -95,6 +95,11 @@
       width: 15px; height: 15px; cursor: pointer; accent-color: #1a3a5c; flex-shrink: 0;
     }
 
+    /* Radio group */
+    .radio-group { display: flex; gap: 18px; flex-wrap: wrap; }
+    .radio-group label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 400; color: #333; cursor: pointer; }
+    .radio-group input[type=radio] { width: auto; }
+
     /* Foto grid */
     .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .photo-item { min-width: 0; overflow: hidden; }
@@ -334,18 +339,25 @@
         </div>
       </div>
 
+      <!-- JENIS SURAT LAPORAN -->
+      <div class="form-section">
+        <h3>Jenis Surat Laporan</h3>
+        <div class="form-row">
+          <select id="selectJenisLaporan" onchange="setJenisLaporan(this.value)">
+            <option value="ac-perbaikan">❄️ Perbaikan / Pemeliharaan AC</option>
+            <option value="ac-pemindahan">🔄 Pemindahan AC</option>
+          </select>
+        </div>
+      </div>
+
       <!-- DASAR SURAT -->
       <div class="form-section">
         <h3>Dasar Surat</h3>
         <div class="form-row">
           <label>Berdasarkan Surat Usulan PP? <span class="req">*</span></label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;color:#333;cursor:pointer;padding:7px 10px;border:1px solid #ccc;border-radius:4px;">
-              <input type="radio" name="dasarSurat" value="ya" onchange="onDasarChange('ya')" style="width:auto;"> Ya
-            </label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;color:#333;cursor:pointer;padding:7px 10px;border:1px solid #ccc;border-radius:4px;">
-              <input type="radio" name="dasarSurat" value="tidak" onchange="onDasarChange('tidak')" checked style="width:auto;"> Tidak
-            </label>
+          <div class="radio-group">
+            <label><input type="radio" name="dasarSurat" value="ya" onchange="onDasarChange('ya')"> Ya</label>
+            <label><input type="radio" name="dasarSurat" value="tidak" onchange="onDasarChange('tidak')" checked> Tidak</label>
           </div>
         </div>
         <!-- Jika Ya: dropdown surat usulan AC -->
@@ -460,6 +472,10 @@
           <label>Ruangan (Sesuai DBR) <span class="req">*</span></label>
           <input type="text" id="ruangan" placeholder="Contoh: Ruang Rapat Lt.2" oninput="syncPreview()" />
         </div>
+        <div class="form-row" id="rowRuanganSesudah" style="display:none;">
+          <label>Ruangan Sesudah Pindah <span class="req">*</span></label>
+          <input type="text" id="ruanganSesudah" placeholder="Contoh: Ruang Direktur Lt.3" oninput="syncPreview()" />
+        </div>
         <div class="form-row">
           <label>Kapasitas AC <span class="req">*</span></label>
           <select id="kapasitasAC" onchange="syncPreview()">
@@ -526,7 +542,7 @@
             <img id="thumb2" class="photo-thumb" />
           </div>
           <div class="photo-item">
-            <label>📸 3. Foto (Sebelum / Spare Part)</label>
+            <label id="foto3Label">📸 3. Foto (Sebelum / Spare Part)</label>
             <input type="file" id="foto3" accept="image/*" onchange="handleFoto(this,'thumb3','prev3','ph3')" />
             <img id="thumb3" class="photo-thumb" />
           </div>
@@ -541,7 +557,7 @@
             <img id="thumb5" class="photo-thumb" />
           </div>
           <div class="photo-item">
-            <label>📸 6. Foto Lain-lain</label>
+            <label id="foto6Label">📸 6. Foto Lain-lain</label>
             <input type="file" id="foto6" accept="image/*" onchange="handleFoto(this,'thumb6','prev6','ph6')" />
             <img id="thumb6" class="photo-thumb" />
           </div>
@@ -677,7 +693,7 @@
         </div>
         <hr class="kop-line" />
 
-        <div class="surat-judul">Laporan Pelaksanaan Pekerjaan Pemeliharaan/Perbaikan Air Conditioner</div>
+        <div class="surat-judul" id="pvJudul">Laporan Pelaksanaan Pekerjaan Pemeliharaan/Perbaikan Air Conditioner</div>
         <div class="surat-nomor">NOMOR: <span id="pvNomor">…………………………</span></div>
 
         <p class="surat-pembuka">
@@ -702,7 +718,7 @@
           </tr>
         </table>
 
-        <p class="telah-para">
+        <p class="telah-para" id="pvPembuka">
           Telah selesai melakukan pemeliharaan/perbaikan air conditioner, sesuai dengan ketentuan sebagai berikut:
         </p>
 
@@ -736,6 +752,12 @@
             <span class="dl-key">Ruangan (Sesuai DBR)</span>
             <span class="dl-sep">:</span>
             <span class="dl-val" id="pvRuangan">……………………………</span>
+          </li>
+          <li id="pvRuanganSesudahRow" style="display:none;">
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Ruangan Sesudah Pindah</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvRuanganSesudah">……………………………</span>
           </li>
           <li>
             <span class="dl-dash">–</span>
@@ -787,7 +809,7 @@
           </li> -->
         </ul>
 
-        <p class="surat-penutup">
+        <p class="surat-penutup" id="pvPenutup">
           Demikian laporan pemeliharaan/perbaikan air conditioner ini dibuat.<br>
           Atas perhatiannya, kami ucapkan terima kasih.
         </p>
@@ -851,7 +873,7 @@
           <div class="foto-placeholder" id="ph2">[ Belum ada foto ]</div>
         </div>
         <div class="foto-item" id="itemFoto3">
-          <div class="foto-caption">3. Foto (Sebelum / Spare Part)</div>
+          <div class="foto-caption" id="pvCaption3">3. Foto (Sebelum / Spare Part)</div>
           <img id="prev3" src="" style="display:none;width:100%;height:auto;" />
           <div class="foto-placeholder" id="ph3">[ Belum ada foto ]</div>
         </div>
@@ -866,7 +888,7 @@
           <div class="foto-placeholder" id="ph5">[ Belum ada foto ]</div>
         </div>
         <div class="foto-item" id="itemFoto6">
-          <div class="foto-caption">6. Foto Lain-lain</div>
+          <div class="foto-caption" id="pvCaption6">6. Foto Lain-lain</div>
           <img id="prev6" src="" style="display:none;width:100%;height:auto;" />
           <div class="foto-placeholder" id="ph6">[ Belum ada foto ]</div>
         </div>
@@ -923,14 +945,39 @@
       'Iqbal':     { jabatan: 'Teknisi', perusahaan: 'PT. Sumber Tehnik Jaya' },
     };
 
+    // ===== JENIS LAPORAN CONFIG =====
+    const JENIS_LAP_CONFIG = {
+      'ac-perbaikan': {
+        judul      : 'Laporan Pelaksanaan Pekerjaan Pemeliharaan/Perbaikan Air Conditioner',
+        pembuka    : 'Telah selesai melakukan pemeliharaan/perbaikan air conditioner, sesuai dengan ketentuan sebagai berikut:',
+        penutup    : 'Demikian laporan pemeliharaan/perbaikan air conditioner ini dibuat.\nAtas perhatiannya, kami ucapkan terima kasih.',
+        showRuanganSesudah : false,
+        foto3Label   : '📸 3. Foto (Sebelum / Spare Part)',
+        foto6Label   : '📸 6. Foto Lain-lain',
+        foto3Caption : '3. Foto (Sebelum / Spare Part)',
+        foto6Caption : '6. Foto Lain-lain',
+      },
+      'ac-pemindahan': {
+        judul      : 'Laporan Pelaksanaan Pekerjaan Pemindahan Air Conditioner',
+        pembuka    : 'Telah selesai melakukan pemindahan air conditioner, sesuai dengan ketentuan sebagai berikut:',
+        penutup    : 'Demikian laporan pemindahan air conditioner ini dibuat.\nAtas perhatiannya, kami ucapkan terima kasih.',
+        showRuanganSesudah : true,
+        foto3Label   : '📸 3. Foto AC dan Ruangan Sebelum Pemindahan',
+        foto6Label   : '📸 6. Foto AC dan Ruangan Sesudah Pemindahan',
+        foto3Caption : '3. Foto AC dan Ruangan Sebelum Pemindahan',
+        foto6Caption : '6. Foto AC dan Ruangan Sesudah Pemindahan',
+      },
+    };
+
     // ===== STATE =====
+    let jenisLaporan = 'ac-perbaikan';
     let nomorData = null;
     let asetACList = [];   // daftar aset A.C yang sudah difilter dari server
     let selNup  = '', selNama = '', selMerk = '', selTipe = '';
     let isManualMode = false;
     let suratUsulanACDB = [];  // surat usulan AC (ac-perbaikan / ac-pemindahan)
     const fotoData  = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null, foto6:null };
-    let autoFotoUrls  = { foto1: null, foto2: null }; // URL Drive dari surat usulan (tidak di-re-upload)
+    let autoFotoUrls  = { foto1: null, foto2: null, foto3: null, foto6: null }; // URL Drive dari surat usulan
     let selectedUsulan = null;
     const ttdData   = { pelaksana:null, pengguna:null, pengawas:null };
     // ttdIsKey: true = dipilih dari daftar (jangan upload), false = digambar manual (upload)
@@ -958,6 +1005,38 @@
       fetchSuratUsulanList();
     });
 
+    // ===== JENIS LAPORAN =====
+    function setJenisLaporan(val) {
+      jenisLaporan = val;
+      const cfg = JENIS_LAP_CONFIG[val];
+      // Update foto labels di form
+      const lbl3 = document.getElementById('foto3Label');
+      const lbl6 = document.getElementById('foto6Label');
+      if (lbl3) lbl3.textContent = cfg.foto3Label;
+      if (lbl6) lbl6.textContent = cfg.foto6Label;
+      // Update foto captions di preview
+      const cap3 = document.getElementById('pvCaption3');
+      const cap6 = document.getElementById('pvCaption6');
+      if (cap3) cap3.textContent = cfg.foto3Caption;
+      if (cap6) cap6.textContent = cfg.foto6Caption;
+      // Show/hide ruangan sesudah
+      const rowRS = document.getElementById('rowRuanganSesudah');
+      if (rowRS) rowRS.style.display = cfg.showRuanganSesudah ? '' : 'none';
+      const pvRS = document.getElementById('pvRuanganSesudahRow');
+      if (pvRS) pvRS.style.display = cfg.showRuanganSesudah ? '' : 'none';
+      // Update narasi di preview
+      const pvJudul = document.getElementById('pvJudul');
+      if (pvJudul) pvJudul.textContent = cfg.judul;
+      const pvPembuka = document.getElementById('pvPembuka');
+      if (pvPembuka) pvPembuka.textContent = cfg.pembuka;
+      const pvPenutup = document.getElementById('pvPenutup');
+      if (pvPenutup) pvPenutup.textContent = cfg.penutup;
+      // Rebuild dropdown surat usulan (filter by jenis baru)
+      buildSelectUsulan();
+      // Clear auto-fill (jenis berganti, pilihan sebelumnya tidak valid)
+      clearAutoFill();
+    }
+
     // ===== DASAR SURAT (No Surat Usulan AC) =====
     async function fetchSuratUsulanList() {
       const elLoad = document.getElementById('usulanLoading');
@@ -983,10 +1062,11 @@
 
     function buildSelectUsulan() {
       const sel = document.getElementById('selectUsulan');
-      sel.innerHTML = '<option value="">— Pilih nomor surat usulan AC —</option>';
+      sel.innerHTML = '<option value="">— Pilih nomor surat usulan —</option>';
       suratUsulanACDB.forEach((s, i) => {
+        if (s.jenisSurat !== jenisLaporan) return; // filter by active jenis
         const opt = document.createElement('option');
-        opt.value = i;
+        opt.value = i; // simpan index original agar onSelectUsulan bisa lookup
         const label = s.jenisSurat === 'ac-pemindahan' ? '🔄' : '❄️';
         opt.textContent = label + ' ' + s.nomor + (s.namaBarang ? ' — ' + s.namaBarang : '');
         sel.appendChild(opt);
@@ -1027,22 +1107,30 @@
       const ruanganEl = document.getElementById('ruangan');
       if (ruanganEl) ruanganEl.value = s.ruangan || '';
 
-      // Auto-load foto 1 & 2 (Drive URL — tidak diupload ulang)
+      // Auto-load foto 1 & 2 (Drive URL — semua jenis AC)
       autoFotoUrls.foto1 = s.fotoNup   !== '-' ? s.fotoNup   : null;
       autoFotoUrls.foto2 = s.fotoMerek !== '-' ? s.fotoMerek : null;
       showAutoFoto(1, autoFotoUrls.foto1);
       showAutoFoto(2, autoFotoUrls.foto2);
+
+      // Auto-load foto 3 & 6 — hanya untuk pemindahan (fotoKerusakan=Sebelum, fotoLainLain=Sesudah)
+      if (jenisLaporan === 'ac-pemindahan') {
+        autoFotoUrls.foto3 = s.fotoKerusakan !== '-' ? s.fotoKerusakan : null;
+        autoFotoUrls.foto6 = s.fotoLainLain  !== '-' ? s.fotoLainLain  : null;
+        showAutoFoto(3, autoFotoUrls.foto3);
+        showAutoFoto(6, autoFotoUrls.foto6);
+      }
       syncPreview();
     }
 
     function clearAutoFill() {
       selectedUsulan = null;
-      autoFotoUrls   = { foto1: null, foto2: null };
+      autoFotoUrls   = { foto1: null, foto2: null, foto3: null, foto6: null };
       ['nup','namaBarang','merek','tipe','ruangan'].forEach(id => setHidden(id, ''));
       ['nupManual','namaBarangManual','merekManual','tipeManual'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
       });
-      hideAutoFoto(1); hideAutoFoto(2);
+      hideAutoFoto(1); hideAutoFoto(2); hideAutoFoto(3); hideAutoFoto(6);
       syncPreview();
     }
 
@@ -1516,9 +1604,11 @@
       const file = input.files[0];
       if (!file) return;
       const fotoKey = input.id; // 'foto1' … 'foto6'
-      // Jika user upload foto1/foto2 manual, buang auto-foto dari surat usulan
+      // Jika user upload manual, buang auto-foto dari surat usulan untuk slot tsb
       if (fotoKey === 'foto1') { autoFotoUrls.foto1 = null; }
       if (fotoKey === 'foto2') { autoFotoUrls.foto2 = null; }
+      if (fotoKey === 'foto3') { autoFotoUrls.foto3 = null; }
+      if (fotoKey === 'foto6') { autoFotoUrls.foto6 = null; }
       const reader = new FileReader();
       reader.onload = e => {
         const b64 = e.target.result;
@@ -1585,6 +1675,8 @@
       document.getElementById('pvTipe').textContent       = g('tipe')          || '……………………………';
       document.getElementById('pvMerek').textContent      = g('merek')         || '……………………………';
       document.getElementById('pvRuangan').textContent    = g('ruangan')       || '……………………………';
+      const pvRS = document.getElementById('pvRuanganSesudah');
+      if (pvRS) pvRS.textContent = g('ruanganSesudah') || '……………………………';
       document.getElementById('pvNup').textContent        = g('nup')           || '……………………………';
       document.getElementById('pvDeskripsi').textContent  = g('deskripsi')     || '……………………………';
 
@@ -1810,10 +1902,12 @@
         urut            : nomorData.urut,
         tanggalLaporan  : g('tanggalLaporan'),
         noSuratUsulan   : getNoUsulan(),
+        jenisSurat      : jenisLaporan,
         namaBarang      : g('namaBarang'),
         merek           : g('merek'),
         tipe            : g('tipe'),
         ruangan         : g('ruangan'),
+        ruanganSesudah  : g('ruanganSesudah'),
         nup             : g('nup'),
         kapasitasAC          : g('kapasitasAC'),
         jenisCuci            : document.getElementById('jenisCuci').checked,
@@ -1837,10 +1931,10 @@
         ttdPengawas     : ttdIsKey.pengawas  ? ttdKeyVal.pengawas  : (ttdData.pengawas  || ''),
         foto1           : fotoData.foto1 || autoFotoUrls.foto1 || '',
         foto2           : fotoData.foto2 || autoFotoUrls.foto2 || '',
-        foto3           : fotoData.foto3 || '',
+        foto3           : fotoData.foto3 || autoFotoUrls.foto3 || '',
         foto4           : fotoData.foto4 || '',
         foto5           : fotoData.foto5 || '',
-        foto6           : fotoData.foto6 || '',
+        foto6           : fotoData.foto6 || autoFotoUrls.foto6 || '',
       };
 
       try {
@@ -1875,6 +1969,11 @@
     // ===== RESET =====
     function resetForm() {
       if (!confirm('Reset semua isian? Data yang belum di-submit akan hilang.')) return;
+      // Reset jenis laporan ke default
+      jenisLaporan = 'ac-perbaikan';
+      const selJenis = document.getElementById('selectJenisLaporan');
+      if (selJenis) selJenis.value = 'ac-perbaikan';
+      setJenisLaporan('ac-perbaikan'); // updates labels, dropdown, narasi
       // Reset dasar surat
       document.querySelector('input[name=dasarSurat][value=tidak]').checked = true;
       onDasarChange('tidak');
@@ -1882,7 +1981,7 @@
       const elNoUsulan = document.getElementById('inputNoUsulan');
       if (elNoUsulan) elNoUsulan.value = '';
 
-      ['namaBarang','merek','tipe','ruangan','nup','deskripsi',
+      ['namaBarang','merek','tipe','ruangan','ruanganSesudah','nup','deskripsi',
        'namaPelaksana','jabPelaksana','perusahaanPelaksana',
        'namaPengguna','jabPengguna'].forEach(id => {
         const el = document.getElementById(id);
@@ -1923,7 +2022,7 @@
 
       // Reset auto-foto dari surat usulan
       selectedUsulan = null;
-      autoFotoUrls = { foto1: null, foto2: null };
+      autoFotoUrls = { foto1: null, foto2: null, foto3: null, foto6: null };
       for (let i = 1; i <= 6; i++) {
         const inp = document.getElementById('foto' + i);
         if (inp) inp.value = '';
