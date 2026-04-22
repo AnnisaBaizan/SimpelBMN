@@ -311,8 +311,14 @@ function handleSubmit(d) {
     sheet.getRange(newRow, 4).setNumberFormat('dd/mm/yyyy');
 
     // --- 3. Kirim email notifikasi ---
+    let emailError = null;
     if (CONFIG.EMAIL_AKTIF) {
-      kirimEmailNotifikasi(d, fotoLinks, timestamp);
+      try {
+        kirimEmailNotifikasi(d, fotoLinks, timestamp);
+      } catch (emailErr) {
+        emailError = emailErr.message;
+        Logger.log('EMAIL ERROR (Usulan): ' + emailErr.message);
+      }
     }
 
     // --- 4. Kirim WhatsApp notifikasi ---
@@ -324,6 +330,7 @@ function handleSubmit(d) {
       status: 'ok',
       message: 'Data berhasil disimpan. Folder: ' + namaFolder,
       folder: subFolder.getUrl(),
+      emailError: emailError,
     };
   } catch (err) {
     return { status: 'error', error: err.message };
@@ -899,14 +906,21 @@ function handleSubmitBA(d) {
     sheet.getRange(newRow, 3).setNumberFormat('dd/mm/yyyy hh:mm:ss');
     sheet.getRange(newRow, 4).setNumberFormat('dd/mm/yyyy');
 
+    let emailError = null;
     if (CONFIG.EMAIL_AKTIF) {
-      kirimEmailNotifikasiBA(d, { foto1, foto2, foto3, foto4, foto5, foto6 }, timestamp);
+      try {
+        kirimEmailNotifikasiBA(d, { foto1, foto2, foto3, foto4, foto5, foto6 }, timestamp);
+      } catch (emailErr) {
+        emailError = emailErr.message;
+        Logger.log('EMAIL ERROR (BA): ' + emailErr.message);
+      }
     }
 
     return {
       status: 'ok',
       message: 'Berita Acara berhasil disimpan.',
       folder: subFolder.getUrl(),
+      emailError: emailError,
     };
   } catch (err) {
     return { status: 'error', error: err.message };
@@ -1085,19 +1099,26 @@ function handleSubmitLaporanAC(d) {
     sheet.getRange(newRow, 3).setNumberFormat('dd/mm/yyyy hh:mm:ss');
     sheet.getRange(newRow, 4).setNumberFormat('dd/mm/yyyy');
 
+    let emailError = null;
     if (CONFIG.EMAIL_AKTIF) {
-      const isPindahan = d.jenisSurat === 'ac-pemindahan';
-      kirimEmailNotifikasiLaporanAC(d, {
-        foto1, foto2, foto3, foto4, foto5, foto6,
-        foto3Label: isPindahan ? 'Foto AC Sebelum Pindah' : 'Foto Sebelum / Spare Part',
-        foto6Label: isPindahan ? 'Foto AC Sesudah Pindah' : 'Foto Lain-lain',
-      }, timestamp);
+      try {
+        const isPindahan = d.jenisSurat === 'ac-pemindahan';
+        kirimEmailNotifikasiLaporanAC(d, {
+          foto1, foto2, foto3, foto4, foto5, foto6,
+          foto3Label: isPindahan ? 'Foto AC Sebelum Pindah' : 'Foto Sebelum / Spare Part',
+          foto6Label: isPindahan ? 'Foto AC Sesudah Pindah' : 'Foto Lain-lain',
+        }, timestamp);
+      } catch (emailErr) {
+        emailError = emailErr.message;
+        Logger.log('EMAIL ERROR (Laporan AC): ' + emailErr.message);
+      }
     }
 
     return {
       status  : 'ok',
       message : 'Laporan AC berhasil disimpan.',
       folder  : subFolder.getUrl(),
+      emailError: emailError,
     };
   } catch (err) {
     return { status: 'error', error: err.message };
