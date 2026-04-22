@@ -739,7 +739,7 @@ function getNomorLaporanAC() {
 //         U=TTDNamaPelaksana, V=TTDJabPelaksana,
 //         W=NamaPengguna, X=JabPengguna, Y=NamaPengawas,
 //         Z=TTDPelaksana, AA=TTDPengguna, AB=TTDPengawas,
-//         AC=Foto1, AD=Foto2, AE=Foto3, AF=Foto4, AG=Foto5
+//         AC=Foto1, AD=Foto2, AE=Foto3, AF=Foto4, AG=Foto5, AH=Foto6
 // ============================================================
 function getLaporanACList() {
   try {
@@ -749,7 +749,7 @@ function getLaporanACList() {
     const lastRow = sheet.getLastRow();
     if (lastRow < 2) return { status: 'ok', data: [] };
 
-    const raw  = sheet.getRange(2, 1, lastRow - 1, 32).getValues();
+    const raw  = sheet.getRange(2, 1, lastRow - 1, 34).getValues();
     const data = raw
       .filter(r => r[1])
       .map(r => ({
@@ -784,6 +784,7 @@ function getLaporanACList() {
         foto3                : String(r[30] || '-'),
         foto4                : String(r[31] || '-'),
         foto5                : String(r[32] || '-'),
+        foto6                : String(r[33] || '-'),
       }))
       .reverse();
     return { status: 'ok', count: data.length, data: data };
@@ -802,12 +803,18 @@ function handleSubmitLaporanAC(d) {
     const parentFolder = DriveApp.getFolderById(CONFIG.L_PP_AC_DRIVE_FOLDER_ID);
     const subFolder    = parentFolder.createFolder(namaFolder);
 
-    // Upload foto (base64 → Drive)
-    const foto1 = uploadFoto(subFolder, d.foto1, 'Foto1_NUP');
-    const foto2 = uploadFoto(subFolder, d.foto2, 'Foto2_Merek');
+    // Upload atau teruskan URL Drive (foto1 & foto2 bisa sudah berupa URL dari surat usulan)
+    function resolveAtauUpload(nilaiInput, namaFile) {
+      if (!nilaiInput || nilaiInput === '-' || nilaiInput.length < 10) return '-';
+      if (nilaiInput.startsWith('https://')) return nilaiInput; // sudah URL Drive
+      return uploadFoto(subFolder, nilaiInput, namaFile);       // base64 → upload
+    }
+    const foto1 = resolveAtauUpload(d.foto1, 'Foto1_NUP');
+    const foto2 = resolveAtauUpload(d.foto2, 'Foto2_Merek');
     const foto3 = uploadFoto(subFolder, d.foto3, 'Foto3_Sebelum');
     const foto4 = uploadFoto(subFolder, d.foto4, 'Foto4_Pekerjaan1');
     const foto5 = uploadFoto(subFolder, d.foto5, 'Foto5_Pekerjaan2');
+    const foto6 = uploadFoto(subFolder, d.foto6, 'Foto6_LainLain');
 
     // TTD: kalau base64 (gambar manual) → upload ke Drive, kalau nama (dari daftar) → simpan langsung
     const ttdPelaksana = d.ttdPelaksana && d.ttdPelaksana.startsWith('data:')
@@ -858,6 +865,7 @@ function handleSubmitLaporanAC(d) {
       foto3,                                 // AE: Foto 3 Sebelum
       foto4,                                 // AF: Foto 4 Pekerjaan 1
       foto5,                                 // AG: Foto 5 Pekerjaan 2
+      foto6,                                 // AH: Foto 6 Lain-lain
     ]);
 
     const newRow = sheet.getLastRow();
@@ -885,7 +893,7 @@ function setupSheetHeaders() {
 
   const SHEETS = {
 
-    // ── Sheet 1: Usulan-PP (A–Z = 26 kolom) ──────────────────
+    // ── Sheet 1: Usulan-PP (A–AB = 28 kolom) ─────────────────
     'Usulan-PP': [
       'No', 'Nomor Surat', 'Tanggal Submit', 'Tanggal Surat',
       'Nama Pengusul', 'NIP', 'Jabatan', 'Unit/Bagian',
@@ -912,7 +920,7 @@ function setupSheetHeaders() {
       'Foto 1', 'Foto 2', 'Foto 3', 'Foto 4', 'Foto 5', 'Foto 6',
     ],
 
-    // ── Sheet 3: L-PP-AC (A–AG = 33 kolom) ───────────────────
+    // ── Sheet 3: L-PP-AC (A–AH = 34 kolom) ───────────────────
     'L-PP-AC': [
       'No', 'Nomor Laporan', 'Tanggal Submit', 'Tanggal Laporan',
       'No Surat Usulan', 'Nama Barang', 'Tipe', 'Merek',
@@ -925,6 +933,7 @@ function setupSheetHeaders() {
       'TTD Pelaksana', 'TTD Pengguna', 'TTD Pengawas',
       'Foto 1 NUP', 'Foto 2 Merek/Tipe',
       'Foto 3 Sebelum/Spare Part', 'Foto 4 Pekerjaan', 'Foto 5 Pekerjaan',
+      'Foto 6 Lain-lain',
     ],
   };
 

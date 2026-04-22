@@ -919,7 +919,9 @@
     function buildSelectUsulan() {
       const sel = document.getElementById('selectUsulan');
       sel.innerHTML = '<option value="">— Pilih nomor surat usulan —</option>';
+      // Hanya tampilkan surat dengan jenisSurat 'umum' atau kosong (bukan AC)
       suratUsulanDB.forEach((s, i) => {
+        if (s.jenisSurat && s.jenisSurat !== 'umum') return;
         const opt = document.createElement('option');
         opt.value = i;
         const sudahAda = baNomorSet.has(s.nomor);

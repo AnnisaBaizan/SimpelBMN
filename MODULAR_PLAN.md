@@ -10,10 +10,10 @@ Dokumen ini adalah **referensi perencanaan** — belum ada kode yang diubah.
 | File | Baris saat ini | Estimasi baris yang bisa dipindah |
 |---|---|---|
 | usulan.html | ~2.212 | ~500 |
-| bapp.html | ~1.737 | ~450 |
-| laporan-ac.html | ~1.875 | ~450 |
+| bapp.html | ~1.739 | ~450 |
+| laporan-ac.html | ~1.974 | ~450 |
 | admin.html | ~1.426 | ~120 |
-| Code_UseFonnte.gs | ~959 | ~25 (uploadFoto) |
+| Code_UseFonnte.gs | ~967 | ~25 (uploadFoto) |
 
 Pendekatan yang disarankan: tambahkan dua file baru —
 - `shared.css` — CSS bersama (dilink dari semua halaman)

@@ -339,9 +339,13 @@
         <h3>Dasar Surat</h3>
         <div class="form-row">
           <label>Berdasarkan Surat Usulan PP? <span class="req">*</span></label>
-          <div class="radio-group">
-            <label><input type="radio" name="dasarSurat" value="ya" onchange="onDasarChange('ya')"> Ya</label>
-            <label><input type="radio" name="dasarSurat" value="tidak" onchange="onDasarChange('tidak')" checked> Tidak</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;color:#333;cursor:pointer;padding:7px 10px;border:1px solid #ccc;border-radius:4px;">
+              <input type="radio" name="dasarSurat" value="ya" onchange="onDasarChange('ya')" style="width:auto;"> Ya
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;color:#333;cursor:pointer;padding:7px 10px;border:1px solid #ccc;border-radius:4px;">
+              <input type="radio" name="dasarSurat" value="tidak" onchange="onDasarChange('tidak')" checked style="width:auto;"> Tidak
+            </label>
           </div>
         </div>
         <!-- Jika Ya: dropdown surat usulan AC -->
@@ -531,10 +535,15 @@
             <input type="file" id="foto4" accept="image/*" onchange="handleFoto(this,'thumb4','prev4','ph4')" />
             <img id="thumb4" class="photo-thumb" />
           </div>
-          <div class="photo-item" style="grid-column:1/-1;">
+          <div class="photo-item">
             <label>📸 5. Foto Pekerjaan 2</label>
             <input type="file" id="foto5" accept="image/*" onchange="handleFoto(this,'thumb5','prev5','ph5')" />
             <img id="thumb5" class="photo-thumb" />
+          </div>
+          <div class="photo-item">
+            <label>📸 6. Foto Lain-lain</label>
+            <input type="file" id="foto6" accept="image/*" onchange="handleFoto(this,'thumb6','prev6','ph6')" />
+            <img id="thumb6" class="photo-thumb" />
           </div>
         </div>
       </div>
@@ -856,6 +865,11 @@
           <img id="prev5" src="" style="display:none;width:100%;height:auto;" />
           <div class="foto-placeholder" id="ph5">[ Belum ada foto ]</div>
         </div>
+        <div class="foto-item" id="itemFoto6">
+          <div class="foto-caption">6. Foto Lain-lain</div>
+          <img id="prev6" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph6">[ Belum ada foto ]</div>
+        </div>
       </div><!-- /surat page 2 -->
     </div><!-- /preview-panel -->
   </div><!-- /main-layout -->
@@ -915,7 +929,9 @@
     let selNup  = '', selNama = '', selMerk = '', selTipe = '';
     let isManualMode = false;
     let suratUsulanACDB = [];  // surat usulan AC (ac-perbaikan / ac-pemindahan)
-    const fotoData  = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null };
+    const fotoData  = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null, foto6:null };
+    let autoFotoUrls  = { foto1: null, foto2: null }; // URL Drive dari surat usulan (tidak di-re-upload)
+    let selectedUsulan = null;
     const ttdData   = { pelaksana:null, pengguna:null, pengawas:null };
     // ttdIsKey: true = dipilih dari daftar (jangan upload), false = digambar manual (upload)
     const ttdIsKey  = { pelaksana:false, pengguna:false, pengawas:false };
@@ -980,12 +996,87 @@
     function onDasarChange(val) {
       document.getElementById('wrapDropdownUsulan').style.display = val === 'ya' ? 'block' : 'none';
       document.getElementById('wrapInputUsulan').style.display    = val === 'ya' ? 'none'  : 'block';
-      if (val === 'tidak') document.getElementById('selectUsulan').value = '';
+      if (val === 'tidak') {
+        document.getElementById('selectUsulan').value = '';
+        clearAutoFill();
+      }
       syncPreview();
     }
 
     function onSelectUsulan() {
+      const sel = document.getElementById('selectUsulan');
+      const idx = sel.value;
+      if (idx === '') { clearAutoFill(); return; }
+      const s = suratUsulanACDB[parseInt(idx)];
+      if (!s) return;
+      selectedUsulan = s;
+
+      // Auto-fill detail barang — switch ke manual mode & isi dari data surat
+      activateManualMode();
+      const fillMap = {
+        nupManual: s.nup, namaBarangManual: s.namaBarang,
+        merekManual: s.merek, tipeManual: s.tipe
+      };
+      Object.entries(fillMap).forEach(([id, val]) => {
+        const el = document.getElementById(id); if (el) el.value = val || '';
+      });
+      setHidden('nup',        s.nup       || '');
+      setHidden('namaBarang', s.namaBarang || '');
+      setHidden('merek',      s.merek     || '');
+      setHidden('tipe',       s.tipe      || '');
+      const ruanganEl = document.getElementById('ruangan');
+      if (ruanganEl) ruanganEl.value = s.ruangan || '';
+
+      // Auto-load foto 1 & 2 (Drive URL — tidak diupload ulang)
+      autoFotoUrls.foto1 = s.fotoNup   !== '-' ? s.fotoNup   : null;
+      autoFotoUrls.foto2 = s.fotoMerek !== '-' ? s.fotoMerek : null;
+      showAutoFoto(1, autoFotoUrls.foto1);
+      showAutoFoto(2, autoFotoUrls.foto2);
       syncPreview();
+    }
+
+    function clearAutoFill() {
+      selectedUsulan = null;
+      autoFotoUrls   = { foto1: null, foto2: null };
+      ['nup','namaBarang','merek','tipe','ruangan'].forEach(id => setHidden(id, ''));
+      ['nupManual','namaBarangManual','merekManual','tipeManual'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      hideAutoFoto(1); hideAutoFoto(2);
+      syncPreview();
+    }
+
+    // Konversi Drive file URL → thumbnail URL yang bisa di-embed sebagai <img>
+    function driveToThumb(driveUrl) {
+      if (!driveUrl || driveUrl === '-') return null;
+      const m = driveUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      return m ? 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w600' : null;
+    }
+
+    function showAutoFoto(n, url) {
+      const prevImg = document.getElementById('prev' + n);
+      const phEl    = document.getElementById('ph' + n);
+      const thumb   = document.getElementById('thumb' + n);
+      if (url) {
+        const thumbUrl = driveToThumb(url);
+        if (thumb && thumbUrl)   { thumb.src = thumbUrl; thumb.style.display = 'block'; }
+        if (prevImg && thumbUrl) { prevImg.src = thumbUrl; prevImg.style.display = 'block'; }
+        if (phEl)                phEl.style.display = 'none';
+        // Simpan URL Drive asli untuk dikirim ke backend (bukan thumbnail)
+        fotoData['foto' + n] = url;
+      } else {
+        hideAutoFoto(n);
+      }
+    }
+
+    function hideAutoFoto(n) {
+      const thumb   = document.getElementById('thumb' + n);
+      const prevImg = document.getElementById('prev' + n);
+      const phEl    = document.getElementById('ph' + n);
+      if (thumb)   { thumb.style.display = 'none'; thumb.src = ''; }
+      if (prevImg) { prevImg.src = ''; prevImg.style.display = 'none'; }
+      if (phEl)    phEl.style.display = 'flex';
+      fotoData['foto' + n] = null;
     }
 
     function getNoUsulan() {
@@ -1424,10 +1515,14 @@
     function handleFoto(input, thumbId, prevId, phId) {
       const file = input.files[0];
       if (!file) return;
+      const fotoKey = input.id; // 'foto1' … 'foto6'
+      // Jika user upload foto1/foto2 manual, buang auto-foto dari surat usulan
+      if (fotoKey === 'foto1') { autoFotoUrls.foto1 = null; }
+      if (fotoKey === 'foto2') { autoFotoUrls.foto2 = null; }
       const reader = new FileReader();
       reader.onload = e => {
         const b64 = e.target.result;
-        fotoData[input.id] = b64;
+        fotoData[fotoKey] = b64;
         const thumb = document.getElementById(thumbId);
         if (thumb) { thumb.src = b64; thumb.style.display = 'block'; }
         const prev = document.getElementById(prevId);
@@ -1740,11 +1835,12 @@
         ttdPelaksana    : ttdIsKey.pelaksana ? ttdKeyVal.pelaksana : (ttdData.pelaksana || ''),
         ttdPengguna     : ttdData.pengguna  || '',   // pengguna selalu gambar manual
         ttdPengawas     : ttdIsKey.pengawas  ? ttdKeyVal.pengawas  : (ttdData.pengawas  || ''),
-        foto1           : fotoData.foto1 || '',
-        foto2           : fotoData.foto2 || '',
+        foto1           : fotoData.foto1 || autoFotoUrls.foto1 || '',
+        foto2           : fotoData.foto2 || autoFotoUrls.foto2 || '',
         foto3           : fotoData.foto3 || '',
         foto4           : fotoData.foto4 || '',
         foto5           : fotoData.foto5 || '',
+        foto6           : fotoData.foto6 || '',
       };
 
       try {
@@ -1825,7 +1921,10 @@
       document.getElementById('jenisLainLain').value = '';
       document.getElementById('wrapLainLain').style.display = 'none';
 
-      for (let i = 1; i <= 5; i++) {
+      // Reset auto-foto dari surat usulan
+      selectedUsulan = null;
+      autoFotoUrls = { foto1: null, foto2: null };
+      for (let i = 1; i <= 6; i++) {
         const inp = document.getElementById('foto' + i);
         if (inp) inp.value = '';
         fotoData['foto' + i] = null;

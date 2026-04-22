@@ -3,26 +3,7 @@
 Daftar masalah yang ditemukan saat pembacaan seluruh proyek pada 2026-04-22.
 **Tidak ada isu yang langsung diperbaiki di sini** — ini hanya dokumentasi untuk tindak lanjut.
 
----
-
-## CRITICAL
-
-### 1. `getLaporanACList()` membaca 32 kolom, tapi mengakses indeks ke-32 (kolom ke-33)
-**File:** `Code_UseFonnte.gs` · Baris 752 & 786
-
-```js
-// Baris 752 — hanya 32 kolom yang dibaca (indeks 0–31)
-const raw = sheet.getRange(2, 1, lastRow - 1, 32).getValues();
-
-// Baris 786 — mencoba akses r[32] (kolom ke-33 = AG = Foto 5) yang selalu undefined
-foto5: String(r[32] || '-'),
-```
-
-`handleSubmitLaporanAC` menyimpan 33 kolom (A–AG), dan `setupSheetHeaders` mendefinisikan 33 header untuk L-PP-AC. Namun `getLaporanACList` hanya membaca 32 kolom, sehingga `r[32]` selalu `undefined`.
-
-**Dampak:** Kolom Foto 5 (Pekerjaan 2) di sheet L-PP-AC tidak pernah dikembalikan ke admin panel. Data tersimpan di sheet tapi tidak pernah ditampilkan.
-
-**Saran perbaikan:** Ganti `32` → `33` di baris 752.
+> **Update 2026-04-22:** Issue CRITICAL #1 sudah diperbaiki sekalian saat menambah Foto 6 pada Laporan AC. `getLaporanACList` sekarang membaca 34 kolom (A–AH), foto5 dan foto6 keduanya benar.
 
 ---
 
