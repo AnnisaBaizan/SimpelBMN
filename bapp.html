@@ -859,6 +859,8 @@
     let selNup = '', selNama = '', selMerk = '', selTipe = '';
     const fotoData    = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null, foto6:null };
     const ttdData     = { pelaksana:null, pengawas:null, pengguna:null };
+    const ttdIsKey    = { pelaksana:false, pengawas:false, pengguna:false };
+    const ttdKeyVal   = { pelaksana:'',    pengawas:'',    pengguna:'' };
     const TTD_SAPRAS_RAW = __TTD_SAPRAS__;   // { "Nama": "data:image/png;base64,…" }
     const TTD_ATASAN_RAW = __TTD_ATASAN__;   // { "Nama": "data:image/png;base64,…" }
     const TTD_SAPRAS_CACHE = {};
@@ -1380,6 +1382,8 @@
         let b64 = TTD_SAPRAS_CACHE[name];
         if (!b64) { b64 = await imgToBase64BW(TTD_SAPRAS_RAW[name]); TTD_SAPRAS_CACHE[name] = b64; }
         ttdData.pengawas = b64;
+        ttdIsKey.pengawas  = true;
+        ttdKeyVal.pengawas = name;
         const pvImg = document.getElementById('pvTTDPengawas');
         if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
         const formImg = document.getElementById('previewTTD_pengawas');
@@ -1418,6 +1422,8 @@
         let b64 = TTD_ATASAN_CACHE[name];
         if (!b64) { b64 = await imgToBase64BW(TTD_ATASAN_RAW[name]); TTD_ATASAN_CACHE[name] = b64; }
         ttdData[target] = b64;
+        ttdIsKey[target]  = true;
+        ttdKeyVal[target] = name;
         const pvImg = document.getElementById('pvTTDPengguna');
         if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
         const formImg = document.getElementById('previewTTD_' + target);
@@ -1513,6 +1519,8 @@
       const c   = document.getElementById('ttdCanvas');
       const b64 = c.toDataURL('image/png');
       ttdData[currentTTDTarget] = b64;
+      ttdIsKey[currentTTDTarget]  = false;
+      ttdKeyVal[currentTTDTarget] = '';
 
       // Update preview surat
       const pvMap = { pelaksana:'pvTTDPelaksana', pengawas:'pvTTDPengawas', pengguna:'pvTTDPengguna' };
@@ -1541,6 +1549,8 @@
 
     function clearTTD(target) {
       ttdData[target] = null;
+      ttdIsKey[target]  = false;
+      ttdKeyVal[target] = '';
       const pvMap = { pelaksana:'pvTTDPelaksana', pengawas:'pvTTDPengawas', pengguna:'pvTTDPengguna' };
       const pvImg = document.getElementById(pvMap[target]);
       if (pvImg) pvImg.style.display = 'none';
@@ -1628,8 +1638,8 @@
         namaPengguna  : g('namaPengguna'),
         jabPengguna   : g('jabPengguna'),
         ttdPelaksana  : ttdData.pelaksana || '',
-        ttdPengawas   : ttdData.pengawas  || '',
-        ttdPengguna   : ttdData.pengguna  || '',
+        ttdPengawas   : ttdIsKey.pengawas ? ttdKeyVal.pengawas : (ttdData.pengawas || ''),
+        ttdPengguna   : ttdIsKey.pengguna ? ttdKeyVal.pengguna : (ttdData.pengguna || ''),
         // Kalau user upload foto baru → pakai base64 (GAS akan upload ke Drive)
         // Kalau tidak → pakai Drive URL dari surat usulan (GAS simpan langsung, tidak re-upload)
         foto1         : fotoData.foto1 || autoFotoUrls.foto1 || '',

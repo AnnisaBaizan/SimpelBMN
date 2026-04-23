@@ -262,7 +262,9 @@ function handleSubmit(d) {
       kerusakan: uploadFoto(subFolder, d.fotoKerusakan, 'Foto_Kerusakan_' + d.nup),
       keseluruhan: uploadFoto(subFolder, d.fotoKeseluruhan, 'Foto_Keseluruhan_' + d.nup),
       lainlain: uploadFoto(subFolder, d.fotoLainLain, 'Foto_LainLain_' + d.nup),
-      ttdPenerima: uploadFoto(subFolder, d.ttdPenerima, 'TTD_Penerima_' + d.nup),
+      ttdPenerima: d.ttdPenerima && d.ttdPenerima.startsWith('data:')
+        ? uploadFoto(subFolder, d.ttdPenerima, 'TTD_Penerima_' + d.nup)
+        : (d.ttdPenerima || '-'),
       ttdPengirim: uploadFoto(subFolder, d.ttdPengirim, 'TTD_Pengirim_' + d.nup),
     };
 
@@ -860,10 +862,15 @@ function handleSubmitBA(d) {
     const foto5 = resolveAtauUpload(d.foto5, 'Foto5_Setelah2');
     const foto6 = resolveAtauUpload(d.foto6, 'Foto6_LainLain');
 
-    // Upload TTD (base64 PNG dari canvas)
+    // TTD Pelaksana selalu gambar manual (upload ke Drive)
+    // TTD Pengawas & Pengguna bisa nama kunci (dari daftar) atau base64 (manual)
     const ttdPelaksana = uploadFoto(subFolder, d.ttdPelaksana, 'TTD_Pelaksana');
-    const ttdPengawas  = uploadFoto(subFolder, d.ttdPengawas,  'TTD_Pengawas');
-    const ttdPengguna  = uploadFoto(subFolder, d.ttdPengguna,  'TTD_PenggunaBMN');
+    const ttdPengawas  = d.ttdPengawas && d.ttdPengawas.startsWith('data:')
+      ? uploadFoto(subFolder, d.ttdPengawas, 'TTD_Pengawas')
+      : (d.ttdPengawas || '-');
+    const ttdPengguna  = d.ttdPengguna && d.ttdPengguna.startsWith('data:')
+      ? uploadFoto(subFolder, d.ttdPengguna, 'TTD_PenggunaBMN')
+      : (d.ttdPengguna || '-');
 
     // Append ke sheet BA-PP
     const ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);

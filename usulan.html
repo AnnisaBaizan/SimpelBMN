@@ -1360,7 +1360,9 @@
     let jenisSurat = 'umum';
     let isManualMode = false;
     let nomorData = null;
-    const ttdData = { penerima: null, pengirim: null };
+    const ttdData   = { penerima: null, pengirim: null };
+    const ttdIsKey  = { penerima: false };
+    const ttdKeyVal = { penerima: '' };
     let currentTTDTarget = null;
     let isDrawing = false;
     let ctx = null;
@@ -1875,6 +1877,8 @@
 
     function setTTDPenerimaBW(b64, name) {
       ttdData['penerima'] = b64;
+      ttdIsKey.penerima  = true;
+      ttdKeyVal.penerima = name;
       const pvImg = document.getElementById('pvTTDPenerima');
       if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
       const prevImg = document.getElementById('previewTTD_penerima');
@@ -1972,6 +1976,7 @@
 
     function clearTTD(target) {
       ttdData[target] = null;
+      if (ttdIsKey[target] !== undefined) { ttdIsKey[target] = false; ttdKeyVal[target] = ''; }
       const pvMap = { penerima: 'pvTTDPenerima', pengirim: 'pvTTDPengirim' };
       const pvImg = document.getElementById(pvMap[target]);
       if (pvImg) pvImg.style.display = 'none';
@@ -2049,7 +2054,8 @@
         fotoNup: photoData.fotoNup || '', fotoMerek: photoData.fotoMerek || '',
         fotoKerusakan: photoData.fotoKerusakan || '', fotoKeseluruhan: photoData.fotoKeseluruhan || '',
         fotoLainLain: photoData.fotoLainLain || '',
-        ttdPenerima: ttdData.penerima || '', ttdPengirim: ttdData.pengirim || ''
+        ttdPenerima: ttdIsKey.penerima ? ttdKeyVal.penerima : (ttdData.penerima || ''),
+        ttdPengirim: ttdData.pengirim || ''
       };
 
       try {

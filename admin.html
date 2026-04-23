@@ -975,19 +975,11 @@ async function startRegenPDF() {
     } catch(_) {}
   }));
 
-  // Load TTD Penerima & Pengirim
-  const ttdMap = { prTTDPenerima: d.ttdPenerima, prTTDPengirim: d.ttdPengirim };
-  await Promise.all(Object.entries(ttdMap).map(async ([imgId, url]) => {
-    if (!url || url === '-') return;
-    try {
-      const resp = await fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(url));
-      const data = await resp.json();
-      if (data.status === 'ok' && data.base64) {
-        const img = document.getElementById(imgId);
-        if (img) { img.src = data.base64; img.style.display = 'block'; }
-      }
-    } catch(_) {}
-  }));
+  // Load TTD — penerima bisa nama kunci (TTDSapras) atau URL Drive (manual)
+  await Promise.all([
+    loadTTDIntoEl('prTTDPenerima', d.ttdPenerima, 'pengawas'),
+    loadTTDIntoEl('prTTDPengirim', d.ttdPengirim, 'pengawas'),
+  ]);
 
   setStep('ms2', 'done', `✅ ${fetched} foto dimuat`);
   await sleep(300);
@@ -1171,10 +1163,7 @@ async function startRegenBAPDF() {
 
   // Step 2 — foto & TTD
   setStep('ms2','active','🔄');
-  const urlsToFetch = [
-    { id:'brTTDPelaksana', url: d.ttdPelaksana },
-    { id:'brTTDPengawas',  url: d.ttdPengawas  },
-    { id:'brTTDPengguna',  url: d.ttdPengguna  },
+  const fotoToFetch = [
     { id:'baImg1', url: d.foto1 }, { id:'baImg2', url: d.foto2 },
     { id:'baImg3', url: d.foto3 }, { id:'baImg4', url: d.foto4 },
     { id:'baImg5', url: d.foto5 }, { id:'baImg6', url: d.foto6 },
@@ -1186,8 +1175,15 @@ async function startRegenBAPDF() {
   });
   ['brTTDPelaksana','brTTDPengawas','brTTDPengguna'].forEach(id => setImg(id, false));
 
+  // TTD — bisa nama kunci (dari daftar) atau URL Drive (manual)
+  await Promise.all([
+    loadTTDIntoEl('brTTDPelaksana', d.ttdPelaksana, 'pelaksana'),
+    loadTTDIntoEl('brTTDPengawas',  d.ttdPengawas,  'pengawas'),
+    loadTTDIntoEl('brTTDPengguna',  d.ttdPengguna,  'pengguna'),
+  ]);
+
   let fetched = 0;
-  await Promise.all(urlsToFetch.map(async ({id, url}) => {
+  await Promise.all(fotoToFetch.map(async ({id, url}) => {
     if (!url || url === '-') return;
     try {
       const resp = await fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(url));
