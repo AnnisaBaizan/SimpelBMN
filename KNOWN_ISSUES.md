@@ -6,6 +6,8 @@ Daftar masalah yang ditemukan saat pembacaan seluruh proyek pada 2026-04-22.
 > **Update 2026-04-22 (batch 1):** Issue CRITICAL #1 sudah diperbaiki sekalian saat menambah Foto 6 pada Laporan AC. `getLaporanACList` sekarang membaca 34 kolom (A–AH), foto5 dan foto6 keduanya benar.
 >
 > **Update 2026-04-22 (batch 2):** Issue LOW #10 sudah diperbaiki — `kirimEmailNotifikasi` sekarang menyertakan Jenis Surat dan Ruangan Sesudah Pindah. Email sudah diaktifkan (EMAIL_AKTIF: true, EMAIL_TUJUAN: sarpras@poltekkespalembang.ac.id). Sheet L-PP-AC sekarang 36 kolom (A–AJ) dengan AI=JenisSurat, AJ=RuanganSesudah. `getSuratUsulanList` sekarang mengembalikan `fotoKerusakan` dan `fotoLainLain` untuk auto-fill foto pemindahan.
+>
+> **Update 2026-04-23 (batch 3):** Issue HIGH #3 sudah diperbaiki secara menyeluruh — TTD list-based kini ditangani benar di seluruh pipeline: (1) `usulan.html` dan `bapp.html` kini menyimpan nama kunci ke sheet, bukan base64 (menggunakan pola `ttdIsKey`/`ttdKeyVal` dari `laporan-ac.html`); (2) GAS `handleSubmit` dan `handleSubmitBA` kini cek `startsWith('data:')` sebelum upload TTD, sehingga nama kunci disimpan langsung tanpa re-upload ke Drive; (3) `admin.html` kini memakai `loadTTDIntoEl` untuk semua TTD di reprint surat usulan dan BA — bisa handle nama kunci maupun URL Drive. Juga ditambahkan `emailError` di response GAS dan try-catch per handler untuk memudahkan debug email yang tidak terkirim.
 
 ---
 
@@ -30,14 +32,13 @@ TTD Pengguna di `laporan-ac.html` selalu digambar manual (canvas), sehingga ini 
 
 **Saran perbaikan:** Tambahkan cek `startsWith('data:')` yang sama seperti `ttdPelaksana`.
 
-### 3. Admin regenerasi PDF tidak bisa menampilkan TTD list-based dari Laporan AC
-**File:** `admin.html` · Bagian `startRegenPDF` (sekitar baris 930–970)
+### ~~3. Admin regenerasi PDF tidak bisa menampilkan TTD list-based dari Laporan AC~~ ✅ DIPERBAIKI
+**File:** `admin.html`, `usulan.html`, `bapp.html`, `Code_UseFonnte.gs`
 
-TTD Pelaksana dan Pengawas di `laporan-ac.html` bisa disimpan sebagai **nama kunci** (misalnya `"Heriyanto"`) jika dipilih dari daftar, atau sebagai **URL Drive** jika digambar manual. Ketika admin me-regen PDF laporan AC, kode admin memanggil `getPhoto?url=<nilai_ttd>`. Jika nilainya adalah nama kunci (bukan URL), `getPhotoBase64()` akan gagal karena format URL tidak valid.
-
-**Dampak:** TTD Pelaksana/Pengawas tidak muncul saat regenerasi PDF untuk entri Laporan AC yang menggunakan TTD dari daftar.
-
-**Saran perbaikan:** Di admin, sebelum memanggil `getPhoto`, deteksi apakah nilai TTD adalah URL Drive atau nama kunci. Jika nama kunci, cari base64-nya dari `TTD_DATA` yang sudah ada di `laporan-ac.html` (atau embed TTD_DATA di admin juga).
+Pipeline TTD list-based sudah diperbaiki end-to-end:
+- `usulan.html` + `bapp.html`: tambah `ttdIsKey`/`ttdKeyVal`, kirim nama kunci ke GAS (bukan base64)
+- `Code_UseFonnte.gs` `handleSubmit` + `handleSubmitBA`: cek `startsWith('data:')` — nama kunci disimpan langsung, base64 di-upload ke Drive
+- `admin.html` reprint surat usulan dan BA: pakai `loadTTDIntoEl` yang sudah handle nama kunci (load dari TTDSapras/TTDAtasanLangsung) maupun URL Drive (fetch via `getPhoto`)
 
 ### 4. `PELAKSANA_PROFILE` dan `TTD_DATA` hardcoded hanya untuk 2 teknisi
 **File:** `laporan-ac.html` · Bagian `const PELAKSANA_LIST` dan `const TTD_DATA`

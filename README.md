@@ -633,12 +633,27 @@ git push
 
 ### Mode TTD di Form
 
-Setiap bidang TTD di semua form memiliki 2 mode yang bisa dipilih:
+Setiap bidang TTD di semua form memiliki 2 mode:
 
-| Mode | Cara Kerja |
-|------|-----------|
-| **🗂️ Pilih dari Daftar** | Pilih nama → TTD otomatis diproses B&W dan ditampilkan. Nama kunci disimpan ke sheet (bukan URL Drive); admin resolves dari `TTD_DATA` saat regen PDF. |
-| **✍️ Gambar Manual** | Canvas tanda tangan muncul. Gambar dengan mouse atau jari (layar sentuh). Klik Simpan → TTD di-upload ke Drive; URL disimpan ke sheet. |
+| Mode | Yang Tersimpan di Sheet | Admin Reprint |
+|------|------------------------|---------------|
+| **🗂️ Pilih dari Daftar** | **Nama kunci** (mis. `"Tommy"`) — tidak upload ke Drive | `loadTTDIntoEl` load dari folder TTD lokal (embed saat build) |
+| **✍️ Gambar Manual** | **URL Google Drive** — base64 di-upload ke folder Drive | `loadTTDIntoEl` fetch via GAS `?action=getPhoto` |
+
+Kedua mode ditangani otomatis oleh `loadTTDIntoEl` di `admin.html` — fungsi ini cek `startsWith('https://')` untuk Drive URL, sisanya dianggap nama kunci dan diload dari folder TTD lokal.
+
+### Kolom TTD di Google Sheets
+
+| Sheet | Kolom | Nilai yang Mungkin |
+|-------|-------|--------------------|
+| Usulan-PP | U (TTD Penerima) | Nama kunci (dari daftar) atau URL Drive (manual) |
+| Usulan-PP | V (TTD Pengirim) | URL Drive (selalu manual/canvas) |
+| BA-PP | T (TTD Pelaksana) | URL Drive (selalu manual/canvas) |
+| BA-PP | U (TTD Pengawas) | Nama kunci atau URL Drive |
+| BA-PP | V (TTD Pengguna) | Nama kunci atau URL Drive |
+| L-PP-AC | Z (TTD Pelaksana) | Nama kunci atau URL Drive |
+| L-PP-AC | AA (TTD Pengguna) | URL Drive (selalu manual/canvas) |
+| L-PP-AC | AB (TTD Pengawas) | Nama kunci atau URL Drive |
 
 ---
 

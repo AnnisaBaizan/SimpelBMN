@@ -9,13 +9,15 @@ Dokumen ini adalah **referensi perencanaan** — belum ada kode yang diubah.
 
 | File | Baris saat ini | Estimasi baris yang bisa dipindah |
 |---|---|---|
-| usulan.html | ~2.214 | ~500 |
-| bapp.html | ~1.739 | ~450 |
+| usulan.html | ~2.220 | ~500 |
+| bapp.html | ~1.749 | ~450 |
 | laporan-ac.html | ~2.073 | ~450 |
-| admin.html | ~1.467 | ~120 |
-| Code_UseFonnte.gs | ~986 | ~25 (uploadFoto) |
+| admin.html | ~1.463 | ~120 |
+| Code_UseFonnte.gs | ~1.345 | ~25 (uploadFoto) |
 
 > **Update 2026-04-22 (batch 2):** Radio button "Berdasarkan Surat Usulan PP?" sekarang sudah konsisten menggunakan `.radio-group` di bapp.html dan laporan-ac.html → **siap dijadikan component**. Jenis Surat di usulan.html sekarang `<select>` dropdown (bukan radio). `JENIS_LAP_CONFIG` (laporan-ac) dan `JENIS_LAP_CONFIG_AC` (admin) sudah terpisah — kandidat untuk endpoint GAS `getJenisConfig` di fase modularisasi lanjutan.
+>
+> **Update 2026-04-23 (batch 3):** Pola `ttdIsKey`/`ttdKeyVal` (simpan nama kunci vs base64) kini **konsisten di semua 3 halaman form** (usulan, bapp, laporan-ac) — siap dijadikan bagian dari `partials/ttd-section.html`. Fungsi `loadTTDIntoEl` di `admin.html` kini menjadi satu-satunya entry point load TTD di admin, menggantikan raw `getPhoto` fetch — kandidat untuk `shared.js`.
 
 Pendekatan yang disarankan: tambahkan dua file baru —
 - `shared.css` — CSS bersama (dilink dari semua halaman)
