@@ -12,12 +12,15 @@ Dokumen ini adalah **referensi perencanaan** — belum ada kode yang diubah.
 | usulan.html | ~2.220 | ~500 |
 | bapp.html | ~1.749 | ~450 |
 | laporan-ac.html | ~2.073 | ~450 |
-| admin.html | ~1.463 | ~120 |
-| Code_UseFonnte.gs | ~1.345 | ~25 (uploadFoto) |
+| lkh.html | ~1.600 | ~400 |
+| admin.html | ~1.800 | ~120 |
+| Code_UseFonnte.gs | ~1.550 | ~25 (uploadFoto) |
 
 > **Update 2026-04-22 (batch 2):** Radio button "Berdasarkan Surat Usulan PP?" sekarang sudah konsisten menggunakan `.radio-group` di bapp.html dan laporan-ac.html → **siap dijadikan component**. Jenis Surat di usulan.html sekarang `<select>` dropdown (bukan radio). `JENIS_LAP_CONFIG` (laporan-ac) dan `JENIS_LAP_CONFIG_AC` (admin) sudah terpisah — kandidat untuk endpoint GAS `getJenisConfig` di fase modularisasi lanjutan.
 >
 > **Update 2026-04-23 (batch 3):** Pola `ttdIsKey`/`ttdKeyVal` (simpan nama kunci vs base64) kini **konsisten di semua 3 halaman form** (usulan, bapp, laporan-ac) — siap dijadikan bagian dari `partials/ttd-section.html`. Fungsi `loadTTDIntoEl` di `admin.html` kini menjadi satu-satunya entry point load TTD di admin, menggantikan raw `getPhoto` fetch — kandidat untuk `shared.js`.
+>
+> **Update 2026-04-23 (batch 4 — LKH):** Ditambahkan halaman baru `lkh.html` (Laporan Kegiatan Harian Sarpras). Fungsi GAS baru: `getNomorLKH`, `getLKHList`, `handleSubmitLKH`, `kirimEmailNotifikasiLKH`. Sheet baru `LKH-ISP` (30 kolom A–AD) ditambahkan ke `setupSheetHeaders()`. Tab LKH ditambahkan ke `admin.html`. Menu LKH ditambahkan ke `index.html`. `build.js` sekarang juga memproses `lkh.html`. Pola `ttdIsKey`/`ttdKeyVal` dan `resolveAtauUpload` dipakai konsisten di `lkh.html`, mengikuti konvensi halaman form lainnya.
 
 Pendekatan yang disarankan: tambahkan dua file baru —
 - `shared.css` — CSS bersama (dilink dari semua halaman)

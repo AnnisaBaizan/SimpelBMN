@@ -31,6 +31,11 @@ const CONFIG = {
   L_PP_AC_SHEET_NAME: 'L-PP-AC',
   L_PP_AC_NOMOR_PREFIX: 'KN.01.03/Sarpras/L-PP-AC',
   L_PP_AC_DRIVE_FOLDER_ID: 'GANTI_DENGAN_FOLDER_ID_L_PP_AC',
+
+  // --- Laporan Kegiatan Harian Sarpras (LKH) ---
+  LKH_SHEET_NAME: 'LKH-ISP',
+  LKH_NOMOR_PREFIX: 'KN.01.03/Sarpras/LKH-ISP',
+  LKH_DRIVE_FOLDER_ID: 'GANTI_DENGAN_FOLDER_ID_LKH',
 };
 
 // ================================================
@@ -58,6 +63,10 @@ function doGet(e) {
     result = getNomorLaporanAC();
   } else if (action === 'getLaporanACList') {
     result = getLaporanACList();
+  } else if (action === 'getNomorLKH') {
+    result = getNomorLKH();
+  } else if (action === 'getLKHList') {
+    result = getLKHList();
   } else {
     result = { error: 'Action tidak dikenal.' };
   }
@@ -85,6 +94,8 @@ function doPost(e) {
     result = handleSubmitBA(payload);
   } else if (action === 'submitLaporanAC') {
     result = handleSubmitLaporanAC(payload);
+  } else if (action === 'submitLKH') {
+    result = handleSubmitLKH(payload);
   } else {
     result = { status: 'error', error: 'Action tidak dikenal.' };
   }
@@ -1132,6 +1143,270 @@ function handleSubmitLaporanAC(d) {
   }
 }
 // ============================================================
+//  GET NOMOR LKH
+// ============================================================
+function getNomorLKH() {
+  const tahun = new Date().getFullYear();
+  try {
+    const ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.LKH_SHEET_NAME);
+    if (!sheet) throw new Error('Sheet "' + CONFIG.LKH_SHEET_NAME + '" tidak ditemukan.');
+
+    const lastRow = sheet.getLastRow();
+    let urut = 1;
+    if (lastRow > 1) {
+      const nomorList = sheet.getRange(2, 2, lastRow - 1, 1).getValues().flat();
+      const count = nomorList.filter(n => n && String(n).includes('/' + tahun)).length;
+      urut = count + 1;
+    }
+    const urutStr = String(urut).padStart(3, '0');
+    const nomor   = CONFIG.LKH_NOMOR_PREFIX + '/' + urutStr + '/' + tahun;
+    return { status: 'ok', urut: urut, nomor: nomor };
+  } catch (err) {
+    return { status: 'error', error: err.message };
+  }
+}
+
+// ============================================================
+//  GET DAFTAR LKH (untuk filter dropdown lkh.html & admin)
+//  Kolom: A=No, B=Nomor, C=TglSubmit, D=TglLKH, E=NoSuratUsulan,
+//         F=NamaKegiatan, G=NamaBarang, H=Merek, I=Tipe,
+//         J=Ruangan, K=NUP, L=Kondisi, M=Keluhan, N=Progress,
+//         O=NamaPelaksana, P=NIPPelaksana, Q=JabPelaksana, R=TTDPelaksana,
+//         S=NamaPengusul, T=NIPPengusul, U=JabPengusul, V=TTDPengusul,
+//         W=NamaMengetahui, X=TTDMengetahui,
+//         Y=Foto1, Z=Foto2, AA=Foto3, AB=Foto4, AC=Foto5, AD=Foto6
+// ============================================================
+function getLKHList() {
+  try {
+    const ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.LKH_SHEET_NAME);
+    if (!sheet) throw new Error('Sheet "' + CONFIG.LKH_SHEET_NAME + '" tidak ditemukan.');
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return { status: 'ok', data: [] };
+
+    const raw  = sheet.getRange(2, 1, lastRow - 1, 30).getValues();
+    const data = raw
+      .filter(r => r[1])
+      .map(r => ({
+        nomor          : String(r[1]  || ''),
+        tanggalLKH     : r[3] ? Utilities.formatDate(new Date(r[3]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
+        noSuratUsulan  : String(r[4]  || ''),
+        namaKegiatan   : String(r[5]  || ''),
+        namaBarang     : String(r[6]  || ''),
+        merek          : String(r[7]  || ''),
+        tipe           : String(r[8]  || ''),
+        ruangan        : String(r[9]  || ''),
+        nup            : String(r[10] || ''),
+        kondisi        : String(r[11] || ''),
+        keluhan        : String(r[12] || ''),
+        progress       : String(r[13] || ''),
+        namaPelaksana  : String(r[14] || ''),
+        nipPelaksana   : String(r[15] || ''),
+        jabPelaksana   : String(r[16] || ''),
+        ttdPelaksana   : String(r[17] || '-'),
+        namaPengusul   : String(r[18] || ''),
+        nipPengusul    : String(r[19] || ''),
+        jabPengusul    : String(r[20] || ''),
+        ttdPengusul    : String(r[21] || '-'),
+        namaMengetahui : String(r[22] || ''),
+        ttdMengetahui  : String(r[23] || '-'),
+        foto1          : String(r[24] || '-'),
+        foto2          : String(r[25] || '-'),
+        foto3          : String(r[26] || '-'),
+        foto4          : String(r[27] || '-'),
+        foto5          : String(r[28] || '-'),
+        foto6          : String(r[29] || '-'),
+      }))
+      .reverse();
+    return { status: 'ok', count: data.length, data: data };
+  } catch (err) {
+    return { status: 'error', error: err.message };
+  }
+}
+
+// ============================================================
+//  HANDLE SUBMIT LKH
+// ============================================================
+function handleSubmitLKH(d) {
+  try {
+    const timestamp   = new Date();
+    const namaFolder  = d.nomor + ' - ' + (d.namaPelaksana || 'LKH');
+    const parentFolder = DriveApp.getFolderById(CONFIG.LKH_DRIVE_FOLDER_ID);
+    const subFolder    = parentFolder.createFolder(namaFolder);
+
+    // foto1 & foto2 bisa jadi URL Drive (auto-fill dari surat usulan)
+    function resolveAtauUpload(nilaiInput, namaFile) {
+      if (!nilaiInput || nilaiInput === '-' || nilaiInput.length < 10) return '-';
+      if (nilaiInput.startsWith('https://')) return nilaiInput;
+      return uploadFoto(subFolder, nilaiInput, namaFile);
+    }
+    const foto1 = resolveAtauUpload(d.foto1, 'Foto1_NUP');
+    const foto2 = resolveAtauUpload(d.foto2, 'Foto2_Merek');
+    const foto3 = resolveAtauUpload(d.foto3, 'Foto3_Sebelum');
+    const foto4 = resolveAtauUpload(d.foto4, 'Foto4_Sesudah1');
+    const foto5 = resolveAtauUpload(d.foto5, 'Foto5_Sesudah2');
+    const foto6 = resolveAtauUpload(d.foto6, 'Foto6_LainLain');
+
+    // TTD Pelaksana & Mengetahui: nama kunci atau base64
+    const ttdPelaksana = d.ttdPelaksana && d.ttdPelaksana.startsWith('data:')
+      ? uploadFoto(subFolder, d.ttdPelaksana, 'TTD_Pelaksana')
+      : (d.ttdPelaksana || '-');
+    const ttdPengusul = d.ttdPengusul && d.ttdPengusul.startsWith('data:')
+      ? uploadFoto(subFolder, d.ttdPengusul, 'TTD_Pengusul')
+      : (d.ttdPengusul || '-');
+    const ttdMengetahui = d.ttdMengetahui && d.ttdMengetahui.startsWith('data:')
+      ? uploadFoto(subFolder, d.ttdMengetahui, 'TTD_Mengetahui')
+      : (d.ttdMengetahui || '-');
+
+    const ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.LKH_SHEET_NAME);
+    if (!sheet) throw new Error('Sheet "' + CONFIG.LKH_SHEET_NAME + '" tidak ditemukan.');
+
+    const noUrut = sheet.getLastRow();
+    sheet.appendRow([
+      noUrut,                   // A: No
+      d.nomor,                  // B: Nomor LKH
+      timestamp,                // C: Tanggal Submit
+      d.tanggalLKH,             // D: Tanggal LKH
+      d.noSuratUsulan || '',    // E: No Surat Usulan
+      d.namaKegiatan || '',     // F: Nama Kegiatan
+      d.namaBarang   || '',     // G: Nama Barang
+      d.merek        || '',     // H: Merek
+      d.tipe         || '',     // I: Tipe
+      d.ruangan      || '',     // J: Ruangan
+      d.nup          || '',     // K: NUP
+      d.kondisi      || '',     // L: Kondisi
+      d.keluhan      || '',     // M: Keluhan
+      d.progress     || 'Dalam Tahap Pengerjaan', // N: Progress
+      d.namaPelaksana  || '',   // O: Nama Pelaksana
+      d.nipPelaksana   || '',   // P: NIP Pelaksana
+      d.jabPelaksana   || '',   // Q: Jabatan Pelaksana
+      ttdPelaksana,             // R: TTD Pelaksana
+      d.namaPengusul   || '',   // S: Nama Pengusul
+      d.nipPengusul    || '',   // T: NIP Pengusul
+      d.jabPengusul    || '',   // U: Jabatan Pengusul
+      ttdPengusul,              // V: TTD Pengusul
+      d.namaMengetahui || '',   // W: Nama Mengetahui
+      ttdMengetahui,            // X: TTD Mengetahui
+      foto1,                    // Y: Foto 1 NUP
+      foto2,                    // Z: Foto 2 Merek
+      foto3,                    // AA: Foto 3 Sebelum
+      foto4,                    // AB: Foto 4 Sesudah 1
+      foto5,                    // AC: Foto 5 Sesudah 2
+      foto6,                    // AD: Foto 6 Lain-lain
+    ]);
+
+    const newRow = sheet.getLastRow();
+    sheet.getRange(newRow, 3).setNumberFormat('dd/mm/yyyy hh:mm:ss');
+    sheet.getRange(newRow, 4).setNumberFormat('dd/mm/yyyy');
+
+    let emailError = null;
+    if (CONFIG.EMAIL_AKTIF) {
+      try {
+        kirimEmailNotifikasiLKH(d, { foto1, foto2, foto3, foto4, foto5, foto6 }, timestamp);
+      } catch (emailErr) {
+        emailError = emailErr.message;
+        Logger.log('EMAIL ERROR (LKH): ' + emailErr.message);
+      }
+    }
+
+    return {
+      status: 'ok',
+      message: 'Laporan Kegiatan berhasil disimpan.',
+      folder: subFolder.getUrl(),
+      emailError: emailError,
+    };
+  } catch (err) {
+    return { status: 'error', error: err.message };
+  }
+}
+
+// -------- Email notifikasi: Laporan Kegiatan Harian --------
+function kirimEmailNotifikasiLKH(d, fotoLinks, timestamp) {
+  const tgl = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'dd MMMM yyyy HH:mm');
+  const body = `
+  <div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
+    <div style="background:#1a3a5c;color:#fff;padding:20px 24px;">
+      <h2 style="margin:0;font-size:16px;">📋 Laporan Kegiatan Sarpras Baru</h2>
+      <p style="margin:4px 0 0;font-size:12px;opacity:.8;">${CONFIG.NAMA_INSTANSI} — ${tgl}</p>
+    </div>
+    <div style="padding:20px 24px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;width:35%;">Nomor LKH</td>
+          <td style="padding:8px 12px;">${d.nomor}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Tanggal Laporan</td>
+          <td style="padding:8px 12px;">${d.tanggalLKH}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">No Surat Usulan</td>
+          <td style="padding:8px 12px;">${d.noSuratUsulan || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;vertical-align:top;">Nama Kegiatan</td>
+          <td style="padding:8px 12px;">${(d.namaKegiatan || '-').replace(/\n/g, '<br>')}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Nama Barang</td>
+          <td style="padding:8px 12px;">${d.namaBarang || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Merek / Tipe</td>
+          <td style="padding:8px 12px;">${d.merek || '-'} / ${d.tipe || '-'}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Ruangan (DBR)</td>
+          <td style="padding:8px 12px;">${d.ruangan || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">NUP BMN</td>
+          <td style="padding:8px 12px;">${d.nup || '-'}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Kondisi</td>
+          <td style="padding:8px 12px;">${d.kondisi || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Progress</td>
+          <td style="padding:8px 12px;font-weight:bold;color:${d.progress === 'Selesai' ? '#27ae60' : '#e67e22'};">${d.progress || '-'}</td>
+        </tr>
+        <tr style="background:#f5f7fa;">
+          <td style="padding:8px 12px;font-weight:bold;">Pelaksana</td>
+          <td style="padding:8px 12px;">${d.namaPelaksana || '-'}${d.jabPelaksana ? ' — ' + d.jabPelaksana : ''}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:bold;">Pengusul</td>
+          <td style="padding:8px 12px;">${d.namaPengusul || '-'}${d.jabPengusul ? ' — ' + d.jabPengusul : ''}</td>
+        </tr>
+      </table>
+      <div style="margin-top:16px;padding:12px;background:#eaf4fb;border-radius:6px;border-left:4px solid #2980b9;">
+        <p style="margin:0 0 8px;font-weight:bold;font-size:13px;">📎 Lampiran Foto:</p>
+        <ul style="margin:0;padding-left:18px;font-size:12px;line-height:2;">
+          <li>Foto NUP: <a href="${fotoLinks.foto1}">${fotoLinks.foto1 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Merek/Tipe: <a href="${fotoLinks.foto2}">${fotoLinks.foto2 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Sebelum: <a href="${fotoLinks.foto3}">${fotoLinks.foto3 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Sesudah 1: <a href="${fotoLinks.foto4}">${fotoLinks.foto4 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Sesudah 2: <a href="${fotoLinks.foto5}">${fotoLinks.foto5 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+          <li>Foto Lain-lain: <a href="${fotoLinks.foto6}">${fotoLinks.foto6 !== '-' ? 'Lihat Foto' : 'Tidak ada'}</a></li>
+        </ul>
+      </div>
+      <p style="margin-top:20px;font-size:12px;color:#888;">
+        Email ini dikirim otomatis oleh Sistem BMN — ${CONFIG.NAMA_INSTANSI}.
+      </p>
+    </div>
+  </div>
+  `;
+  MailApp.sendEmail({
+    to: CONFIG.EMAIL_TUJUAN,
+    subject: '[BMN] Laporan Kegiatan Baru — ' + d.nomor + ' — ' + (d.namaPelaksana || ''),
+    htmlBody: body,
+  });
+}
+
+// ============================================================
 //  SETUP SPREADSHEET HEADERS
 //  Jalankan sekali dari Apps Script Editor → Run → setupSheetHeaders
 //  Membuat/mengganti baris header di 3 sheet arsip BMN.
@@ -1185,6 +1460,18 @@ function setupSheetHeaders() {
       'Foto 3 (Sebelum/Spare Part | AC Sebelum Pindah)', 'Foto 4 Pekerjaan', 'Foto 5 Pekerjaan',
       'Foto 6 (Lain-lain | AC Sesudah Pindah)',
       'Jenis Surat Laporan', 'Ruangan Sesudah Pindah',
+    ],
+
+    // ── Sheet 4: LKH-ISP (A–AD = 30 kolom) ───────────────────
+    'LKH-ISP': [
+      'No', 'Nomor LKH', 'Tanggal Submit', 'Tanggal LKH',
+      'No Surat Usulan', 'Nama Kegiatan', 'Nama Barang', 'Merek', 'Tipe',
+      'Ruangan (DBR)', 'NUP', 'Kondisi', 'Keluhan', 'Progress',
+      'Nama Pelaksana', 'NIP Pelaksana', 'Jabatan Pelaksana', 'TTD Pelaksana',
+      'Nama Pengusul', 'NIP Pengusul', 'Jabatan Pengusul', 'TTD Pengusul',
+      'Nama Mengetahui', 'TTD Mengetahui',
+      'Foto 1 NUP', 'Foto 2 Merek/Tipe', 'Foto 3 Sebelum',
+      'Foto 4 Sesudah 1', 'Foto 5 Sesudah 2', 'Foto 6 Lain-lain',
     ],
   };
 

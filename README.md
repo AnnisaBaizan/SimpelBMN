@@ -13,7 +13,8 @@ Sistem digital pengelolaan dokumen **Barang Milik Negara (BMN)** — pengajuan, 
   - [Surat Usulan BMN](#1-surat-usulan-bmn--usulanhtml)
   - [Berita Acara (BAPP)](#2-berita-acara-serah-terima--bapphtml)
   - [Laporan Pemeliharaan AC](#3-laporan-pemeliharaanperbaikan-ac--laporan-achtml)
-  - [Panel Admin](#4-panel-admin--adminhtml)
+  - [Laporan Kegiatan Harian](#4-laporan-kegiatan-harian-sarpras--lkhhtml)
+  - [Panel Admin](#5-panel-admin--adminhtml)
 - [Arsitektur Sistem](#arsitektur-sistem)
 - [Alur Kerja Pengembangan](#alur-kerja-pengembangan)
 - [Setup Awal](#setup-awal)
@@ -31,7 +32,7 @@ Sistem digital pengelolaan dokumen **Barang Milik Negara (BMN)** — pengajuan, 
 
 | Fitur | Keterangan |
 |-------|-----------|
-| **3 Jenis Dokumen** | Surat Usulan BMN (Umum / AC Perbaikan / AC Pemindahan), Berita Acara PP, Laporan Pemeliharaan AC |
+| **4 Jenis Dokumen** | Surat Usulan BMN (Umum / AC Perbaikan / AC Pemindahan), Berita Acara PP, Laporan Pemeliharaan AC, Laporan Kegiatan Harian |
 | **Live Preview** | Preview surat terbentuk otomatis real-time saat form diisi |
 | **Cascade Dropdown Aset** | NUP → Nama Barang → Merek → Tipe, diambil dari Google Sheets aset |
 | **Input Manual** | Toggle "✏️ Isi Data Manual" jika barang tidak ada di daftar |
@@ -179,7 +180,42 @@ Form laporan khusus pemeliharaan, perbaikan, atau pemindahan Air Conditioner.
 
 ---
 
-### 4. Panel Admin — `admin.html`
+### 4. Laporan Kegiatan Harian Sarpras — `lkh.html`
+
+Form laporan harian kegiatan pemeliharaan Barang Milik Negara oleh Instalasi Sarana Prasarana.
+
+#### Langkah Pengisian
+
+1. **Info Laporan** — Nomor LKH terisi otomatis. Isi Tanggal Laporan.
+
+2. **Dasar Surat Usulan** — Pilih:
+   - **Ya** → pilih Nomor Surat Usulan dari dropdown; detail barang (NUP, nama, merek, tipe, ruangan, keluhan) + foto 1 & 2 terisi otomatis
+   - **Tidak** → isi nomor surat usulan manual atau kosongkan (untuk kegiatan rutin tanpa surat usulan)
+
+   > Opsi ditandai **🔒 (sudah selesai)** jika surat usulan tersebut sudah pernah punya LKH ber-progress "Selesai" — tidak bisa dipilih kembali.
+
+3. **Nama Kegiatan** — Deskripsikan kegiatan yang dilakukan (mis. "Pemeliharaan rutin AC, pembersihan filter").
+
+4. **Rincian BMN** — Pilih NUP dari dropdown cascade (atau isi manual). Isi Ruangan dan Kondisi barang.
+
+5. **Progress** — Pilih:
+   - **Dalam Tahap Pengerjaan** — pekerjaan belum selesai
+   - **Selesai** — pekerjaan sudah selesai (LKH ini akan mengunci surat usulan agar tidak bisa dipilih lagi)
+
+6. **Foto** — Upload hingga 6 foto:
+   - Foto 1 & 2: auto-fill dari surat usulan (NUP dan merek/tipe)
+   - Foto 3–6: upload manual (sebelum, sesudah 1, sesudah 2, lain-lain)
+
+7. **Penandatangan** — Isi data 3 pihak:
+   - **Yang Melaksanakan** (Sarpras) — pilih dari daftar TTDSapras
+   - **Pengusul / Pengguna BMN** — isi nama/NIP + gambar TTD manual
+   - **Mengetahui / Kepala Instalasi** — pilih dari daftar TTDSapras
+
+8. Klik **🚀 Submit**. Email notifikasi terkirim otomatis ke tim Sarpras.
+
+---
+
+### 5. Panel Admin — `admin.html`
 
 Halaman untuk melihat, mencari, dan mencetak ulang semua dokumen yang pernah disubmit.
 
@@ -204,6 +240,11 @@ Buka `admin.html` → masukkan **password admin** (dikonfigurasi saat deploy).
 - Klik baris → detail panel (termasuk Jenis Surat, Ruangan Sesudah jika pemindahan) + tombol Cetak
 - Saat cetak: judul, narasi, dan caption foto berubah otomatis sesuai jenis (perbaikan vs pemindahan), foto 6 slot tersedia
 
+**Tab Laporan Kegiatan (LKH):**
+- Tabel semua LKH dengan kolom: Tanggal LKH, Nomor LKH, Pelaksana, Nama Barang, NUP, Progress, No Usulan
+- Klik baris → detail lengkap + tombol Cetak
+- Saat cetak: muat foto & TTD dari Drive, tanggal diformat terbilang, progress di-underline sesuai nilai
+
 > **Catatan:** Cetak akan mengunduh foto terbaru dari Google Drive. Pastikan koneksi internet stabil.
 
 ---
@@ -212,12 +253,13 @@ Buka `admin.html` → masukkan **password admin** (dikonfigurasi saat deploy).
 
 ```
 SimpleBMN/
-├── index.html              #   163 baris — Landing page, navigasi ke 3 form
-├── usulan.html             # 2.214 baris — Form Surat Usulan BMN
-├── bapp.html               # 1.739 baris — Form Berita Acara PP
-├── laporan-ac.html         # 2.073 baris — Form Laporan Pemeliharaan AC
-├── admin.html              # 1.467 baris — Panel Admin
-├── build.js                #    87 baris — Build script: inject env + embed TTD base64 → dist/
+├── index.html              #   ~175 baris — Landing page, navigasi ke 4 form
+├── usulan.html             # ~2.220 baris — Form Surat Usulan BMN
+├── bapp.html               # ~1.749 baris — Form Berita Acara PP
+├── laporan-ac.html         # ~2.073 baris — Form Laporan Pemeliharaan AC
+├── lkh.html                # ~1.600 baris — Form Laporan Kegiatan Harian Sarpras
+├── admin.html              # ~1.800 baris — Panel Admin (4 tab: Usulan, BA, AC, LKH)
+├── build.js                #    88 baris — Build script: inject env + embed TTD base64 → dist/
 ├── vercel.json             #             — Konfigurasi deploy Vercel
 ├── KOP.png                 #             — Kop surat institusi
 │
@@ -240,6 +282,7 @@ SimpleBMN/
     ├── usulan.html
     ├── bapp.html
     ├── laporan-ac.html
+    ├── lkh.html
     ├── admin.html
     ├── KOP.png
     ├── TTDSapras/
@@ -316,6 +359,7 @@ const CONFIG = {
   DRIVE_FOLDER_ID         : 'ID_FOLDER_DRIVE_FOTO_USULAN',
   BA_DRIVE_FOLDER_ID      : 'ID_FOLDER_DRIVE_FOTO_BA',
   L_PP_AC_DRIVE_FOLDER_ID : 'ID_FOLDER_DRIVE_FOTO_LAPORAN_AC',
+  LKH_DRIVE_FOLDER_ID     : 'ID_FOLDER_DRIVE_FOTO_LKH',
   ASET_SPREADSHEET_ID     : 'ID_SHEETS_ASET_BMN',
   ASET_SHEET_NAME         : 'ASET2026',        // nama sheet di spreadsheet aset
   EMAIL_TUJUAN            : 'sarpras@poltekkespalembang.ac.id',
@@ -349,6 +393,7 @@ Buat 3 folder di Google Drive, salin ID masing-masing dari URL:
 | Foto Surat Usulan | `DRIVE_FOLDER_ID` | Foto & TTD dari form usulan |
 | Foto BA PP | `BA_DRIVE_FOLDER_ID` | Foto & TTD dari form BAPP |
 | Foto Laporan AC | `L_PP_AC_DRIVE_FOLDER_ID` | Foto & TTD dari form laporan AC |
+| Foto LKH | `LKH_DRIVE_FOLDER_ID` | Foto & TTD dari form laporan kegiatan harian |
 
 > ID folder ada di URL Google Drive: `drive.google.com/drive/folders/**ID_INI**`
 
@@ -452,6 +497,8 @@ POST : {GAS_URL}  (body: JSON string)
 | `getSuratUsulanList` | Surat usulan untuk dropdown BA & Laporan AC | `{status, count, data: [{nomor, namaBarang, merek, tipe, ruangan, nup, fotoNup, fotoMerek, fotoKerusakan, fotoLainLain, jenisSurat}]}` |
 | `getBASuratList` | Semua berita acara (untuk admin) | `{status, count, data: [...]}` |
 | `getLaporanACList` | Semua laporan AC (untuk admin) | `{status, count, data: [...]}` |
+| `getNomorLKH` | Generate nomor LKH berikutnya | `{status, nomor, urut}` |
+| `getLKHList` | Semua laporan kegiatan harian (untuk filter & admin) | `{status, count, data: [...]}` |
 | `getPhoto` | Ambil foto Drive sebagai base64 | `{status, base64}` — param: `url=DRIVE_URL` |
 
 ### POST Endpoints
@@ -461,6 +508,7 @@ POST : {GAS_URL}  (body: JSON string)
 | `submit` | Simpan Surat Usulan | `nomor, tanggalSurat, nama, nip, jabatan, bagian, namaBarang, merek, tipe, ruangan, ruanganSesudah, nup, kondisi, keluhan, jenisSurat, fotoNup, fotoMerek, fotoKerusakan, fotoKeseluruhan, fotoLainLain, ttdPenerima, ttdPengirim, namaPenerima, nipPenerima` |
 | `submitBA` | Simpan Berita Acara | `nomor, tanggalBA, noSuratUsulan, namaBarang, merek, tipe, ruangan, nup, kondisi, rincian, namaPelaksana, jabPelaksana, namaPengawas, jabPengawas, namaPengguna, jabPengguna, ttdPelaksana, ttdPengawas, ttdPengguna, foto1–foto6` |
 | `submitLaporanAC` | Simpan Laporan AC | `nomor, tanggalLaporan, noSuratUsulan, jenisSurat, namaBarang, merek, tipe, ruangan, ruanganSesudah, nup, kapasitasAC, jenisCuci, jenisIsiFreon, jenisGantiKapasitor, jenisGantiModul, jenisLainLain, deskripsi, namaPelaksana, jabPelaksana, perusahaanPelaksana, namaPengguna, jabPengguna, namaPengawas, ttdPelaksana, ttdPengguna, ttdPengawas, foto1–foto6` |
+| `submitLKH` | Simpan Laporan Kegiatan Harian | `nomor, tanggalLKH, noSuratUsulan, namaKegiatan, namaBarang, merek, tipe, ruangan, nup, kondisi, keluhan, progress, namaPelaksana, nipPelaksana, jabPelaksana, namaPengusul, nipPengusul, jabPengusul, namaMengetahui, ttdPelaksana, ttdPengusul, ttdMengetahui, foto1–foto6` |
 
 ### Format Nomor Surat
 
@@ -469,6 +517,7 @@ POST : {GAS_URL}  (body: JSON string)
 | Surat Usulan | `KN.01.03/Sarpras/PP` | `KN.01.03/Sarpras/PP/001/I/2026` |
 | Berita Acara | `KN.01.03/Sarpras/BA-PP` | `KN.01.03/Sarpras/BA-PP/001/I/2026` |
 | Laporan AC | `KN.01.03/Sarpras/L-PP-AC` | `KN.01.03/Sarpras/L-PP-AC/001/I/2026` |
+| Laporan Kegiatan Harian | `KN.01.03/Sarpras/LKH-ISP` | `KN.01.03/Sarpras/LKH-ISP/001/I/2026` |
 
 Format: `PREFIX/URUT/BULAN_ROMAWI/TAHUN`
 
@@ -593,6 +642,41 @@ Format: `PREFIX/URUT/BULAN_ROMAWI/TAHUN`
 | AI | Jenis Surat Laporan (`ac-perbaikan` / `ac-pemindahan`) |
 | AJ | Ruangan Sesudah Pindah (DBR) — khusus Pemindahan AC |
 
+### Sheet: `LKH-ISP` (30 kolom, A–AD)
+
+| Kolom | Field |
+|-------|-------|
+| A | No (nomor urut baris) |
+| B | Nomor LKH |
+| C | Tanggal Submit (timestamp) |
+| D | Tanggal LKH |
+| E | No Surat Usulan |
+| F | Nama Kegiatan |
+| G | Nama Barang |
+| H | Merek |
+| I | Tipe |
+| J | Ruangan (DBR) |
+| K | NUP BMN |
+| L | Kondisi |
+| M | Keluhan |
+| N | Progress (`Dalam Tahap Pengerjaan` / `Selesai`) |
+| O | Nama Pelaksana (Sarpras) |
+| P | NIP Pelaksana |
+| Q | Jabatan Pelaksana |
+| R | TTD Pelaksana (nama kunci atau URL Drive) |
+| S | Nama Pengusul / Pengguna BMN |
+| T | NIP Pengusul |
+| U | Jabatan Pengusul |
+| V | TTD Pengusul (URL Drive — selalu manual/canvas) |
+| W | Nama Mengetahui (Kepala Instalasi) |
+| X | TTD Mengetahui (nama kunci atau URL Drive) |
+| Y | Link Foto 1 — NUP Barang (Drive atau URL dari usulan) |
+| Z | Link Foto 2 — Merek/Tipe (Drive atau URL dari usulan) |
+| AA | Link Foto 3 — Sebelum Perbaikan (Drive) |
+| AB | Link Foto 4 — Sesudah Perbaikan 1 (Drive) |
+| AC | Link Foto 5 — Sesudah Perbaikan 2 (Drive) |
+| AD | Link Foto 6 — Lain-lain (Drive) |
+
 ---
 
 ## Manajemen TTD
@@ -601,7 +685,7 @@ Format: `PREFIX/URUT/BULAN_ROMAWI/TAHUN`
 
 | Folder | Diembed ke | Dipakai di Form |
 |--------|-----------|-----------------|
-| `TTDSapras/` | `usulan.html`, `bapp.html`, `laporan-ac.html` | TTD Penerima (usulan), TTD Pengawas Sarpras (bapp & laporan) |
+| `TTDSapras/` | `usulan.html`, `bapp.html`, `laporan-ac.html`, `lkh.html` | TTD Penerima (usulan), TTD Pengawas Sarpras (bapp & laporan), TTD Pelaksana & Mengetahui (lkh) |
 | `TTDPelaksana/` | `laporan-ac.html` | TTD Pelaksana pekerjaan |
 | `TTDAtasanLangsung/` | `bapp.html` | TTD Atasan Langsung / Pengguna BMN |
 
@@ -654,6 +738,9 @@ Kedua mode ditangani otomatis oleh `loadTTDIntoEl` di `admin.html` — fungsi in
 | L-PP-AC | Z (TTD Pelaksana) | Nama kunci atau URL Drive |
 | L-PP-AC | AA (TTD Pengguna) | URL Drive (selalu manual/canvas) |
 | L-PP-AC | AB (TTD Pengawas) | Nama kunci atau URL Drive |
+| LKH-ISP | R (TTD Pelaksana) | Nama kunci atau URL Drive |
+| LKH-ISP | V (TTD Pengusul) | URL Drive (selalu manual/canvas) |
+| LKH-ISP | X (TTD Mengetahui) | Nama kunci atau URL Drive |
 
 ---
 
@@ -668,6 +755,7 @@ Email dikirim **otomatis saat form disubmit** ke `sarpras@poltekkespalembang.ac.
 | Surat Usulan | `[BMN] Usulan Baru — {nomor} — {nama}` | Jenis surat, identitas pengusul, detail barang, kondisi, keluhan, link foto |
 | Berita Acara | `[BMN] Berita Acara Baru — {nomor}` | Detail barang, kondisi, rincian, pelaksana/pengawas/pengguna, link foto |
 | Laporan AC | `[BMN] Laporan AC Baru — {nomor} — {jenis}` | Jenis laporan, detail AC, ruangan sesudah (jika pemindahan), jenis pekerjaan, pelaksana, link foto |
+| Laporan Kegiatan (LKH) | `[BMN] Laporan Kegiatan Baru — {nomor} — {pelaksana}` | Nama kegiatan, detail BMN, progress, pelaksana, pengusul, link foto |
 
 Konfigurasi di `CONFIG` dalam `Code_UseFonnte.gs`:
 

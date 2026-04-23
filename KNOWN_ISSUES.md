@@ -8,6 +8,8 @@ Daftar masalah yang ditemukan saat pembacaan seluruh proyek pada 2026-04-22.
 > **Update 2026-04-22 (batch 2):** Issue LOW #10 sudah diperbaiki — `kirimEmailNotifikasi` sekarang menyertakan Jenis Surat dan Ruangan Sesudah Pindah. Email sudah diaktifkan (EMAIL_AKTIF: true, EMAIL_TUJUAN: sarpras@poltekkespalembang.ac.id). Sheet L-PP-AC sekarang 36 kolom (A–AJ) dengan AI=JenisSurat, AJ=RuanganSesudah. `getSuratUsulanList` sekarang mengembalikan `fotoKerusakan` dan `fotoLainLain` untuk auto-fill foto pemindahan.
 >
 > **Update 2026-04-23 (batch 3):** Issue HIGH #3 sudah diperbaiki secara menyeluruh — TTD list-based kini ditangani benar di seluruh pipeline: (1) `usulan.html` dan `bapp.html` kini menyimpan nama kunci ke sheet, bukan base64 (menggunakan pola `ttdIsKey`/`ttdKeyVal` dari `laporan-ac.html`); (2) GAS `handleSubmit` dan `handleSubmitBA` kini cek `startsWith('data:')` sebelum upload TTD, sehingga nama kunci disimpan langsung tanpa re-upload ke Drive; (3) `admin.html` kini memakai `loadTTDIntoEl` untuk semua TTD di reprint surat usulan dan BA — bisa handle nama kunci maupun URL Drive. Juga ditambahkan `emailError` di response GAS dan try-catch per handler untuk memudahkan debug email yang tidak terkirim.
+>
+> **Update 2026-04-23 (batch 4 — LKH):** Fitur baru Laporan Kegiatan Harian Sarpras (`lkh.html`) ditambahkan secara menyeluruh: frontend (form + preview + TTD), backend GAS (`getNomorLKH`, `getLKHList`, `handleSubmitLKH`, `kirimEmailNotifikasiLKH`, sheet `LKH-ISP` 30 kolom), tab admin, menu index, dan build.js. Pola TTD dan foto konsisten dengan halaman lain.
 
 ---
 

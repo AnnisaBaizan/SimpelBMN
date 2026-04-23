@@ -42,7 +42,7 @@ const TTD_PELAKSANA_JSON = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDPelak
 const TTD_ATASAN_JSON    = JSON.stringify(readTTDFolder(path.join(SRC, 'TTDAtasanLangsung'), 'Atasan'));
 
 // ── File HTML yang perlu diproses ──
-const HTML_FILES = ['index.html', 'usulan.html', 'bapp.html', 'admin.html', 'laporan-ac.html'];
+const HTML_FILES = ['index.html', 'usulan.html', 'bapp.html', 'admin.html', 'laporan-ac.html', 'lkh.html'];
 
 HTML_FILES.forEach(file => {
   const src = path.join(SRC, file);

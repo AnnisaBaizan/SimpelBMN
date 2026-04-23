@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laporan Kegiatan Pemeliharaan BMN</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 13px; background: #f0f2f5; color: #222; }
+
+    .app-header {
+      background: #1a3a5c; color: #fff; padding: 12px 24px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    }
+    .app-header h1 { font-size: 16px; font-weight: 700; }
+    .app-header small { font-size: 11px; opacity: .75; }
+    .app-header .hdr-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    .btn-nav {
+      color: rgba(255,255,255,.8); text-decoration: none; font-size: 12px;
+      padding: 5px 12px; border: 1px solid rgba(255,255,255,.3); border-radius: 4px;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,.1); }
+
+    .main-layout {
+      display: grid; grid-template-columns: 430px 1fr;
+      gap: 0; height: calc(100vh - 50px); overflow: hidden;
+    }
+
+    .form-panel {
+      background: #fff; overflow-y: auto;
+      border-right: 1px solid #dde; padding: 20px 22px 60px;
+    }
+    .form-panel h2 {
+      font-size: 13px; font-weight: 700; color: #1a3a5c;
+      margin-bottom: 14px; border-bottom: 2px solid #1a3a5c; padding-bottom: 6px;
+    }
+    .form-section { margin-bottom: 18px; }
+    .form-section h3 {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: #888; margin-bottom: 10px;
+    }
+    .form-row { margin-bottom: 10px; }
+    label { display: block; font-size: 11px; font-weight: 600; color: #444; margin-bottom: 3px; }
+    label span.req { color: #c0392b; }
+    input[type=text], input[type=date], select, textarea {
+      width: 100%; padding: 7px 10px; border: 1px solid #ccc;
+      border-radius: 4px; font-size: 12px; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #1a3a5c; }
+    input[readonly] { background: #f5f5f5; color: #666; }
+    textarea { resize: vertical; min-height: 70px; }
+
+    .radio-group { display: flex; gap: 18px; flex-wrap: wrap; }
+    .radio-group label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 400; color: #333; cursor: pointer; }
+    .radio-group input[type=radio] { width: auto; }
+
+    .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .photo-item { min-width: 0; overflow: hidden; }
+    .photo-item label { margin-bottom: 4px; font-size: 10px; }
+    .photo-item input[type=file] {
+      width: 100%; max-width: 100%; font-size: 11px;
+      padding: 5px; border: 1px dashed #aaa;
+      border-radius: 4px; background: #fafafa; cursor: pointer;
+    }
+    .photo-thumb { width: 100%; max-height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; display: none; margin-top: 4px; }
+    .photo-auto-preview { width: 100%; max-height: 80px; object-fit: cover; border-radius: 4px; border: 2px solid #27ae60; display: none; margin-top: 4px; }
+    .photo-auto-label { font-size: 10px; color: #27ae60; font-weight: 600; display: none; margin-top: 2px; }
+
+    .ttd-section {
+      border: 1px solid #d6eaf8; border-radius: 6px;
+      padding: 12px; margin-bottom: 10px; background: #f8fafc;
+    }
+    .ttd-section h4 { font-size: 11px; font-weight: 700; color: #1a3a5c; margin-bottom: 8px; }
+    .ttd-preview-wrap { margin-top: 8px; text-align: center; }
+    .ttd-preview-img {
+      max-width: 100%; max-height: 80px; border: 1px solid #ddd;
+      border-radius: 4px; display: none; margin: 0 auto;
+    }
+    .ttd-status { font-size: 10px; color: #888; margin-top: 3px; }
+    .ttd-status.signed { color: #27ae60; font-weight: 700; }
+    .btn-ttd {
+      display: inline-block; padding: 6px 14px; background: #1a3a5c; color: #fff;
+      border: none; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;
+    }
+    .btn-ttd:hover { background: #0f2640; }
+    .btn-clear-ttd {
+      display: none; padding: 4px 10px; background: #e74c3c; color: #fff;
+      border: none; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 6px;
+    }
+    .ttd-mode-toggle { display: flex; gap: 4px; margin-bottom: 10px; }
+    .btn-ttd-mode {
+      flex: 1; padding: 5px 8px; border: 1px solid #1a3a5c; border-radius: 4px;
+      background: #fff; color: #1a3a5c; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-ttd-mode.active { background: #1a3a5c; color: #fff; }
+    .btn-ttd-mode:hover:not(.active) { background: #eaf2fb; }
+
+    .btn-group { display: flex; gap: 8px; margin-top: 18px; }
+    .btn { flex: 1; padding: 10px; border: none; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-submit { background: #1a3a5c; color: #fff; }
+    .btn-submit:hover { background: #0f2640; }
+    .btn-print  { background: #27ae60; color: #fff; }
+    .btn-print:hover  { background: #1e8449; }
+    .btn-reset  { background: #e74c3c; color: #fff; }
+    .btn-reset:hover  { background: #c0392b; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .status-bar {
+      display: none; padding: 9px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-bottom: 12px;
+    }
+    .status-bar.info    { display: block; background: #d6eaf8; color: #1a3a5c; }
+    .status-bar.success { display: block; background: #d5f5e3; color: #1e8449; }
+    .status-bar.error   { display: block; background: #fdecea; color: #c0392b; }
+    .status-bar.loading { display: block; background: #fef9e7; color: #b7950b; }
+
+    .searchable-wrap { position: relative; }
+    .dropdown-list {
+      position: absolute; top: 100%; left: 0; right: 0; background: #fff;
+      border: 1px solid #ccc; border-top: none; border-radius: 0 0 4px 4px;
+      max-height: 180px; overflow-y: auto; z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,.12); display: none;
+    }
+    .dropdown-item { padding: 7px 10px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+    .dropdown-item:hover { background: #f0f7ff; }
+    .dropdown-list.open { display: block; }
+    .dropdown-item.no-result { color: #aaa; font-style: italic; cursor: default; }
+    .aset-manual-link {
+      background: none; border: none; color: #0066cc; cursor: pointer;
+      font-size: 12px; padding: 0; text-decoration: underline;
+    }
+    .aset-manual-link:hover { color: #004499; }
+
+    /* ===== PREVIEW PANEL ===== */
+    .preview-panel {
+      background: #888; overflow-y: auto; padding: 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .preview-label { color: #fff; font-size: 11px; opacity: .7; text-align: center; width: 100%; padding-bottom: 4px; }
+
+    /* ===== SURAT PREVIEW ===== */
+    .surat-wrapper {
+      width: 794px; background: #fff; font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt; padding: 40px 56px; box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+    .kop-img { width: 100%; display: block; }
+    .kop-placeholder {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      border: 2px solid #1a3a5c; border-radius: 6px; padding: 12px; margin-bottom: 8px; color: #1a3a5c;
+    }
+    .kop-placeholder .kop-nama { font-weight: 700; font-size: 14px; }
+    .kop-line { border: none; border-top: 3px solid #000; margin: 6px 0 12px; }
+
+    .surat-judul { font-size: 13pt; font-weight: bold; text-align: center; text-transform: uppercase; text-decoration: underline; margin-bottom: 2px; }
+    .surat-judul-sub { font-size: 13pt; font-weight: bold; text-align: center; text-transform: uppercase; margin-bottom: 2px; }
+    .surat-nomor  { font-size: 12pt; text-align: center; margin-bottom: 18px; }
+    .surat-pembuka { text-align: justify; line-height: 1.8; margin-bottom: 14px; font-size: 12pt; }
+
+    .identitas-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12pt; }
+    .identitas-table td { padding: 1px 0; vertical-align: top; }
+    .identitas-table td:first-child { width: 90px; }
+    .identitas-table td:nth-child(2) { width: 12px; }
+
+    .telah-para { text-align: justify; line-height: 1.8; margin-bottom: 12px; font-size: 12pt; }
+
+    .detail-list { list-style: none; padding: 0; margin: 0 0 14px; font-size: 12pt; }
+    .detail-list li { display: flex; margin-bottom: 4px; }
+    .detail-list li .dl-dash { min-width: 18px; }
+    .detail-list li .dl-key  { min-width: 240px; }
+    .detail-list li .dl-sep  { min-width: 14px; }
+    .detail-list li .dl-val  { flex: 1; text-align: justify; }
+    .dl-sub { padding-left: 18px; margin-bottom: 0; }
+    .dl-sub li .dl-key { min-width: 200px; }
+
+    .progress-opt { display: inline; }
+    .progress-opt.aktif { text-decoration: underline; font-weight: bold; }
+
+    .surat-penutup { text-align: justify; line-height: 1.8; margin-bottom: 16px; font-size: 12pt; }
+
+    .ttd-area { margin-top: 16px; font-size: 12pt; }
+    .ttd-top-row { display: flex; justify-content: space-between; margin-bottom: 0; }
+    .ttd-col { width: 44%; text-align: center; }
+    .ttd-col .jabatan-ttd { margin-bottom: 2px; }
+    .ttd-img-wrap { min-height: 80px; display: flex; align-items: center; justify-content: center; }
+    .ttd-img { max-width: 160px; max-height: 80px; display: none; }
+    .ttd-nama-line { border-bottom: 1px solid #000; min-width: 180px; min-height: 24px; margin: 0 auto 4px; }
+    .ttd-bottom-row { text-align: center; margin-top: 16px; }
+    .ttd-bottom-row .ttd-col { display: inline-block; }
+
+    /* ===== LAMPIRAN FOTO ===== */
+    .lampiran-title { font-size: 12pt; font-weight: bold; text-decoration: underline; text-align: center; margin-bottom: 14px; }
+    .foto-item { margin-bottom: 14px; page-break-inside: avoid; }
+    .foto-item.first { border-top: none; }
+    .foto-caption { font-size: 11pt; font-weight: bold; border-bottom: 1px solid #999; padding-bottom: 4px; margin-bottom: 6px; }
+    .foto-placeholder { min-height: 120px; border: 1px dashed #aaa; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 10pt; }
+    .foto-placeholder-print { display: none; }
+
+    /* ===== MODAL TTD (CANVAS) ===== */
+    .ttd-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.6); z-index: 9000;
+      align-items: center; justify-content: center;
+    }
+    .ttd-modal-overlay.show { display: flex; }
+    .ttd-modal-box {
+      background: #fff; border-radius: 10px; padding: 20px;
+      width: 95vw; max-width: 600px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    }
+    .ttd-modal-title { font-size: 14px; font-weight: 700; color: #1a3a5c; margin-bottom: 12px; }
+    #ttdCanvas {
+      width: 100%; height: 220px; border: 2px dashed #1a3a5c;
+      border-radius: 6px; cursor: crosshair; display: block; touch-action: none;
+    }
+    .ttd-modal-hint { font-size: 11px; color: #888; margin-top: 6px; margin-bottom: 12px; }
+    .ttd-modal-actions { display: flex; gap: 8px; }
+    .btn-ttd-save  { flex: 1; padding: 10px; background: #27ae60; color: #fff; border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-ttd-clear { flex: 1; padding: 10px; background: #f39c12; color: #fff; border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-ttd-cancel{ flex: 1; padding: 10px; background: #95a5a6; color: #fff; border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+    /* ===== MODAL LOADING ===== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 8000;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box { background: #fff; border-radius: 10px; padding: 28px 32px; min-width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+    .modal-spinner { width: 36px; height: 36px; border: 4px solid #d6eaf8; border-top-color: #1a3a5c; border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-title { font-size: 14px; font-weight: 700; color: #1a3a5c; text-align: center; margin-bottom: 16px; }
+    .modal-steps-list { list-style: none; padding: 0; }
+    .modal-step-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; color: #555; border-bottom: 1px solid #f0f0f0; }
+    .modal-step-item .si { font-size: 14px; min-width: 20px; }
+
+    /* ===== PRINT ===== */
+    @media print {
+      .form-panel, .app-header { display: none !important; }
+      .preview-panel { height: auto; overflow: visible; background: #fff; padding: 0; }
+      .surat-wrapper { box-shadow: none; margin: 0; padding: 20px 30px; }
+      .foto-placeholder { display: none; }
+      .foto-placeholder-print { display: flex; min-height: 80px; border: 1px dashed #ccc; align-items: center; justify-content: center; color: #ccc; font-size: 10pt; }
+      .preview-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-header">
+    <div>
+      <h1>📋 Laporan Kegiatan Pemeliharaan BMN</h1>
+      <small>Instalasi Sarana Prasarana — Isi form kiri → Preview kanan → Submit / Cetak</small>
+    </div>
+    <div class="hdr-right">
+      <a href="index.html" class="btn-nav">← Beranda</a>
+      <a href="admin.html" class="btn-nav">⚙️ Admin</a>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <!-- ============================================================ -->
+    <!--  FORM PANEL                                                  -->
+    <!-- ============================================================ -->
+    <div class="form-panel">
+      <h2>Form Laporan Kegiatan Harian (LKH)</h2>
+
+      <div id="statusBar" class="status-bar"></div>
+
+      <!-- INFO SURAT -->
+      <div class="form-section">
+        <h3>Info Laporan</h3>
+        <div class="form-row">
+          <label>Nomor LKH</label>
+          <input type="text" id="nomorLKH" readonly placeholder="Mengambil nomor…" />
+        </div>
+        <div class="form-row">
+          <label>Tanggal Laporan <span class="req">*</span></label>
+          <input type="date" id="tanggalLKH" oninput="onTanggalChange()" />
+        </div>
+      </div>
+
+      <!-- DASAR SURAT -->
+      <div class="form-section">
+        <h3>Referensi Surat Usulan</h3>
+        <div class="form-row">
+          <label>Berdasarkan Surat Usulan PP? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label><input type="radio" name="dasarSurat" value="ya" onchange="onDasarChange('ya')"> Ya</label>
+            <label><input type="radio" name="dasarSurat" value="tidak" onchange="onDasarChange('tidak')" checked> Tidak</label>
+          </div>
+        </div>
+        <div id="wrapDropdownUsulan" style="display:none;">
+          <div class="form-row">
+            <label>Pilih Nomor Surat Usulan <span class="req">*</span></label>
+            <select id="selectUsulan" onchange="onSelectUsulan()" style="width:100%">
+              <option value="">— Pilih nomor surat usulan —</option>
+            </select>
+          </div>
+        </div>
+        <div id="wrapInputUsulan" style="display:block;">
+          <div class="form-row">
+            <label>No Surat Usulan (opsional)</label>
+            <input type="text" id="inputNoUsulan" placeholder="Kosongkan jika tidak ada" oninput="syncPreview()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- DETAIL KEGIATAN -->
+      <div class="form-section">
+        <h3>Detail Kegiatan</h3>
+        <div class="form-row">
+          <label>Nama Kegiatan <span class="req">*</span></label>
+          <textarea id="namaKegiatan" rows="2" placeholder="Contoh: Pemeliharaan AC Split 1 PK Ruang Rapat" oninput="syncPreview()"></textarea>
+        </div>
+      </div>
+
+      <!-- RINCIAN BMN -->
+      <div class="form-section">
+        <h3>Rincian BMN</h3>
+        <input type="hidden" id="nup" />
+        <input type="hidden" id="namaBarang" />
+        <input type="hidden" id="merek" />
+        <input type="hidden" id="tipe" />
+
+        <div id="asetLoading" style="padding:8px;text-align:center;color:#888;font-size:12px;">⏳ Memuat data aset BMN…</div>
+        <div id="asetError" style="display:none;padding:8px;background:#fdecea;border-radius:4px;color:#c0392b;font-size:12px;margin-bottom:8px;"></div>
+
+        <div id="asetManualToggleWrap" style="display:none;margin-bottom:8px;">
+          <button class="aset-manual-link" onclick="toggleManualMode(event)" id="btnToggleManual">✏️ Isi Data Manual (tidak ada di daftar)</button>
+        </div>
+
+        <div id="wrapDropdownBarang" style="display:none">
+          <div class="form-row" id="rowNup">
+            <label>NUP BMN <span class="req">*</span></label>
+            <div class="searchable-wrap">
+              <input type="text" id="searchNup" placeholder="Cari NUP…" autocomplete="off" />
+              <div class="dropdown-list" id="listNup"></div>
+            </div>
+          </div>
+          <div class="form-row" id="rowNama" style="display:none">
+            <label>Nama Barang <span class="req">*</span></label>
+            <div class="searchable-wrap">
+              <input type="text" id="searchNama" placeholder="Cari nama barang…" autocomplete="off" />
+              <div class="dropdown-list" id="listNama"></div>
+            </div>
+          </div>
+          <div class="form-row" id="rowMerk" style="display:none">
+            <label>Merek</label>
+            <div class="searchable-wrap" id="merkDropdownWrap">
+              <input type="text" id="searchMerk" placeholder="Cari merek…" autocomplete="off" />
+              <div class="dropdown-list" id="listMerk"></div>
+            </div>
+            <input type="text" id="merkManualDrop" placeholder="Ketik merek secara manual…" style="display:none;margin-top:4px;"
+              oninput="document.getElementById('merek').value=this.value;syncPreview()" />
+          </div>
+          <div class="form-row" id="rowTipe" style="display:none">
+            <label>Tipe <span style="color:#888;font-weight:400">(opsional)</span></label>
+            <div class="searchable-wrap" id="tipeDropdownWrap">
+              <input type="text" id="searchTipe" placeholder="Cari tipe…" autocomplete="off" />
+              <div class="dropdown-list" id="listTipe"></div>
+            </div>
+            <input type="text" id="tipeManualDrop" placeholder="Ketik tipe secara manual… (opsional)" style="display:none;margin-top:4px;"
+              oninput="selTipe=this.value;document.getElementById('tipe').value=this.value;syncPreview()" />
+            <input type="hidden" id="selectedTipe" />
+          </div>
+        </div>
+
+        <div id="wrapManualBarang" style="display:none">
+          <div class="form-row">
+            <label>NUP BMN <span class="req">*</span></label>
+            <input type="text" id="nupManual" placeholder="Contoh: 0001"
+              oninput="document.getElementById('nup').value=this.value;syncPreview()" />
+          </div>
+          <div class="form-row">
+            <label>Nama Barang <span class="req">*</span></label>
+            <input type="text" id="namaBarangManual" placeholder="Contoh: AC Split"
+              oninput="document.getElementById('namaBarang').value=this.value;syncPreview()" />
+          </div>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div>
+              <label>Merek</label>
+              <input type="text" id="merekManual" placeholder="Contoh: Daikin"
+                oninput="document.getElementById('merek').value=this.value;syncPreview()" />
+            </div>
+            <div>
+              <label>Tipe</label>
+              <input type="text" id="tipeManual" placeholder="Contoh: FTKQ25UVM"
+                oninput="selTipe=this.value;document.getElementById('tipe').value=this.value;syncPreview()" />
+            </div>
+          </div>
+          <div style="margin-top:4px;margin-bottom:4px;">
+            <button class="aset-manual-link" onclick="switchBackToDropdown(event)">← Kembali ke pilih dari daftar</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Ruangan (DBR) <span class="req">*</span></label>
+          <input type="text" id="ruangan" placeholder="Contoh: Ruang Rapat Lt.2" oninput="syncPreview()" />
+        </div>
+        <div class="form-row">
+          <label>Kondisi (Sesuai Status BMN) <span class="req">*</span></label>
+          <div class="radio-group">
+            <label><input type="radio" name="kondisi" value="Baik" onchange="syncPreview()"> Baik</label>
+            <label><input type="radio" name="kondisi" value="Rusak Ringan" onchange="syncPreview()"> Rusak Ringan</label>
+            <label><input type="radio" name="kondisi" value="Rusak Berat" onchange="syncPreview()"> Rusak Berat</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Keluhan Pengusul/Pengguna</label>
+          <textarea id="keluhan" rows="2" placeholder="Uraikan keluhan atau kondisi yang dilaporkan pengusul…" oninput="syncPreview()"></textarea>
+        </div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="form-section">
+        <h3>Progress Pelaksanaan</h3>
+        <div class="form-row">
+          <label>Status Kegiatan <span class="req">*</span></label>
+          <div class="radio-group">
+            <label><input type="radio" name="progress" value="Dalam Tahap Pengerjaan" onchange="syncPreview()" checked> Dalam Tahap Pengerjaan</label>
+            <label><input type="radio" name="progress" value="Selesai" onchange="syncPreview()"> Selesai</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOTO -->
+      <div class="form-section">
+        <h3>Foto-foto Pemeliharaan/Perbaikan</h3>
+        <div class="photo-grid">
+          <div class="photo-item">
+            <label>📸 1. Foto NUP Barang/Ruangan/Gedung</label>
+            <input type="file" id="foto1" accept="image/*" onchange="handleFoto(this,'thumb1','prev1','foto1')" />
+            <img id="thumb1" class="photo-thumb" />
+            <img id="autoFoto1" class="photo-auto-preview" />
+            <div id="autoLabel1" class="photo-auto-label">✅ Dari surat usulan</div>
+          </div>
+          <div class="photo-item">
+            <label>📸 2. Foto Merek/Tipe Barang</label>
+            <input type="file" id="foto2" accept="image/*" onchange="handleFoto(this,'thumb2','prev2','foto2')" />
+            <img id="thumb2" class="photo-thumb" />
+            <img id="autoFoto2" class="photo-auto-preview" />
+            <div id="autoLabel2" class="photo-auto-label">✅ Dari surat usulan</div>
+          </div>
+          <div class="photo-item">
+            <label>📸 3. Foto Spare Part / Sisa Bongkaran (jika ada)</label>
+            <input type="file" id="foto3" accept="image/*" onchange="handleFoto(this,'thumb3','prev3','foto3')" />
+            <img id="thumb3" class="photo-thumb" />
+          </div>
+          <div class="photo-item">
+            <label>📸 4. Foto Barang setelah diperbaiki 1</label>
+            <input type="file" id="foto4" accept="image/*" onchange="handleFoto(this,'thumb4','prev4','foto4')" />
+            <img id="thumb4" class="photo-thumb" />
+          </div>
+          <div class="photo-item">
+            <label>📸 5. Foto Barang setelah diperbaiki 2</label>
+            <input type="file" id="foto5" accept="image/*" onchange="handleFoto(this,'thumb5','prev5','foto5')" />
+            <img id="thumb5" class="photo-thumb" />
+          </div>
+          <div class="photo-item">
+            <label>📸 6. Foto Lain-lain</label>
+            <input type="file" id="foto6" accept="image/*" onchange="handleFoto(this,'thumb6','prev6','foto6')" />
+            <img id="thumb6" class="photo-thumb" />
+          </div>
+        </div>
+      </div>
+
+      <!-- PENANDATANGAN -->
+      <div class="form-section">
+        <h3>Penandatangan</h3>
+
+        <!-- Yang Melaksanakan (Sarpras) — dari daftar TTDSapras -->
+        <div class="ttd-section">
+          <h4>Yang Melaksanakan Kegiatan</h4>
+          <div class="ttd-mode-toggle">
+            <button class="btn-ttd-mode active" id="modeBtn_pelaksana_list" onclick="setTTDMode('pelaksana','list')">🗂️ Pilih dari Daftar</button>
+            <button class="btn-ttd-mode" id="modeBtn_pelaksana_manual" onclick="setTTDMode('pelaksana','manual')">✍️ Gambar Manual</button>
+          </div>
+          <div id="wrapMode_pelaksana_list">
+            <select id="selectTTD_pelaksana" onchange="onSelectTTDSarpras('pelaksana')">
+              <option value="">— Pilih nama Sarpras —</option>
+            </select>
+            <div id="loadingTTD_pelaksana" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
+          </div>
+          <div id="wrapMode_pelaksana_manual" style="display:none;margin-top:6px;">
+            <button class="btn-ttd" onclick="openTTD('pelaksana')">✍️ Tanda Tangan</button>
+          </div>
+          <div id="wrapFields_pelaksana" style="display:none;margin-top:8px;">
+            <div class="form-row">
+              <label>Nama <span class="req">*</span></label>
+              <input type="text" id="namaPelaksana" placeholder="Nama Sarpras" oninput="syncPreview()" />
+            </div>
+            <div class="form-row">
+              <label>NIP</label>
+              <input type="text" id="nipPelaksana" placeholder="NIP Sarpras" oninput="syncPreview()" />
+            </div>
+            <div class="form-row">
+              <label>Jabatan</label>
+              <input type="text" id="jabPelaksana" placeholder="Jabatan" oninput="syncPreview()" />
+            </div>
+          </div>
+          <div class="ttd-preview-wrap" style="margin-top:8px;">
+            <button class="btn-clear-ttd" id="clearTTD_pelaksana" onclick="clearTTD('pelaksana')">✕ Hapus</button>
+            <div>
+              <img id="previewTTD_pelaksana" class="ttd-preview-img" />
+              <div class="ttd-status" id="statusTTD_pelaksana">Belum ditandatangani</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pengusul/Pengguna — manual canvas -->
+        <div class="ttd-section">
+          <h4>Pengusul / Pengguna BMN</h4>
+          <div class="form-row">
+            <label>Nama <span class="req">*</span></label>
+            <input type="text" id="namaPengusul" placeholder="Nama pengusul/pengguna" oninput="syncPreview()" />
+          </div>
+          <div class="form-row">
+            <label>NIP</label>
+            <input type="text" id="nipPengusul" placeholder="NIP (opsional)" oninput="syncPreview()" />
+          </div>
+          <div class="form-row">
+            <label>Jabatan</label>
+            <input type="text" id="jabPengusul" placeholder="Jabatan (opsional)" oninput="syncPreview()" />
+          </div>
+          <div class="ttd-preview-wrap">
+            <button class="btn-ttd" onclick="openTTD('pengusul')">✍️ Tanda Tangan</button>
+            <button class="btn-clear-ttd" id="clearTTD_pengusul" onclick="clearTTD('pengusul')">✕ Hapus</button>
+            <div>
+              <img id="previewTTD_pengusul" class="ttd-preview-img" />
+              <div class="ttd-status" id="statusTTD_pengusul">Belum ditandatangani</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mengetahui — Kepala Instalasi Sarana Prasarana -->
+        <div class="ttd-section">
+          <h4>Mengetahui — Kepala Instalasi Sarana Prasarana</h4>
+          <div class="ttd-mode-toggle">
+            <button class="btn-ttd-mode active" id="modeBtn_mengetahui_list" onclick="setTTDMode('mengetahui','list')">🗂️ Pilih dari Daftar</button>
+            <button class="btn-ttd-mode" id="modeBtn_mengetahui_manual" onclick="setTTDMode('mengetahui','manual')">✍️ Gambar Manual</button>
+          </div>
+          <div id="wrapMode_mengetahui_list">
+            <select id="selectTTD_mengetahui" onchange="onSelectTTDSarpras('mengetahui')">
+              <option value="">— Pilih nama Kepala Instalasi —</option>
+            </select>
+            <div id="loadingTTD_mengetahui" style="display:none;font-size:11px;color:#b7950b;margin-top:4px;">⏳ Memproses TTD…</div>
+          </div>
+          <div id="wrapMode_mengetahui_manual" style="display:none;margin-top:6px;">
+            <button class="btn-ttd" onclick="openTTD('mengetahui')">✍️ Tanda Tangan</button>
+          </div>
+          <div id="wrapFields_mengetahui" style="display:none;margin-top:8px;">
+            <div class="form-row">
+              <label>Nama</label>
+              <input type="text" id="namaMengetahui" placeholder="Nama Kepala Instalasi" oninput="syncPreview()" />
+            </div>
+          </div>
+          <div class="ttd-preview-wrap" style="margin-top:8px;">
+            <button class="btn-clear-ttd" id="clearTTD_mengetahui" onclick="clearTTD('mengetahui')">✕ Hapus</button>
+            <div>
+              <img id="previewTTD_mengetahui" class="ttd-preview-img" />
+              <div class="ttd-status" id="statusTTD_mengetahui">Belum ditandatangani</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOMBOL AKSI -->
+      <div class="btn-group">
+        <button class="btn btn-submit" id="btnSubmit" onclick="submitForm()">🚀 Submit</button>
+        <button class="btn btn-print"  onclick="window.print()">🖨️ Cetak</button>
+        <button class="btn btn-reset"  onclick="resetForm()">🔄 Reset</button>
+      </div>
+    </div><!-- /form-panel -->
+
+    <!-- ============================================================ -->
+    <!--  PREVIEW PANEL                                               -->
+    <!-- ============================================================ -->
+    <div class="preview-panel">
+      <div class="preview-label">Preview — Halaman 1 (Laporan Kegiatan)</div>
+
+      <div class="surat-wrapper" id="suratPage1">
+        <img class="kop-img" src="KOP.png" onerror="this.style.display='none';document.getElementById('kopFallback').style.display='flex'" />
+        <div id="kopFallback" class="kop-placeholder" style="display:none">
+          <div>
+            <div class="kop-nama">Politeknik Kesehatan Palembang</div>
+            <div style="font-size:11px;color:#555;">Instalasi Sarana Prasarana</div>
+          </div>
+        </div>
+        <hr class="kop-line" />
+
+        <div class="surat-judul">Laporan Kegiatan</div>
+        <div class="surat-judul-sub">Pemeliharaan Barang Milik Negara</div>
+        <div class="surat-nomor">NOMOR: <span id="pvNomor">…………………………………………</span></div>
+
+        <p class="surat-pembuka">
+          Pada hari ini, <strong id="pvHari">…………</strong> tanggal <strong id="pvTanggalTerbilang">…………………………………</strong> bulan <strong id="pvBulan">…………</strong> tahun <strong id="pvTahun">………………………………</strong>, saya yang bertanda tangan di bawah ini:
+        </p>
+
+        <table class="identitas-table">
+          <tr>
+            <td>Nama</td><td>:</td>
+            <td id="pvNamaPelaksana">……………………………………………</td>
+          </tr>
+          <tr>
+            <td>NIP</td><td>:</td>
+            <td id="pvNipPelaksana">……………………………………………</td>
+          </tr>
+        </table>
+
+        <p class="telah-para">
+          Telah selesai melakukan pemeliharaan/perbaikan BMN, sesuai dengan ketentuan sebagai berikut:
+        </p>
+
+        <ul class="detail-list">
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">No Surat Usulan (Jika Ada)</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvNoUsulan">……………………………</span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Nama Kegiatan</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val" id="pvNamaKegiatan" style="white-space:pre-line">……………………………</span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key" style="vertical-align:top">Rincian Pemeliharaan/<br>Perbaikan BMN</span>
+            <span class="dl-sep" style="vertical-align:top">:</span>
+            <span class="dl-val" style="vertical-align:top">
+              <ul class="detail-list dl-sub">
+                <li>
+                  <span class="dl-dash"></span>
+                  <span class="dl-key">Nama Barang</span>
+                  <span class="dl-sep">:</span>
+                  <span class="dl-val" id="pvNamaBarang">……………………</span>
+                </li>
+                <li>
+                  <span class="dl-dash"></span>
+                  <span class="dl-key">Tipe</span>
+                  <span class="dl-sep">:</span>
+                  <span class="dl-val" id="pvTipe">……………………</span>
+                </li>
+                <li>
+                  <span class="dl-dash"></span>
+                  <span class="dl-key">Merek</span>
+                  <span class="dl-sep">:</span>
+                  <span class="dl-val" id="pvMerek">……………………</span>
+                </li>
+                <li>
+                  <span class="dl-dash"></span>
+                  <span class="dl-key">Ruangan (Sesuai DBR)</span>
+                  <span class="dl-sep">:</span>
+                  <span class="dl-val" id="pvRuangan">……………………</span>
+                </li>
+                <li>
+                  <span class="dl-dash"></span>
+                  <span class="dl-key">NUP</span>
+                  <span class="dl-sep">:</span>
+                  <span class="dl-val" id="pvNup">……………………</span>
+                </li>
+                <li>
+                  <span class="dl-dash"></span>
+                  <span class="dl-key">Kondisi (Sesuai Status BMN)</span>
+                  <span class="dl-sep">:</span>
+                  <span class="dl-val" id="pvKondisi">……………………</span>
+                </li>
+                <li>
+                  <span class="dl-dash"></span>
+                  <span class="dl-key" style="vertical-align:top">Keluhan Pengusul/<br>Pengguna</span>
+                  <span class="dl-sep" style="vertical-align:top">:</span>
+                  <span class="dl-val" id="pvKeluhan" style="vertical-align:top;white-space:pre-line">……………………</span>
+                </li>
+              </ul>
+            </span>
+          </li>
+          <li>
+            <span class="dl-dash">–</span>
+            <span class="dl-key">Progress Pelaksanaan Kegiatan</span>
+            <span class="dl-sep">:</span>
+            <span class="dl-val">
+              <span id="pvProgressDP" class="progress-opt">Dalam Tahap Pengerjaan</span>
+              &nbsp;/&nbsp;
+              <span id="pvProgressS" class="progress-opt">Selesai</span>
+            </span>
+          </li>
+        </ul>
+
+        <p class="surat-penutup">
+          Demikianlah laporan kegiatan pemeliharaan barang milik negara instalasi sarana prasarana ini dibuat, untuk dipergunakan sebagaimana mestinya. Atas perhatiannya diucapkan terimakasih.
+        </p>
+
+        <div class="ttd-area">
+          <div style="text-align:right;margin-bottom:16px;">
+            Palembang, <span id="pvTanggalTTD">…………………………</span>
+          </div>
+          <div class="ttd-top-row">
+            <div class="ttd-col">
+              <div class="jabatan-ttd">Pengusul/Pengguna</div>
+              <div class="jabatan-ttd" id="pvJabPengusul" style="font-size:11pt">……………………</div>
+              <div class="ttd-img-wrap">
+                <img id="pvTTDPengusul" class="ttd-img" />
+              </div>
+              <div class="ttd-nama-line" id="pvNamaPengusulTTD">……………………………………</div>
+              <div id="pvNipPengusulTTD" style="font-size:10pt">NIP. ……………………</div>
+            </div>
+            <div class="ttd-col">
+              <div class="jabatan-ttd">Yang Melaksanakan Kegiatan</div>
+              <div class="jabatan-ttd" id="pvJabPelaksanaSub" style="font-size:11pt">……………………</div>
+              <div class="ttd-img-wrap">
+                <img id="pvTTDPelaksana" class="ttd-img" />
+              </div>
+              <div class="ttd-nama-line" id="pvNamaPelaksanaTTD">……………………………………</div>
+              <div id="pvNipPelaksanaTTD" style="font-size:10pt">NIP. ……………………</div>
+            </div>
+          </div>
+          <div class="ttd-bottom-row">
+            <div class="ttd-col">
+              <div>Mengetahui,</div>
+              <div>Kepala Instalasi Sarana Prasarana</div>
+              <div class="ttd-img-wrap">
+                <img id="pvTTDMengetahui" class="ttd-img" />
+              </div>
+              <div class="ttd-nama-line" id="pvNamaMengetahui">……………………………………</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /surat page 1 -->
+
+      <div class="preview-label" style="margin-top:8px;">Preview — Halaman 2 (Lampiran Foto)</div>
+
+      <div class="surat-wrapper" id="suratPage2">
+        <img class="kop-img" src="KOP.png" onerror="this.style.display='none'" />
+        <hr class="kop-line" />
+        <div class="lampiran-title">
+          LAMPIRAN FOTO<br>
+          <span style="font-size:10pt;font-weight:normal">Nomor: <span id="pvNomorLampiran">…………………………</span></span>
+        </div>
+        <div class="foto-item first">
+          <div class="foto-caption">1. Foto NUP Barang/Ruangan/Gedung (sebelum perbaikan)</div>
+          <img id="prev1" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph1">[ Belum ada foto ]</div>
+          <div class="foto-placeholder-print">[ Foto 1 tidak tersedia ]</div>
+        </div>
+        <div class="foto-item">
+          <div class="foto-caption">2. Foto Merek/Tipe Barang/Ruangan/Gedung (sebelum perbaikan)</div>
+          <img id="prev2" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph2">[ Belum ada foto ]</div>
+          <div class="foto-placeholder-print">[ Foto 2 tidak tersedia ]</div>
+        </div>
+        <div class="foto-item">
+          <div class="foto-caption">3. Foto Spare Part / Sisa Bongkaran Barang (Jika ada)</div>
+          <img id="prev3" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph3">[ Belum ada foto ]</div>
+          <div class="foto-placeholder-print">[ Foto 3 tidak tersedia ]</div>
+        </div>
+        <div class="foto-item">
+          <div class="foto-caption">4. Foto Barang setelah di perbaiki/di pasang 1</div>
+          <img id="prev4" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph4">[ Belum ada foto ]</div>
+          <div class="foto-placeholder-print">[ Foto 4 tidak tersedia ]</div>
+        </div>
+        <div class="foto-item">
+          <div class="foto-caption">5. Foto Barang setelah di perbaiki/di pasang 2</div>
+          <img id="prev5" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph5">[ Belum ada foto ]</div>
+          <div class="foto-placeholder-print">[ Foto 5 tidak tersedia ]</div>
+        </div>
+        <div class="foto-item">
+          <div class="foto-caption">6. Foto Lain-lain</div>
+          <img id="prev6" src="" style="display:none;width:100%;height:auto;" />
+          <div class="foto-placeholder" id="ph6">[ Belum ada foto ]</div>
+          <div class="foto-placeholder-print">[ Foto 6 tidak tersedia ]</div>
+        </div>
+      </div>
+    </div><!-- /preview-panel -->
+  </div><!-- /main-layout -->
+
+  <!-- ===== TTD MODAL ===== -->
+  <div class="ttd-modal-overlay" id="ttdModal">
+    <div class="ttd-modal-box">
+      <div class="ttd-modal-title" id="ttdModalTitle">Tanda Tangan Digital</div>
+      <canvas id="ttdCanvas"></canvas>
+      <p class="ttd-modal-hint">Gambar tanda tangan di area abu-abu di atas. Gunakan mouse atau jari (layar sentuh).</p>
+      <div class="ttd-modal-actions">
+        <button class="btn-ttd-save"   onclick="saveTTD()">✅ Simpan</button>
+        <button class="btn-ttd-clear"  onclick="clearCanvas()">🗑️ Ulang</button>
+        <button class="btn-ttd-cancel" onclick="closeTTDModal()">✕ Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOADING MODAL ===== -->
+  <div class="modal-overlay" id="loadingModal">
+    <div class="modal-box">
+      <div class="modal-spinner"></div>
+      <div class="modal-title">Menyimpan Laporan Kegiatan…</div>
+      <ul class="modal-steps-list">
+        <li class="modal-step-item" id="ms1"><span class="si">⏳</span> Memproses data laporan</li>
+        <li class="modal-step-item" id="ms2"><span class="si">⏳</span> Mengunggah foto & TTD</li>
+        <li class="modal-step-item" id="ms3"><span class="si">⏳</span> Menyimpan ke arsip</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = '__GAS_URL__';
+
+    // ===== TTD DATA =====
+    const TTD_SAPRAS_RAW = __TTD_SAPRAS__;
+    const TTD_SAPRAS_CACHE = {};
+
+    // NIP Sarpras map
+    const NIP_SARPRAS = {
+      'Sukiman': '199604082025211060',
+      'Tommy':   '197408082007011032',
+    };
+    const JAB_SARPRAS = {
+      'Sukiman': 'Sanitarian',
+      'Tommy':   'Pengadministrasi Umum',
+    };
+
+    // ===== STATE =====
+    let nomorData = null;
+    let suratUsulanDB = [];
+    let lkhSelesaiSet = new Set(); // nomor surat usulan yang sudah punya LKH "selesai"
+    let autoFotoUrls = { foto1: null, foto2: null };
+    let fotoData = { foto1:null, foto2:null, foto3:null, foto4:null, foto5:null, foto6:null };
+    const ttdData   = { pelaksana:null, pengusul:null, mengetahui:null };
+    const ttdIsKey  = { pelaksana:false, pengusul:false, mengetahui:false };
+    const ttdKeyVal = { pelaksana:'',   pengusul:'',    mengetahui:'' };
+    let currentTTDTarget = null;
+    let isManualMode = false;
+    let selTipe = '';
+    let asetData = [];
+    let isDrawing = false;
+    let ctx = null;
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().slice(0,10);
+      document.getElementById('tanggalLKH').value = today;
+      onTanggalChange();
+      fetchNomorLKH();
+      fetchSuratUsulanList();
+      fetchAset();
+      initTTDLists();
+    });
+
+    function g(id) { return (document.getElementById(id)||{}).value || ''; }
+
+    function setStatus(type, msg) {
+      const el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + type;
+      el.textContent = msg;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ===== NOMOR LKH =====
+    async function fetchNomorLKH(loadingMsg = '⏳ Mengambil nomor LKH dari server…') {
+      setStatus('loading', loadingMsg);
+      try {
+        const r = await fetch(GAS_URL + '?action=getNomorLKH');
+        const d = await r.json();
+        if (d.status === 'ok') {
+          nomorData = d;
+          document.getElementById('nomorLKH').value = d.nomor;
+          syncPreview();
+          setStatus('success', '✅ Nomor LKH: ' + d.nomor);
+        } else {
+          setStatus('error', '⚠️ Gagal ambil nomor LKH: ' + d.error);
+        }
+      } catch (e) {
+        setStatus('error', '⚠️ Tidak dapat terhubung ke server: ' + e.message);
+      }
+    }
+
+    // ===== SURAT USULAN =====
+    async function fetchSuratUsulanList() {
+      try {
+        const [rU, rLKH] = await Promise.all([
+          fetch(GAS_URL + '?action=getSuratUsulanList'),
+          fetch(GAS_URL + '?action=getLKHList'),
+        ]);
+        const dU   = await rU.json();
+        const dLKH = await rLKH.json();
+        // Build set nomor surat usulan yang sudah ada LKH "selesai"
+        if (dLKH.status === 'ok') {
+          lkhSelesaiSet = new Set(
+            (dLKH.data || [])
+              .filter(l => l.progress === 'Selesai' && l.noSuratUsulan)
+              .map(l => l.noSuratUsulan)
+          );
+        }
+        if (dU.status === 'ok') {
+          suratUsulanDB = dU.data || [];
+          buildSelectUsulan();
+        }
+      } catch (e) { /* non-fatal */ }
+    }
+
+    function buildSelectUsulan() {
+      const sel = document.getElementById('selectUsulan');
+      sel.innerHTML = '<option value="">— Pilih nomor surat usulan —</option>';
+      suratUsulanDB.forEach((s, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        const sudahSelesai = lkhSelesaiSet.has(s.nomor);
+        opt.textContent = s.nomor + (s.namaBarang ? ' — ' + s.namaBarang : '') + (sudahSelesai ? ' 🔒 (sudah selesai)' : '');
+        // Hanya disable jika sudah ada LKH dengan progress Selesai
+        if (sudahSelesai) { opt.disabled = true; opt.style.color = '#aaa'; }
+        sel.appendChild(opt);
+      });
+    }
+
+    function onDasarChange(val) {
+      document.getElementById('wrapDropdownUsulan').style.display = val === 'ya' ? 'block' : 'none';
+      document.getElementById('wrapInputUsulan').style.display    = val === 'ya' ? 'none'  : 'block';
+      if (val === 'tidak') clearAutoFill();
+      syncPreview();
+    }
+
+    function onSelectUsulan() {
+      const sel = document.getElementById('selectUsulan');
+      const idx = parseInt(sel.value);
+      if (isNaN(idx)) { clearAutoFill(); syncPreview(); return; }
+      const s = suratUsulanDB[idx];
+      if (!s) return;
+      // Autofill detail barang
+      document.getElementById('namaBarang').value = s.namaBarang || '';
+      document.getElementById('nup').value        = s.nup        || '';
+      document.getElementById('merek').value      = s.merek      || '';
+      selTipe = s.tipe || '';
+      document.getElementById('tipe').value       = s.tipe       || '';
+      document.getElementById('ruangan').value    = s.ruangan    || '';
+      document.getElementById('keluhan').value    = s.keluhan    || '';
+      // Auto-fill foto 1 & 2 jika ada di surat usulan
+      autoFotoUrls.foto1 = (s.fotoNup   && s.fotoNup   !== '-') ? s.fotoNup   : null;
+      autoFotoUrls.foto2 = (s.fotoMerek && s.fotoMerek !== '-') ? s.fotoMerek : null;
+      showAutoFoto(1, autoFotoUrls.foto1);
+      showAutoFoto(2, autoFotoUrls.foto2);
+      syncPreview();
+    }
+
+    function clearAutoFill() {
+      autoFotoUrls = { foto1: null, foto2: null };
+      hideAutoFoto(1); hideAutoFoto(2);
+    }
+
+    function showAutoFoto(n, url) {
+      const img = document.getElementById('autoFoto' + n);
+      const lbl = document.getElementById('autoLabel' + n);
+      if (url && img) {
+        fetch(GAS_URL + '?action=getPhoto&url=' + encodeURIComponent(url))
+          .then(r => r.json())
+          .then(d => {
+            if (d.status === 'ok' && d.base64) {
+              img.src = d.base64; img.style.display = 'block';
+              if (lbl) lbl.style.display = 'block';
+              // tampilkan di preview lampiran
+              const pv = document.getElementById('prev' + n);
+              const ph = document.getElementById('ph' + n);
+              if (pv) { pv.src = d.base64; pv.style.display = 'block'; }
+              if (ph) ph.style.display = 'none';
+            }
+          }).catch(()=>{});
+      }
+    }
+
+    function hideAutoFoto(n) {
+      const img = document.getElementById('autoFoto' + n);
+      const lbl = document.getElementById('autoLabel' + n);
+      if (img) { img.src=''; img.style.display='none'; }
+      if (lbl) lbl.style.display = 'none';
+      const pv = document.getElementById('prev' + n);
+      const ph = document.getElementById('ph' + n);
+      if (pv && !fotoData['foto'+n]) { pv.src=''; pv.style.display='none'; }
+      if (ph && !fotoData['foto'+n]) ph.style.display = 'flex';
+    }
+
+    // ===== TANGGAL TERBILANG =====
+    const HARI_ID  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const BULAN_ID = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const SATUAN   = ['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas'];
+
+    function angkaTerbilang(n) {
+      if (n < 12) return SATUAN[n];
+      if (n < 20) return SATUAN[n-10] + ' belas';
+      if (n < 100) return SATUAN[Math.floor(n/10)] + ' puluh' + (n%10 ? ' ' + SATUAN[n%10] : '');
+      return Math.floor(n/100) === 1 ? 'seratus' + (n%100 ? ' ' + angkaTerbilang(n%100) : '') : SATUAN[Math.floor(n/100)] + ' ratus' + (n%100 ? ' ' + angkaTerbilang(n%100) : '');
+    }
+
+    function tahunTerbilang(y) {
+      const r = y % 100, rb = Math.floor(y/1000), rt = Math.floor((y%1000)/100);
+      let s = '';
+      if (rb) s += (rb===1?'seribu':angkaTerbilang(rb)+' ribu');
+      if (rt) s += (s?' ':'') + angkaTerbilang(rt) + ' ratus';
+      if (r)  s += (s?' ':'') + angkaTerbilang(r);
+      return s || 'nol';
+    }
+
+    function onTanggalChange() {
+      const val = g('tanggalLKH');
+      if (!val) return;
+      const dt = new Date(val + 'T00:00:00');
+      document.getElementById('pvHari').textContent              = HARI_ID[dt.getDay()];
+      document.getElementById('pvTanggalTerbilang').textContent  = angkaTerbilang(dt.getDate());
+      document.getElementById('pvBulan').textContent             = BULAN_ID[dt.getMonth()+1];
+      document.getElementById('pvTahun').textContent             = tahunTerbilang(dt.getFullYear());
+      const tgl = String(dt.getDate()).padStart(2,'0');
+      const bln = BULAN_ID[dt.getMonth()+1];
+      document.getElementById('pvTanggalTTD').textContent = tgl + ' ' + bln + ' ' + dt.getFullYear();
+      syncPreview();
+    }
+
+    // ===== PREVIEW SYNC =====
+    function syncPreview() {
+      const nomor = g('nomorLKH');
+      document.getElementById('pvNomor').textContent         = nomor || '…………………………………………';
+      document.getElementById('pvNomorLampiran').textContent = nomor || '…………………………………………';
+
+      // No Surat Usulan
+      const dasarYa = document.querySelector('input[name=dasarSurat]:checked')?.value === 'ya';
+      let noUsulan = '–';
+      if (dasarYa) {
+        const sel = document.getElementById('selectUsulan');
+        const idx = parseInt(sel.value);
+        noUsulan = (!isNaN(idx) && suratUsulanDB[idx]) ? suratUsulanDB[idx].nomor : '–';
+      } else {
+        noUsulan = g('inputNoUsulan') || '–';
+      }
+      document.getElementById('pvNoUsulan').textContent = noUsulan;
+
+      // Kegiatan & rincian
+      document.getElementById('pvNamaKegiatan').textContent = g('namaKegiatan') || '……………………………';
+      document.getElementById('pvNamaBarang').textContent   = g('namaBarang')   || '……………………';
+      document.getElementById('pvTipe').textContent         = selTipe           || '……………………';
+      document.getElementById('pvMerek').textContent        = g('merek')        || '……………………';
+      document.getElementById('pvRuangan').textContent      = g('ruangan')      || '……………………';
+      document.getElementById('pvNup').textContent          = g('nup')          || '……………………';
+      document.getElementById('pvKeluhan').textContent      = g('keluhan')      || '……………………';
+
+      // Kondisi
+      const kondisi = document.querySelector('input[name=kondisi]:checked')?.value || '';
+      document.getElementById('pvKondisi').textContent = kondisi || '……………………';
+
+      // Progress
+      const progress = document.querySelector('input[name=progress]:checked')?.value || '';
+      const dpEl = document.getElementById('pvProgressDP');
+      const sEl  = document.getElementById('pvProgressS');
+      dpEl.className = 'progress-opt' + (progress === 'Dalam Tahap Pengerjaan' ? ' aktif' : '');
+      sEl.className  = 'progress-opt' + (progress === 'Selesai'                ? ' aktif' : '');
+
+      // TTD Pelaksana
+      document.getElementById('pvNamaPelaksana').textContent    = g('namaPelaksana')  || '……………………………………………';
+      document.getElementById('pvNipPelaksana').textContent     = g('nipPelaksana')   || '……………………………………………';
+      document.getElementById('pvNamaPelaksanaTTD').textContent = g('namaPelaksana')  || '……………………………………';
+      document.getElementById('pvJabPelaksanaSub').textContent  = g('jabPelaksana')   || '……………………';
+      document.getElementById('pvNipPelaksanaTTD').textContent  = 'NIP. ' + (g('nipPelaksana') || '……………………');
+
+      // TTD Pengusul
+      document.getElementById('pvNamaPengusulTTD').textContent = g('namaPengusul') || '……………………………………';
+      document.getElementById('pvJabPengusul').textContent      = g('jabPengusul')  || '……………………';
+      document.getElementById('pvNipPengusulTTD').textContent  = 'NIP. ' + (g('nipPengusul') || '……………………');
+
+      // TTD Mengetahui
+      document.getElementById('pvNamaMengetahui').textContent = g('namaMengetahui') || '……………………………………';
+
+      // TTD images
+      const ttdImgMap = {
+        pvTTDPelaksana : ttdData.pelaksana,
+        pvTTDPengusul  : ttdData.pengusul,
+        pvTTDMengetahui: ttdData.mengetahui,
+      };
+      Object.entries(ttdImgMap).forEach(([id, b64]) => {
+        const img = document.getElementById(id);
+        if (!img) return;
+        if (b64) { img.src = b64; img.style.display = 'block'; }
+        else      { img.style.display = 'none'; }
+      });
+    }
+
+    // ===== ASET CASCADE DROPDOWN =====
+    async function fetchAset() {
+      const elLoad  = document.getElementById('asetLoading');
+      const elError = document.getElementById('asetError');
+      elLoad.style.display = 'block';
+      elError.style.display = 'none';
+      try {
+        const r = await fetch(GAS_URL + '?action=getAset');
+        const d = await r.json();
+        elLoad.style.display = 'none';
+        if (d.status === 'ok' && (d.data || []).length > 0) {
+          asetData = d.data;
+          document.getElementById('wrapDropdownBarang').style.display = 'block';
+          document.getElementById('asetManualToggleWrap').style.display = 'block';
+          buildNupDropdown();
+        } else { activateManualMode(); }
+      } catch (e) {
+        elLoad.style.display = 'none';
+        elError.style.display = 'block';
+        elError.textContent = '❌ Gagal memuat data aset: ' + e.message;
+        activateManualMode();
+      }
+    }
+
+    function buildDropdown({ searchId, listId, items, onSelect, emptyText = 'Tidak ada data' }) {
+      const inp  = document.getElementById(searchId);
+      const list = document.getElementById(listId);
+      if (!inp || !list) return;
+      const render = (q = '') => {
+        const q2 = q.toLowerCase();
+        const filtered = items.filter(it => it.label.toLowerCase().includes(q2));
+        list.innerHTML = filtered.length
+          ? filtered.map(it => `<div class="dropdown-item" data-val="${it.value}">${it.label}</div>`).join('')
+          : `<div class="dropdown-item no-result">${emptyText}</div>`;
+        list.classList.add('open');
+        list.querySelectorAll('.dropdown-item:not(.no-result)').forEach(el => {
+          el.addEventListener('mousedown', e => { e.preventDefault(); onSelect(el.dataset.val, el.textContent); list.classList.remove('open'); inp.value = el.textContent; });
+        });
+      };
+      inp.addEventListener('focus', () => render(inp.value));
+      inp.addEventListener('input', () => render(inp.value));
+      document.addEventListener('click', e => { if (!inp.contains(e.target) && !list.contains(e.target)) list.classList.remove('open'); });
+    }
+
+    function buildNupDropdown() {
+      const items = [...new Map(asetData.map(a => [a.nup, { label: a.nup + (a.nama ? ' — ' + a.nama : ''), value: a.nup }])).values()];
+      buildDropdown({
+        searchId: 'searchNup', listId: 'listNup', items,
+        onSelect(nup) {
+          document.getElementById('nup').value = nup;
+          document.getElementById('rowNama').style.display = 'block';
+          buildNamaDropdown(nup);
+          syncPreview();
+        }
+      });
+    }
+
+    function buildNamaDropdown(nup) {
+      const items = [...new Map(
+        asetData.filter(a => a.nup === nup).map(a => [a.nama, { label: a.nama, value: a.nama }])
+      ).values()];
+      buildDropdown({
+        searchId: 'searchNama', listId: 'listNama', items,
+        onSelect(nama) {
+          document.getElementById('namaBarang').value = nama;
+          document.getElementById('rowMerk').style.display = 'block';
+          buildMerkDropdown(nup, nama);
+          syncPreview();
+        }
+      });
+    }
+
+    function buildMerkDropdown(nup, nama) {
+      const merks = [...new Set(asetData.filter(a => a.nup===nup && a.nama===nama && a.merk).map(a => a.merk))];
+      if (!merks.length) {
+        document.getElementById('merkDropdownWrap').style.display = 'none';
+        document.getElementById('merkManualDrop').style.display = 'block';
+        document.getElementById('rowTipe').style.display = 'block';
+        buildTipeDropdown(nup, nama, '');
+        return;
+      }
+      document.getElementById('merkDropdownWrap').style.display = 'block';
+      document.getElementById('merkManualDrop').style.display = 'none';
+      buildDropdown({
+        searchId: 'searchMerk', listId: 'listMerk',
+        items: merks.map(m => ({ label: m, value: m })),
+        onSelect(merk) {
+          document.getElementById('merek').value = merk;
+          document.getElementById('rowTipe').style.display = 'block';
+          buildTipeDropdown(nup, nama, merk);
+          syncPreview();
+        }
+      });
+    }
+
+    function buildTipeDropdown(nup, nama, merk) {
+      const tipes = [...new Set(asetData.filter(a => a.nup===nup && a.nama===nama && (!merk||a.merk===merk) && a.tipe).map(a => a.tipe))];
+      if (!tipes.length) {
+        document.getElementById('tipeDropdownWrap').style.display = 'none';
+        document.getElementById('tipeManualDrop').style.display = 'block';
+        return;
+      }
+      document.getElementById('tipeDropdownWrap').style.display = 'block';
+      document.getElementById('tipeManualDrop').style.display = 'none';
+      buildDropdown({
+        searchId: 'searchTipe', listId: 'listTipe',
+        items: tipes.map(t => ({ label: t, value: t })),
+        onSelect(tipe) {
+          selTipe = tipe;
+          document.getElementById('tipe').value = tipe;
+          syncPreview();
+        }
+      });
+    }
+
+    function toggleManualMode(e) {
+      if (e) e.preventDefault();
+      isManualMode ? switchBackToDropdown(e) : activateManualMode();
+    }
+
+    function activateManualMode() {
+      isManualMode = true;
+      document.getElementById('wrapDropdownBarang').style.display = 'none';
+      document.getElementById('wrapManualBarang').style.display   = 'block';
+      document.getElementById('btnToggleManual').textContent      = '← Kembali ke daftar aset';
+    }
+
+    function switchBackToDropdown(e) {
+      if (e) e.preventDefault();
+      isManualMode = false;
+      document.getElementById('wrapManualBarang').style.display   = 'none';
+      document.getElementById('wrapDropdownBarang').style.display = 'block';
+      document.getElementById('btnToggleManual').textContent      = '✏️ Isi Data Manual (tidak ada di daftar)';
+      ['nupManual','namaBarangManual','merekManual','tipeManual'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      ['nup','namaBarang','merek','tipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      selTipe = '';
+      buildNupDropdown();
+      syncPreview();
+    }
+
+    // ===== FOTO HANDLER =====
+    function handleFoto(input, thumbId, prevId, fotoKey) {
+      const file = input.files[0];
+      if (!file) return;
+      // Clear auto-fill se slot ini diisi manual
+      if (fotoKey === 'foto1') { autoFotoUrls.foto1 = null; hideAutoFoto(1); }
+      if (fotoKey === 'foto2') { autoFotoUrls.foto2 = null; hideAutoFoto(2); }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 1200;
+          let w = img.width, h = img.height;
+          if (w > MAX) { h = Math.round(h * MAX/w); w = MAX; }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          const b64 = c.toDataURL('image/jpeg', 0.75);
+          fotoData[fotoKey] = b64;
+          const th = document.getElementById(thumbId);
+          if (th) { th.src = b64; th.style.display = 'block'; }
+          const pv = document.getElementById(prevId);
+          const ph = document.getElementById('ph' + prevId.replace('prev',''));
+          if (pv) { pv.src = b64; pv.style.display = 'block'; }
+          if (ph) ph.style.display = 'none';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ===== TTD =====
+    function initTTDLists() {
+      ['pelaksana','mengetahui'].forEach(target => {
+        const sel = document.getElementById('selectTTD_' + target);
+        if (!sel) return;
+        Object.keys(TTD_SAPRAS_RAW).sort().forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          sel.appendChild(opt);
+        });
+      });
+    }
+
+    function setTTDMode(target, mode) {
+      ['list','manual'].forEach(m => {
+        const btn  = document.getElementById('modeBtn_' + target + '_' + m);
+        const wrap = document.getElementById('wrapMode_' + target + '_' + m);
+        if (btn)  btn.className  = 'btn-ttd-mode' + (m === mode ? ' active' : '');
+        if (wrap) wrap.style.display = m === mode ? 'block' : 'none';
+      });
+      const fields = document.getElementById('wrapFields_' + target);
+      if (fields) fields.style.display = mode === 'list' ? 'none' : 'block';
+      if (mode === 'manual') clearTTD(target);
+    }
+
+    async function onSelectTTDSarpras(target) {
+      const sel  = document.getElementById('selectTTD_' + target);
+      const name = sel ? sel.value : '';
+      clearTTD(target);
+      // Isi field nama & NIP dari map
+      if (target === 'pelaksana') {
+        document.getElementById('namaPelaksana').value = name;
+        document.getElementById('nipPelaksana').value  = NIP_SARPRAS[name] || '';
+        document.getElementById('jabPelaksana').value  = JAB_SARPRAS[name] || '';
+      }
+      if (target === 'mengetahui') {
+        document.getElementById('namaMengetahui').value = name;
+      }
+      syncPreview();
+      if (!name) return;
+      const loadEl = document.getElementById('loadingTTD_' + target);
+      if (loadEl) loadEl.style.display = 'block';
+      try {
+        let b64 = TTD_SAPRAS_CACHE[name];
+        if (!b64) { b64 = await imgToBase64BW(TTD_SAPRAS_RAW[name]); TTD_SAPRAS_CACHE[name] = b64; }
+        ttdData[target] = b64;
+        ttdIsKey[target]  = true;
+        ttdKeyVal[target] = name;
+        const prevImg = document.getElementById('previewTTD_' + target);
+        if (prevImg) { prevImg.src = b64; prevImg.style.display = 'block'; }
+        const statusEl = document.getElementById('statusTTD_' + target);
+        if (statusEl) { statusEl.textContent = '✅ TTD: ' + name; statusEl.classList.add('signed'); }
+        const clearBtn = document.getElementById('clearTTD_' + target);
+        if (clearBtn) clearBtn.style.display = 'inline-block';
+      } catch (e) {
+        const statusEl = document.getElementById('statusTTD_' + target);
+        if (statusEl) statusEl.textContent = '⚠️ Gagal: ' + e.message;
+      } finally {
+        if (loadEl) loadEl.style.display = 'none';
+      }
+      syncPreview();
+    }
+
+    function imgToBase64BW(src) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          const cx = c.getContext('2d');
+          cx.drawImage(img, 0, 0);
+          const d = cx.getImageData(0, 0, c.width, c.height);
+          for (let i = 0; i < d.data.length; i += 4) {
+            const a = d.data[i+3];
+            const lum = 0.299*d.data[i] + 0.587*d.data[i+1] + 0.114*d.data[i+2];
+            if (a < 30 || lum > 210) { d.data[i+3] = 0; }
+            else { d.data[i] = 0; d.data[i+1] = 0; d.data[i+2] = 0; d.data[i+3] = 255; }
+          }
+          cx.putImageData(d, 0, 0);
+          resolve(c.toDataURL('image/png'));
+        };
+        img.onerror = () => resolve(src);
+        img.src = src;
+      });
+    }
+
+    function openTTD(target) {
+      currentTTDTarget = target;
+      const titles = {
+        pelaksana : 'TTD — Yang Melaksanakan Kegiatan',
+        pengusul  : 'TTD — Pengusul / Pengguna BMN',
+        mengetahui: 'TTD — Mengetahui / Kepala Instalasi',
+      };
+      document.getElementById('ttdModalTitle').textContent = titles[target] || 'Tanda Tangan';
+      document.getElementById('ttdModal').classList.add('show');
+      const canvas = document.getElementById('ttdCanvas');
+      ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = 220;
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+      canvas.onmousedown = startDraw; canvas.onmousemove = draw; canvas.onmouseup = stopDraw;
+      canvas.ontouchstart = e => { e.preventDefault(); startDraw(e.touches[0]); };
+      canvas.ontouchmove  = e => { e.preventDefault(); draw(e.touches[0]); };
+      canvas.ontouchend   = stopDraw;
+    }
+
+    function startDraw(e) {
+      isDrawing = true;
+      const r = e.target.getBoundingClientRect();
+      ctx.beginPath(); ctx.moveTo(e.clientX - r.left, e.clientY - r.top);
+    }
+    function draw(e) {
+      if (!isDrawing) return;
+      const r = document.getElementById('ttdCanvas').getBoundingClientRect();
+      ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke();
+    }
+    function stopDraw() { isDrawing = false; }
+    function clearCanvas() { const c = document.getElementById('ttdCanvas'); ctx.clearRect(0,0,c.width,c.height); }
+
+    function saveTTD() {
+      const c   = document.getElementById('ttdCanvas');
+      const b64 = c.toDataURL('image/png');
+      ttdData[currentTTDTarget] = b64;
+      ttdIsKey[currentTTDTarget]  = false;
+      ttdKeyVal[currentTTDTarget] = '';
+      const pvMap = { pelaksana:'pvTTDPelaksana', pengusul:'pvTTDPengusul', mengetahui:'pvTTDMengetahui' };
+      const pvImg = document.getElementById(pvMap[currentTTDTarget]);
+      if (pvImg) { pvImg.src = b64; pvImg.style.display = 'block'; }
+      const formImg = document.getElementById('previewTTD_' + currentTTDTarget);
+      if (formImg) { formImg.src = b64; formImg.style.display = 'block'; }
+      const statusEl = document.getElementById('statusTTD_' + currentTTDTarget);
+      if (statusEl) { statusEl.textContent = '✅ Sudah ditandatangani'; statusEl.classList.add('signed'); }
+      const clearBtn = document.getElementById('clearTTD_' + currentTTDTarget);
+      if (clearBtn) clearBtn.style.display = 'inline-block';
+      closeTTDModal();
+    }
+
+    function closeTTDModal() {
+      document.getElementById('ttdModal').classList.remove('show');
+      currentTTDTarget = null;
+    }
+
+    function clearTTD(target) {
+      ttdData[target] = null;
+      ttdIsKey[target]  = false;
+      ttdKeyVal[target] = '';
+      const pvMap = { pelaksana:'pvTTDPelaksana', pengusul:'pvTTDPengusul', mengetahui:'pvTTDMengetahui' };
+      const pvImg = document.getElementById(pvMap[target]);
+      if (pvImg) pvImg.style.display = 'none';
+      const formImg = document.getElementById('previewTTD_' + target);
+      if (formImg) { formImg.style.display = 'none'; formImg.src = ''; }
+      const statusEl = document.getElementById('statusTTD_' + target);
+      if (statusEl) { statusEl.textContent = 'Belum ditandatangani'; statusEl.classList.remove('signed'); }
+      const clearBtn = document.getElementById('clearTTD_' + target);
+      if (clearBtn) clearBtn.style.display = 'none';
+      syncPreview();
+    }
+
+    // ===== MODAL LOADING =====
+    function showModal() { document.getElementById('loadingModal').classList.add('show'); }
+    function hideModal() { document.getElementById('loadingModal').classList.remove('show'); }
+    function setStep(id, status, icon) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const si = el.querySelector('.si');
+      if (si) si.textContent = icon;
+      el.style.color = status === 'done' ? '#27ae60' : status === 'active' ? '#1a3a5c' : '#555';
+      el.style.fontWeight = status === 'active' ? '700' : '400';
+    }
+
+    // ===== SUBMIT =====
+    async function submitForm() {
+      const nomor = g('nomorLKH');
+      if (!nomor) { setStatus('error', '⚠️ Nomor LKH belum dimuat.'); return; }
+      if (!g('tanggalLKH')) { setStatus('error', '⚠️ Tanggal laporan wajib diisi.'); return; }
+      if (!g('namaKegiatan').trim()) { setStatus('error', '⚠️ Nama kegiatan wajib diisi.'); return; }
+      if (!g('namaPelaksana')) { setStatus('error', '⚠️ Nama pelaksana wajib diisi (pilih dari daftar atau isi manual).'); return; }
+      if (!g('namaPengusul')) { setStatus('error', '⚠️ Nama pengusul/pengguna wajib diisi.'); return; }
+
+      showModal();
+      setStep('ms1','active','🔄');
+      await sleep(300);
+
+      const dasarYa = document.querySelector('input[name=dasarSurat]:checked')?.value === 'ya';
+      let noSuratUsulan = '';
+      if (dasarYa) {
+        const sel = document.getElementById('selectUsulan');
+        const idx = parseInt(sel.value);
+        noSuratUsulan = (!isNaN(idx) && suratUsulanDB[idx]) ? suratUsulanDB[idx].nomor : '';
+      } else {
+        noSuratUsulan = g('inputNoUsulan');
+      }
+
+      const payload = {
+        action         : 'submitLKH',
+        nomor          : nomor,
+        tanggalLKH     : g('tanggalLKH'),
+        noSuratUsulan  : noSuratUsulan,
+        namaKegiatan   : g('namaKegiatan'),
+        namaBarang     : g('namaBarang'),
+        tipe           : selTipe,
+        merek          : g('merek'),
+        ruangan        : g('ruangan'),
+        nup            : g('nup'),
+        kondisi        : document.querySelector('input[name=kondisi]:checked')?.value || '',
+        keluhan        : g('keluhan'),
+        progress       : document.querySelector('input[name=progress]:checked')?.value || 'Dalam Tahap Pengerjaan',
+        // Pelaksana (Sarpras)
+        namaPelaksana  : g('namaPelaksana'),
+        nipPelaksana   : g('nipPelaksana'),
+        jabPelaksana   : g('jabPelaksana'),
+        // Pengusul
+        namaPengusul   : g('namaPengusul'),
+        nipPengusul    : g('nipPengusul'),
+        jabPengusul    : g('jabPengusul'),
+        // Mengetahui
+        namaMengetahui : g('namaMengetahui'),
+        // TTD — nama kunci jika dari daftar, base64 jika manual
+        ttdPelaksana   : ttdIsKey.pelaksana  ? ttdKeyVal.pelaksana  : (ttdData.pelaksana  || ''),
+        ttdPengusul    : ttdData.pengusul    || '',
+        ttdMengetahui  : ttdIsKey.mengetahui ? ttdKeyVal.mengetahui : (ttdData.mengetahui || ''),
+        // Foto — auto URL jika dari usulan, base64 jika upload baru
+        foto1          : fotoData.foto1 || autoFotoUrls.foto1 || '',
+        foto2          : fotoData.foto2 || autoFotoUrls.foto2 || '',
+        foto3          : fotoData.foto3 || '',
+        foto4          : fotoData.foto4 || '',
+        foto5          : fotoData.foto5 || '',
+        foto6          : fotoData.foto6 || '',
+      };
+
+      setStep('ms1','done','✅');
+      setStep('ms2','active','🔄');
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 90000);
+        const resp = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: controller.signal });
+        clearTimeout(timeout);
+        const result = await resp.json();
+
+        setStep('ms2','done','✅');
+        setStep('ms3','active','🔄');
+        await sleep(400);
+
+        if (result.status === 'ok') {
+          setStep('ms3','done','✅');
+          await sleep(500);
+          hideModal();
+          setStatus('success', '✅ Laporan berhasil disimpan! Nomor: ' + nomor);
+          document.getElementById('btnSubmit').disabled = true;
+          if (result.emailError) console.warn('Email error:', result.emailError);
+        } else {
+          hideModal();
+          setStatus('error', '❌ Gagal: ' + (result.error || 'Unknown error'));
+        }
+      } catch (e) {
+        hideModal();
+        setStatus('error', '❌ Gagal menghubungi server: ' + (e.name === 'AbortError' ? 'Timeout (90 detik)' : e.message));
+      }
+    }
+
+    // ===== RESET =====
+    function resetForm() {
+      if (!confirm('Reset semua data form?')) return;
+      ['namaKegiatan','ruangan','keluhan','inputNoUsulan'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      ['nup','namaBarang','merek','tipe'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      selTipe = ''; isManualMode = false;
+      document.querySelector('input[name=dasarSurat][value=tidak]').checked = true;
+      onDasarChange('tidak');
+      document.querySelector('input[name=progress][value="Dalam Tahap Pengerjaan"]').checked = true;
+      // Reset foto
+      for (let i=1;i<=6;i++) {
+        fotoData['foto'+i] = null;
+        const th = document.getElementById('thumb'+i); if(th){th.src='';th.style.display='none';}
+        const pv = document.getElementById('prev'+i);  if(pv){pv.src='';pv.style.display='none';}
+        const ph = document.getElementById('ph'+i);    if(ph) ph.style.display='flex';
+        const fi = document.getElementById('foto'+i);  if(fi) fi.value='';
+      }
+      clearAutoFill();
+      // Reset TTD
+      ['pelaksana','pengusul','mengetahui'].forEach(t => clearTTD(t));
+      setTTDMode('pelaksana',  'list');
+      setTTDMode('mengetahui', 'list');
+      // Reset dropdown aset
+      switchBackToDropdown(null);
+      nomorData = null;
+      syncPreview();
+      fetchNomorLKH('ℹ️ Form direset — mengambil nomor LKH baru…');
+      document.getElementById('btnSubmit').disabled = false;
+    }
+
+    // ===== SCALE PREVIEW (sama seperti bapp) =====
+    function scalePreviews() {
+      const panel = document.querySelector('.preview-panel');
+      if (!panel) return;
+      const availW = panel.clientWidth - 40;
+      const scale  = Math.min(1, availW / 794);
+      document.querySelectorAll('.surat-wrapper').forEach(el => {
+        el.style.transformOrigin = 'top center';
+        el.style.transform = `scale(${scale})`;
+        el.style.marginBottom = (el.offsetHeight * scale - el.offsetHeight) + 'px';
+      });
+    }
+    window.addEventListener('resize', scalePreviews);
+    document.addEventListener('DOMContentLoaded', () => setTimeout(scalePreviews, 100));
+  </script>
+</body>
+</html>
