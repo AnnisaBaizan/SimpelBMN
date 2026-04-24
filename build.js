@@ -16,7 +16,8 @@ const DIST = path.join(__dirname, 'dist');
 if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
 
 // ── Helper: baca folder TTD, embed sebagai base64 ──
-// Format nama file: {Nama}.png atau {Nama}_TTD.png  →  key = "Nama"
+// Format nama file: {Nama}_{NIP}_{Jabatan}.png  →  key = "Nama"
+// Backward-compat: {Nama}.png atau {Nama}_TTD.png  →  nip/jabatan kosong
 function readTTDFolder(dirPath, label) {
   const obj = {};
   if (!fs.existsSync(dirPath)) return obj;
@@ -24,12 +25,17 @@ function readTTDFolder(dirPath, label) {
     .filter(f => /\.(png|jpg|jpeg)$/i.test(f))
     .sort()
     .forEach(file => {
-      const name = file.replace(/_TTD\.(png|jpg|jpeg)$/i, '').replace(/\.(png|jpg|jpeg)$/i, '');
-      const ext  = path.extname(file).slice(1).toLowerCase();
-      const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
-      const b64  = fs.readFileSync(path.join(dirPath, file)).toString('base64');
-      obj[name] = `data:${mime};base64,${b64}`;
-      console.log(`🖊️  TTD ${label}: ${file} → "${name}"`);
+      const ext    = path.extname(file).slice(1).toLowerCase();
+      const mime   = ext === 'png' ? 'image/png' : 'image/jpeg';
+      const base   = file.replace(/\.(png|jpg|jpeg)$/i, '');
+      const parts    = base.split('_');
+      const name     = parts[0];
+      const nip      = (parts[1] && parts[1] !== '-' && !/^TTD$/i.test(parts[1])) ? parts[1] : '';
+      const jabatan  = parts[2] || '';
+      const instansi = parts.slice(3).join('_');
+      const b64     = fs.readFileSync(path.join(dirPath, file)).toString('base64');
+      obj[name] = { img: `data:${mime};base64,${b64}`, nip, jabatan, instansi };
+      console.log(`🖊️  TTD ${label}: ${file} → "${name}" (NIP: ${nip || '-'}, Jab: ${jabatan || '-'}, Inst: ${instansi || '-'})`);
     });
   return obj;
 }
@@ -79,8 +85,10 @@ TTD_DIRS.forEach(dir => {
   fs.readdirSync(srcDir)
     .filter(f => /\.(png|jpg|jpeg)$/i.test(f))
     .forEach(file => {
-      fs.copyFileSync(path.join(srcDir, file), path.join(dstDir, file));
-      console.log(`📁 ${dir}/${file} → dist/${dir}/${file}`);
+      const ext      = path.extname(file);
+      const destName = file.replace(/\.(png|jpg|jpeg)$/i, '').split('_')[0] + ext;
+      fs.copyFileSync(path.join(srcDir, file), path.join(dstDir, destName));
+      console.log(`📁 ${dir}/${file} → dist/${dir}/${destName}`);
     });
 });
 
