@@ -263,14 +263,15 @@ SimpleBMN/
 ├── vercel.json             #             — Konfigurasi deploy Vercel
 ├── KOP.png                 #             — Kop surat institusi
 │
-├── TTDSapras/              # TTD Pengawas Sarpras
-│   ├── Sukiman.png
-│   └── Tommy.png
+├── TTDSapras/              # TTD Pengawas/Sarpras/Mengetahui
+│   ├── Sukiman_199604082025211060_Staf Instalasi Sarana Prasarana.png
+│   ├── Tommy_197408082007011032_Staf Instalasi Sarana Prasarana.png
+│   └── Rahmad Aswin Juliansyah_<NIP>_Kepala Instalasi Sarana Prasarana.png
 ├── TTDPelaksana/           # TTD Pelaksana pekerjaan
-│   ├── Heriyanto.png
-│   └── Iqbal.png
+│   ├── Heriyanto_-_Teknisi_PT. Sumber Tehnik Jaya.png
+│   └── Iqbal_-_Teknisi_PT. Sumber Tehnik Jaya.png
 ├── TTDAtasanLangsung/      # TTD Atasan Langsung / Pengguna BMN (untuk bapp.html)
-│   └── (nama).png
+│   └── Rahmad Aswin Juliansyah_<NIP>_Kepala Instalasi Sarana Prasarana.png
 │
 ├── Code_UseFonnte.gs       # 1.190 baris — Google Apps Script, backend API utama
 ├── Code_MetaWA.gs          #   370 baris — Alternatif notif WA via Meta API
@@ -463,11 +464,19 @@ git push
 
 ### Jika Ada Pengawas / Pelaksana / Atasan Baru
 
-1. Tambah file `NamaBaru.png` ke folder TTD yang sesuai:
-   - `TTDSapras/` → untuk **Pengawas Sarpras**
-   - `TTDPelaksana/` → untuk **Pelaksana** pekerjaan
-   - `TTDAtasanLangsung/` → untuk **Atasan Langsung / Pengguna BMN**
-2. Push ke GitHub → Vercel auto-rebuild → nama baru otomatis muncul di dropdown
+1. Siapkan file PNG tanda tangan dengan nama sesuai konvensi:
+   ```
+   NamaLengkap_NIP_Jabatan_Instansi.png
+   ```
+   - NIP boleh diisi `-` jika tidak ada (misalnya pegawai swasta)
+   - Instansi boleh dikosongkan (cukup 3 segmen) jika tidak relevan
+   - Contoh: `Tommy_197408082007011032_Staf Instalasi Sarana Prasarana.png`
+   - Contoh: `Heriyanto_-_Teknisi_PT. Sumber Tehnik Jaya.png`
+2. Taruh di folder yang sesuai:
+   - `TTDSapras/` → untuk **Pengawas / Pelaksana Sarpras / Mengetahui** (lkh)
+   - `TTDPelaksana/` → untuk **Pelaksana** pekerjaan (laporan-ac)
+   - `TTDAtasanLangsung/` → untuk **Atasan Langsung / Pengguna BMN** (bapp)
+3. Push ke GitHub → Vercel auto-rebuild → nama baru otomatis muncul di dropdown, NIP dan jabatan terisi otomatis
 
 ### Jika Ada Perubahan di GAS
 
@@ -691,9 +700,21 @@ Format: `PREFIX/URUT/BULAN_ROMAWI/TAHUN`
 
 ### Format File
 
-- Nama file: `NamaOrang.png` (gunakan nama yang akan ditampilkan di dropdown)
-- Format: PNG (disarankan), background transparan atau putih
+```
+NamaLengkap_NIP_Jabatan_Instansi.png
+```
+
+| Segmen | Isi | Wajib? |
+|--------|-----|--------|
+| 1 — Nama | Nama lengkap (ditampilkan di dropdown & surat) | ✓ |
+| 2 — NIP | NIP ASN; gunakan `-` jika tidak ada | — |
+| 3 — Jabatan | Jabatan (auto-fill ke field jabatan) | — |
+| 4 — Instansi | Nama instansi/perusahaan (auto-fill ke field perusahaan) | — |
+
+- Format gambar: PNG disarankan, background transparan atau putih
 - Resolusi: minimal 300×150 px
+- Contoh: `Tommy_197408082007011032_Staf Instalasi Sarana Prasarana.png`
+- Contoh: `Heriyanto_-_Teknisi_PT. Sumber Tehnik Jaya.png`
 
 ### Proses Otomatis saat Dipilih
 
@@ -705,13 +726,12 @@ Format: `PREFIX/URUT/BULAN_ROMAWI/TAHUN`
 ### Menambah TTD Baru
 
 ```bash
-# Taruh file PNG di folder yang sesuai
-cp NamaBaru.png TTDSapras/NamaBaru.png     # untuk pengawas
-cp NamaBaru.png TTDPelaksana/NamaBaru.png  # untuk pelaksana
+# Rename file sesuai konvensi, lalu taruh di folder yang sesuai
+cp NamaBaru.png "TTDSapras/NamaBaru_197001012000011001_Staf Instalasi Sarana Prasarana.png"
 
 # Push ke GitHub → Vercel rebuild otomatis
-git add TTDSapras/NamaBaru.png
-git commit -m "feat(ttd): tambah TTD NamaBaru sebagai pengawas"
+git add "TTDSapras/NamaBaru_197001012000011001_Staf Instalasi Sarana Prasarana.png"
+git commit -m "feat(ttd): tambah TTD NamaBaru"
 git push
 ```
 

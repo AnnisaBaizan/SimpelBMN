@@ -10,6 +10,8 @@ Daftar masalah yang ditemukan saat pembacaan seluruh proyek pada 2026-04-22.
 > **Update 2026-04-23 (batch 3):** Issue HIGH #3 sudah diperbaiki secara menyeluruh — TTD list-based kini ditangani benar di seluruh pipeline: (1) `usulan.html` dan `bapp.html` kini menyimpan nama kunci ke sheet, bukan base64 (menggunakan pola `ttdIsKey`/`ttdKeyVal` dari `laporan-ac.html`); (2) GAS `handleSubmit` dan `handleSubmitBA` kini cek `startsWith('data:')` sebelum upload TTD, sehingga nama kunci disimpan langsung tanpa re-upload ke Drive; (3) `admin.html` kini memakai `loadTTDIntoEl` untuk semua TTD di reprint surat usulan dan BA — bisa handle nama kunci maupun URL Drive. Juga ditambahkan `emailError` di response GAS dan try-catch per handler untuk memudahkan debug email yang tidak terkirim.
 >
 > **Update 2026-04-23 (batch 4 — LKH):** Fitur baru Laporan Kegiatan Harian Sarpras (`lkh.html`) ditambahkan secara menyeluruh: frontend (form + preview + TTD), backend GAS (`getNomorLKH`, `getLKHList`, `handleSubmitLKH`, `kirimEmailNotifikasiLKH`, sheet `LKH-ISP` 30 kolom), tab admin, menu index, dan build.js. Pola TTD dan foto konsisten dengan halaman lain.
+>
+> **Update 2026-04-24 (batch 5 — Identity from filename):** Konvensi nama file TTD diubah ke `Nama_NIP_Jabatan_Instansi.png`. `build.js` kini mem-parse metadata dari nama file dan menghasilkan `{ img, nip, jabatan, instansi }` per entri. NIP bisa diisi `-` untuk pegawai non-ASN. Semua halaman (`lkh.html`, `usulan.html`, `bapp.html`, `laporan-ac.html`) diperbarui: hardcoded map `NIP_SARPRAS`, `JAB_SARPRAS`, `JAB_SARPRAS_DEFAULT`, `PELAKSANA_PROFILE` dihapus — NIP dan jabatan kini auto-fill dari metadata file. Menambah orang baru cukup tambah satu file PNG dengan format nama yang benar. Juga diperbaiki: NUP dropdown di `lkh.html` kini hanya tampilkan nomor NUP (bukan `NUP — Nama Barang`), subtitle judul di `lkh.html` ditambah underline.
 
 ---
 
@@ -42,14 +44,10 @@ Pipeline TTD list-based sudah diperbaiki end-to-end:
 - `Code_UseFonnte.gs` `handleSubmit` + `handleSubmitBA`: cek `startsWith('data:')` — nama kunci disimpan langsung, base64 di-upload ke Drive
 - `admin.html` reprint surat usulan dan BA: pakai `loadTTDIntoEl` yang sudah handle nama kunci (load dari TTDSapras/TTDAtasanLangsung) maupun URL Drive (fetch via `getPhoto`)
 
-### 4. `PELAKSANA_PROFILE` dan `TTD_DATA` hardcoded hanya untuk 2 teknisi
-**File:** `laporan-ac.html` · Bagian `const PELAKSANA_LIST` dan `const TTD_DATA`
+### ~~4. `PELAKSANA_PROFILE` dan `TTD_DATA` hardcoded hanya untuk 2 teknisi~~ ✅ DIPERBAIKI
+**File:** `laporan-ac.html`, `build.js`, semua halaman TTD
 
-Daftar teknisi dan tanda tangan bawaan hanya berisi 'Heriyanto' dan 'Iqbal'. Menambah teknisi baru berarti harus mengubah kode HTML secara langsung, lalu redeploy ke Vercel.
-
-**Dampak:** Operasional — setiap penambahan teknisi memerlukan intervensi developer.
-
-**Saran perbaikan:** Pindahkan data pelaksana ke sheet Google Sheets atau ke folder Drive tertentu agar bisa dikelola tanpa menyentuh kode.
+`PELAKSANA_PROFILE`, `NIP_SARPRAS`, `JAB_SARPRAS` dihapus dari semua halaman. Identitas (NIP, jabatan, instansi) kini dibaca dari nama file PNG: `Nama_NIP_Jabatan_Instansi.png`. Menambah orang baru cukup tambah satu file PNG ke folder TTD yang sesuai.
 
 ### 5. `JENIS_CONFIG` (usulan.html) dan `PR_JENIS` (admin.html) adalah duplikat
 **File:** `usulan.html` · Sekitar baris 900–950  
