@@ -934,16 +934,10 @@
     const GAS_URL = '__GAS_URL__';
 
     // ===== TTD SARPRAS (embed saat build, diproses B&W di browser) =====
-    const TTD_SAPRAS_RAW    = __TTD_SAPRAS__;     // { "Sukiman": "data:...", ... }  — Pengawas
-    const TTD_PELAKSANA_RAW = __TTD_PELAKSANA__;  // { "Heriyanto": "data:...", ... } — Pelaksana
+    const TTD_SAPRAS_RAW    = __TTD_SAPRAS__;     // { "Nama": { img, nip, jabatan } }  — Pengawas
+    const TTD_PELAKSANA_RAW = __TTD_PELAKSANA__;  // { "Nama": { img, nip, jabatan } }  — Pelaksana
     const TTD_SAPRAS_CACHE    = {};
     const TTD_PELAKSANA_CACHE = {};
-
-    // ===== PROFIL PELAKSANA — auto-fill jabatan & perusahaan saat TTD dipilih =====
-    const PELAKSANA_PROFILE = {
-      'Heriyanto': { jabatan: 'Teknisi', perusahaan: 'PT. Sumber Tehnik Jaya' },
-      'Iqbal':     { jabatan: 'Teknisi', perusahaan: 'PT. Sumber Tehnik Jaya' },
-    };
 
     // ===== JENIS LAPORAN CONFIG =====
     const JENIS_LAP_CONFIG = {
@@ -1259,7 +1253,7 @@
       if (cache[name]) {
         applyFn(cache[name]);
       } else {
-        processToBlackWhite(raw[name], processed => {
+        processToBlackWhite(raw[name]?.img || raw[name], processed => {
           cache[name] = processed;
           applyFn(processed);
         });
@@ -1287,11 +1281,10 @@
         const jabEl = document.getElementById('jabPelaksana');
         const perEl = document.getElementById('perusahaanPelaksana');
         if (el)  el.value  = name;
-        const profile = PELAKSANA_PROFILE[name];
-        if (profile) {
-          if (jabEl) jabEl.value = profile.jabatan;
-          if (perEl) perEl.value = profile.perusahaan;
-        }
+        const jabatan  = TTD_PELAKSANA_RAW[name]?.jabatan;
+        const instansi = TTD_PELAKSANA_RAW[name]?.instansi;
+        if (jabEl && jabatan)   jabEl.value = jabatan;
+        if (perEl && instansi)  perEl.value = instansi;
         syncPreview();
       }
       // Update preview surat

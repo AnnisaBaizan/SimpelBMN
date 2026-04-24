@@ -1319,12 +1319,6 @@
     const TTD_SAPRAS_RAW = __TTD_SAPRAS__;
     const TTD_SAPRAS_CACHE_P = {};
 
-    // NIP map untuk penerima dari TTDSapras
-    const NIP_SARPRAS = {
-      'Sukiman': '199604082025211060',
-      'Tommy':   '197408082007011032',
-    };
-
     // ===== JENIS SURAT CONFIG =====
     const JENIS_CONFIG = {
       'umum': {
@@ -1863,12 +1857,12 @@
       const name = sel.value;
       if (!name) return;
       document.getElementById('namaPenerima').value = name;
-      document.getElementById('nipPenerima').value = NIP_SARPRAS[name] || '';
+      document.getElementById('nipPenerima').value = TTD_SAPRAS_RAW[name]?.nip || '';
       updatePreview();
       const statusEl = document.getElementById('statusTTD_penerima');
       if (statusEl) statusEl.textContent = '⏳ Memuat TTD…';
       if (TTD_SAPRAS_CACHE_P[name]) { setTTDPenerimaBW(TTD_SAPRAS_CACHE_P[name], name); return; }
-      const b64raw = TTD_SAPRAS_RAW[name];
+      const b64raw = TTD_SAPRAS_RAW[name]?.img;
       if (!b64raw) { if (statusEl) statusEl.textContent = '❌ TTD tidak ditemukan'; return; }
       const bw = await imgToBase64BW(b64raw);
       TTD_SAPRAS_CACHE_P[name] = bw;

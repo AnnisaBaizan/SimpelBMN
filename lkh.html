@@ -153,7 +153,7 @@
     .kop-line { border: none; border-top: 3px solid #000; margin: 6px 0 12px; }
 
     .surat-judul { font-size: 13pt; font-weight: bold; text-align: center; text-transform: uppercase; text-decoration: underline; margin-bottom: 2px; }
-    .surat-judul-sub { font-size: 13pt; font-weight: bold; text-align: center; text-transform: uppercase; margin-bottom: 2px; }
+    .surat-judul-sub { font-size: 13pt; font-weight: bold; text-align: center; text-transform: uppercase; text-decoration: underline; margin-bottom: 2px; }
     .surat-nomor  { font-size: 12pt; text-align: center; margin-bottom: 18px; }
     .surat-pembuka { text-align: justify; line-height: 1.8; margin-bottom: 14px; font-size: 12pt; }
 
@@ -625,56 +625,49 @@
             <span class="dl-sep">:</span>
             <span class="dl-val" id="pvNamaKegiatan" style="white-space:pre-line">……………………………</span>
           </li>
-          <li>
-            <span class="dl-dash">–</span>
-            <span class="dl-key" style="vertical-align:top">Rincian Pemeliharaan/<br>Perbaikan BMN</span>
-            <span class="dl-sep" style="vertical-align:top">:</span>
-            <span class="dl-val" style="vertical-align:top">
-              <ul class="detail-list dl-sub">
-                <li>
-                  <span class="dl-dash"></span>
-                  <span class="dl-key">Nama Barang</span>
-                  <span class="dl-sep">:</span>
-                  <span class="dl-val" id="pvNamaBarang">……………………</span>
-                </li>
-                <li>
-                  <span class="dl-dash"></span>
-                  <span class="dl-key">Tipe</span>
-                  <span class="dl-sep">:</span>
-                  <span class="dl-val" id="pvTipe">……………………</span>
-                </li>
-                <li>
-                  <span class="dl-dash"></span>
-                  <span class="dl-key">Merek</span>
-                  <span class="dl-sep">:</span>
-                  <span class="dl-val" id="pvMerek">……………………</span>
-                </li>
-                <li>
-                  <span class="dl-dash"></span>
-                  <span class="dl-key">Ruangan (Sesuai DBR)</span>
-                  <span class="dl-sep">:</span>
-                  <span class="dl-val" id="pvRuangan">……………………</span>
-                </li>
-                <li>
-                  <span class="dl-dash"></span>
-                  <span class="dl-key">NUP</span>
-                  <span class="dl-sep">:</span>
-                  <span class="dl-val" id="pvNup">……………………</span>
-                </li>
-                <li>
-                  <span class="dl-dash"></span>
-                  <span class="dl-key">Kondisi (Sesuai Status BMN)</span>
-                  <span class="dl-sep">:</span>
-                  <span class="dl-val" id="pvKondisi">……………………</span>
-                </li>
-                <li>
-                  <span class="dl-dash"></span>
-                  <span class="dl-key" style="vertical-align:top">Keluhan Pengusul/<br>Pengguna</span>
-                  <span class="dl-sep" style="vertical-align:top">:</span>
-                  <span class="dl-val" id="pvKeluhan" style="vertical-align:top;white-space:pre-line">……………………</span>
-                </li>
-              </ul>
-            </span>
+          <li style="display:block;">
+            <div style="display:flex;">
+              <span class="dl-dash">–</span>
+              <span class="dl-key">Rincian Pemeliharaan/Perbaikan BMN</span>
+              <span class="dl-sep">:</span>
+            </div>
+            <ul class="detail-list" style="padding-left:18px;margin-bottom:0;">
+              <li>
+                <span class="dl-key" style="min-width:240px;">Nama Barang</span>
+                <span class="dl-sep">:</span>
+                <span class="dl-val" id="pvNamaBarang">……………………</span>
+              </li>
+              <li>
+                <span class="dl-key" style="min-width:240px;">Tipe</span>
+                <span class="dl-sep">:</span>
+                <span class="dl-val" id="pvTipe">……………………</span>
+              </li>
+              <li>
+                <span class="dl-key" style="min-width:240px;">Merek</span>
+                <span class="dl-sep">:</span>
+                <span class="dl-val" id="pvMerek">……………………</span>
+              </li>
+              <li>
+                <span class="dl-key" style="min-width:240px;">Ruangan (Sesuai DBR)</span>
+                <span class="dl-sep">:</span>
+                <span class="dl-val" id="pvRuangan">……………………</span>
+              </li>
+              <li>
+                <span class="dl-key" style="min-width:240px;">NUP</span>
+                <span class="dl-sep">:</span>
+                <span class="dl-val" id="pvNup">……………………</span>
+              </li>
+              <li>
+                <span class="dl-key" style="min-width:240px;">Kondisi (Sesuai Status BMN)</span>
+                <span class="dl-sep">:</span>
+                <span class="dl-val" id="pvKondisi">……………………</span>
+              </li>
+              <li>
+                <span class="dl-key" style="min-width:240px;vertical-align:top;">Keluhan Pengusul/Pengguna</span>
+                <span class="dl-sep" style="vertical-align:top;">:</span>
+                <span class="dl-val" id="pvKeluhan" style="vertical-align:top;white-space:pre-line;">……………………</span>
+              </li>
+            </ul>
           </li>
           <li>
             <span class="dl-dash">–</span>
@@ -719,11 +712,12 @@
           <div class="ttd-bottom-row">
             <div class="ttd-col">
               <div>Mengetahui,</div>
-              <div>Kepala Instalasi Sarana Prasarana</div>
+              <div id="pvJabMengetahui">Kepala Instalasi Sarana Prasarana</div>
               <div class="ttd-img-wrap">
                 <img id="pvTTDMengetahui" class="ttd-img" />
               </div>
               <div class="ttd-nama-line" id="pvNamaMengetahui">……………………………………</div>
+              <div id="pvNipMengetahui" style="font-size:10pt">NIP. ……………………</div>
             </div>
           </div>
         </div>
@@ -812,16 +806,6 @@
     const TTD_SAPRAS_RAW = __TTD_SAPRAS__;
     const TTD_SAPRAS_CACHE = {};
 
-    // NIP Sarpras map
-    const NIP_SARPRAS = {
-      'Sukiman': '199604082025211060',
-      'Tommy':   '197408082007011032',
-    };
-    const JAB_SARPRAS = {
-      'Sukiman': 'Sanitarian',
-      'Tommy':   'Pengadministrasi Umum',
-    };
-
     // ===== STATE =====
     let nomorData = null;
     let suratUsulanDB = [];
@@ -831,6 +815,7 @@
     const ttdData   = { pelaksana:null, pengusul:null, mengetahui:null };
     const ttdIsKey  = { pelaksana:false, pengusul:false, mengetahui:false };
     const ttdKeyVal = { pelaksana:'',   pengusul:'',    mengetahui:'' };
+    const mengetahuiMeta = { nip: '', jabatan: '' };
     let currentTTDTarget = null;
     let isManualMode = false;
     let selTipe = '';
@@ -1067,7 +1052,9 @@
       document.getElementById('pvNipPengusulTTD').textContent  = 'NIP. ' + (g('nipPengusul') || '……………………');
 
       // TTD Mengetahui
-      document.getElementById('pvNamaMengetahui').textContent = g('namaMengetahui') || '……………………………………';
+      document.getElementById('pvNamaMengetahui').textContent   = g('namaMengetahui') || '……………………………………';
+      document.getElementById('pvNipMengetahui').textContent    = 'NIP. ' + (mengetahuiMeta.nip || '……………………');
+      document.getElementById('pvJabMengetahui').textContent    = mengetahuiMeta.jabatan || 'Kepala Instalasi Sarana Prasarana';
 
       // TTD images
       const ttdImgMap = {
@@ -1128,7 +1115,7 @@
     }
 
     function buildNupDropdown() {
-      const items = [...new Map(asetData.map(a => [a.nup, { label: a.nup + (a.nama ? ' — ' + a.nama : ''), value: a.nup }])).values()];
+      const items = [...new Map(asetData.map(a => [a.nup, { label: a.nup, value: a.nup }])).values()];
       buildDropdown({
         searchId: 'searchNup', listId: 'listNup', items,
         onSelect(nup) {
@@ -1287,14 +1274,17 @@
       const sel  = document.getElementById('selectTTD_' + target);
       const name = sel ? sel.value : '';
       clearTTD(target);
-      // Isi field nama & NIP dari map
+      // Isi field nama, NIP, jabatan dari metadata TTD
+      const meta = TTD_SAPRAS_RAW[name] || {};
       if (target === 'pelaksana') {
         document.getElementById('namaPelaksana').value = name;
-        document.getElementById('nipPelaksana').value  = NIP_SARPRAS[name] || '';
-        document.getElementById('jabPelaksana').value  = JAB_SARPRAS[name] || '';
+        document.getElementById('nipPelaksana').value  = meta.nip     || '';
+        document.getElementById('jabPelaksana').value  = meta.jabatan || '';
       }
       if (target === 'mengetahui') {
         document.getElementById('namaMengetahui').value = name;
+        mengetahuiMeta.nip     = meta.nip     || '';
+        mengetahuiMeta.jabatan = meta.jabatan || '';
       }
       syncPreview();
       if (!name) return;
@@ -1302,7 +1292,7 @@
       if (loadEl) loadEl.style.display = 'block';
       try {
         let b64 = TTD_SAPRAS_CACHE[name];
-        if (!b64) { b64 = await imgToBase64BW(TTD_SAPRAS_RAW[name]); TTD_SAPRAS_CACHE[name] = b64; }
+        if (!b64) { b64 = await imgToBase64BW(meta.img || meta); TTD_SAPRAS_CACHE[name] = b64; }
         ttdData[target] = b64;
         ttdIsKey[target]  = true;
         ttdKeyVal[target] = name;
@@ -1405,6 +1395,7 @@
       ttdData[target] = null;
       ttdIsKey[target]  = false;
       ttdKeyVal[target] = '';
+      if (target === 'mengetahui') { mengetahuiMeta.nip = ''; mengetahuiMeta.jabatan = ''; }
       const pvMap = { pelaksana:'pvTTDPelaksana', pengusul:'pvTTDPengusul', mengetahui:'pvTTDMengetahui' };
       const pvImg = document.getElementById(pvMap[target]);
       if (pvImg) pvImg.style.display = 'none';

@@ -861,8 +861,8 @@
     const ttdData     = { pelaksana:null, pengawas:null, pengguna:null };
     const ttdIsKey    = { pelaksana:false, pengawas:false, pengguna:false };
     const ttdKeyVal   = { pelaksana:'',    pengawas:'',    pengguna:'' };
-    const TTD_SAPRAS_RAW = __TTD_SAPRAS__;   // { "Nama": "data:image/png;base64,…" }
-    const TTD_ATASAN_RAW = __TTD_ATASAN__;   // { "Nama": "data:image/png;base64,…" }
+    const TTD_SAPRAS_RAW = __TTD_SAPRAS__;   // { "Nama": { img, nip, jabatan } }
+    const TTD_ATASAN_RAW = __TTD_ATASAN__;   // { "Nama": { img, nip, jabatan } }
     const TTD_SAPRAS_CACHE = {};
     const TTD_ATASAN_CACHE = {};
     let currentTTDTarget = null; // 'pelaksana' | 'pengawas' | 'pengguna'
@@ -1364,23 +1364,20 @@
       }
     }
 
-    // ===== TTD PENGAWAS (dari daftar Sarpras, jabatan otomatis) =====
-    const JAB_SARPRAS = { 'Rahmad Aswin Juliansyah': 'Kepala Instalasi Sarana Prasarana' };
-    const JAB_SARPRAS_DEFAULT = 'Staff Instalasi Sarana Prasarana';
-
+    // ===== TTD PENGAWAS (dari daftar Sarpras, jabatan otomatis dari metadata TTD) =====
     async function onSelectTTDPengawas() {
       const sel  = document.getElementById('selectTTD_pengawas');
       const name = sel ? sel.value : '';
       clearTTD('pengawas');
       document.getElementById('namaPengawas').value = name;
-      document.getElementById('jabPengawas').value  = name ? (JAB_SARPRAS[name] || JAB_SARPRAS_DEFAULT) : '';
+      document.getElementById('jabPengawas').value  = name ? (TTD_SAPRAS_RAW[name]?.jabatan || '') : '';
       syncPreview();
       if (!name) return;
       const loadEl = document.getElementById('loadingTTD_pengawas');
       if (loadEl) loadEl.style.display = 'block';
       try {
         let b64 = TTD_SAPRAS_CACHE[name];
-        if (!b64) { b64 = await imgToBase64BW(TTD_SAPRAS_RAW[name]); TTD_SAPRAS_CACHE[name] = b64; }
+        if (!b64) { b64 = await imgToBase64BW(TTD_SAPRAS_RAW[name]?.img); TTD_SAPRAS_CACHE[name] = b64; }
         ttdData.pengawas = b64;
         ttdIsKey.pengawas  = true;
         ttdKeyVal.pengawas = name;
@@ -1414,13 +1411,13 @@
         syncPreview(); return;
       }
       if (nameEl) nameEl.value = name;
-      if (jabEl)  jabEl.value  = JAB_SARPRAS[name] || JAB_SARPRAS_DEFAULT;
+      if (jabEl)  jabEl.value  = TTD_ATASAN_RAW[name]?.jabatan || '';
       syncPreview();
       const loadEl = document.getElementById('loadingTTD_' + target);
       if (loadEl) loadEl.style.display = 'block';
       try {
         let b64 = TTD_ATASAN_CACHE[name];
-        if (!b64) { b64 = await imgToBase64BW(TTD_ATASAN_RAW[name]); TTD_ATASAN_CACHE[name] = b64; }
+        if (!b64) { b64 = await imgToBase64BW(TTD_ATASAN_RAW[name]?.img); TTD_ATASAN_CACHE[name] = b64; }
         ttdData[target] = b64;
         ttdIsKey[target]  = true;
         ttdKeyVal[target] = name;
