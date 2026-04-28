@@ -237,8 +237,10 @@
     /* ===== PRINT ===== */
     @media print {
       .form-panel, .app-header { display: none !important; }
-      .preview-panel { height: auto; overflow: visible; background: #fff; padding: 0; }
-      .surat-wrapper { box-shadow: none; margin: 0; padding: 20px 30px; }
+      .main-layout   { display: block !important; }
+      .preview-panel { display: block !important; height: auto; overflow: visible; background: #fff; padding: 0; width: 100%; }
+      .surat-wrapper { width: 100% !important; box-shadow: none; margin: 0; padding: 20px 30px; page-break-after: always; break-after: page; }
+      .surat-wrapper:last-child { page-break-after: auto; break-after: auto; }
       .foto-placeholder { display: none; }
       .foto-placeholder-print { display: flex; min-height: 80px; border: 1px dashed #ccc; align-items: center; justify-content: center; color: #ccc; font-size: 10pt; }
       .preview-label { display: none; }
@@ -1501,6 +1503,8 @@
           setStatus('success', '✅ Laporan berhasil disimpan! Nomor: ' + nomor);
           document.getElementById('btnSubmit').disabled = true;
           if (result.emailError) console.warn('Email error:', result.emailError);
+          await sleep(300);
+          window.print();
         } else {
           hideModal();
           setStatus('error', '❌ Gagal: ' + (result.error || 'Unknown error'));
