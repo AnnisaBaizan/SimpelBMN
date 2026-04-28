@@ -236,14 +236,17 @@
 
     /* ===== PRINT ===== */
     @media print {
-      .form-panel, .app-header { display: none !important; }
-      .main-layout   { display: block !important; }
-      .preview-panel { display: block !important; height: auto; overflow: visible; background: #fff; padding: 0; width: 100%; }
-      .surat-wrapper { width: 100% !important; box-shadow: none; margin: 0 !important; margin-bottom: 0 !important; padding: 20px 30px; transform: none !important; page-break-after: always; break-after: page; }
-      .surat-wrapper:last-child { page-break-after: auto; break-after: auto; }
+      @page { size: 215mm 330mm; margin: 18mm 20mm; }
+      body { overflow: visible !important; }
+      .app-header, .form-panel, .preview-label { display: none !important; }
+      .main-layout   { display: block !important; height: auto !important; overflow: visible !important; }
+      .preview-panel { display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; height: auto !important; }
+      .surat-wrapper { width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; transform: none !important; page-break-after: always; overflow: visible !important; }
+      .surat-wrapper:last-child { page-break-after: auto; }
+      .foto-item { page-break-inside: avoid; }
       .foto-placeholder { display: none; }
       .foto-placeholder-print { display: flex; min-height: 80px; border: 1px dashed #ccc; align-items: center; justify-content: center; color: #ccc; font-size: 10pt; }
-      .preview-label { display: none; }
+      .ttd-modal-overlay, .modal-overlay { display: none !important; }
     }
   </style>
 </head>
@@ -1549,16 +1552,20 @@
       document.getElementById('btnSubmit').disabled = false;
     }
 
-    // ===== SCALE PREVIEW (sama seperti bapp) =====
+    // ===== SCALE PREVIEW =====
     function scalePreviews() {
-      const panel = document.querySelector('.preview-panel');
-      if (!panel) return;
-      const availW = panel.clientWidth - 40;
-      const scale  = Math.min(1, availW / 794);
+      if (window.innerWidth >= 900) {
+        document.querySelectorAll('.surat-wrapper').forEach(el => {
+          el.style.transform = ''; el.style.marginBottom = '';
+        });
+        return;
+      }
+      const scale = window.innerWidth / 794;
       document.querySelectorAll('.surat-wrapper').forEach(el => {
-        el.style.transformOrigin = 'top center';
+        el.style.transform = ''; el.style.marginBottom = '';
+        const h = el.offsetHeight;
         el.style.transform = `scale(${scale})`;
-        el.style.marginBottom = (el.offsetHeight * scale - el.offsetHeight) + 'px';
+        el.style.marginBottom = `${h * scale - h}px`;
       });
     }
     window.addEventListener('resize', scalePreviews);
