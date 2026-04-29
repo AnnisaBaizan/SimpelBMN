@@ -57,7 +57,7 @@
   .login-error { margin-top: 10px; font-size: 12px; color: #c0392b; display: none; font-weight: 600; }
 
   /* ADMIN PANEL */
-  .admin-wrap { display: none; max-width: 1000px; margin: 28px auto; padding: 0 16px 40px; }
+  .admin-wrap { display: none; max-width: 1560px; margin: 28px auto; padding: 0 16px 40px; }
   .panel-card {
     background: #fff; border-radius: 8px; padding: 24px 28px;
     box-shadow: 0 2px 12px rgba(0,0,0,.08); margin-bottom: 20px;
@@ -179,6 +179,40 @@
   .modal-step-item.done   { color: #27ae60; }
   .modal-step-item .si    { width: 18px; text-align: center; }
 
+  /* DataTables overrides */
+  .admin-wrap .dt-container { font-size: 12px; }
+  .admin-wrap .dt-layout-row { margin-bottom: 10px; }
+  .admin-wrap .dt-buttons { display: flex; flex-wrap: wrap; gap: 5px; }
+  .admin-wrap .dt-buttons button.dt-button {
+    padding: 6px 12px; font-size: 11px; font-weight: 600;
+    background: #1a3a5c; color: #fff; border: none; border-radius: 4px; cursor: pointer;
+  }
+  .admin-wrap .dt-buttons button.dt-button:hover { background: #244f7a; }
+  .admin-wrap .dt-search input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+  .admin-wrap .dt-length select { padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+  .admin-wrap table.dataTable thead th { background: #1a3a5c; color: #fff; font-weight: 600; white-space: nowrap; padding: 8px 10px; }
+  .admin-wrap table.dataTable thead th.dt-type-numeric { text-align: left; }
+  .admin-wrap table.dataTable tfoot input {
+    width: 100%; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px;
+    font-size: 11px; box-sizing: border-box; margin-top: 4px;
+  }
+  .admin-wrap table.dataTable tbody td { padding: 6px 10px; vertical-align: top; border-bottom: 1px solid #eee; }
+  .admin-wrap table.dataTable tbody tr:hover { background: #f0f7ff !important; cursor: pointer; }
+  .admin-wrap table.dataTable tbody tr.selected > * { background: #d6eaf8 !important; }
+  .admin-wrap .dt-top-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .admin-wrap .dt-top-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .admin-wrap .dt-top-right { display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 12px; }
+  .admin-wrap .dt-top-right select { padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+  .admin-wrap .dt-bot-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  /* ColVis dropdown */
+  .dt-button-collection { background: #fff !important; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,.15) !important; padding: 4px 0 !important; min-width: 180px; }
+  .dt-button-collection .dt-button { display: block !important; width: 100% !important; text-align: left !important; padding: 7px 16px !important; background: none !important; color: #222 !important; font-size: 12px !important; border: none !important; border-radius: 0 !important; cursor: pointer; }
+  .dt-button-collection .dt-button:hover { background: #f0f7ff !important; color: #1a3a5c !important; }
+  .dt-button-collection .dt-button.dt-button-active { background: #e3f0fb !important; color: #1a3a5c !important; font-weight: 700 !important; }
+  .admin-wrap .dt-info { font-size: 11px; color: #666; }
+  .admin-wrap .dt-paging .dt-paging-button { padding: 4px 10px; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; font-size: 12px; }
+  .admin-wrap .dt-paging .dt-paging-button.current { background: #1a3a5c; color: #fff; border-color: #1a3a5c; }
+
   @media print {
     @page { size: 215mm 330mm; margin: 18mm 25mm; }
     body { background: #fff; }
@@ -193,6 +227,22 @@
     .foto-item { page-break-inside: avoid; }
   }
 </style>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- JSZip + pdfmake harus sebelum buttons.html5 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.2/css/buttons.dataTables.min.css">
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+<!-- Buttons extension -->
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.colVis.min.js"></script>
 </head>
 <body>
 
@@ -236,30 +286,19 @@
 
     <!-- TAB: USULAN PP -->
     <div class="tab-content active" id="tabUsulan">
-      <div class="filter-grid">
-        <div>
-          <label>Cari Nama Pengaju</label>
-          <input type="text" id="filterNama" placeholder="Ketik nama…" oninput="renderTable()" />
-        </div>
-        <div>
-          <label>Cari Nomor / Barang / NUP</label>
-          <input type="text" id="filterQ" placeholder="Ketik kata kunci…" oninput="renderTable()" />
-        </div>
-        <div>
-          <label>Filter Bulan Surat</label>
-          <input type="month" id="filterBulan" onchange="renderTable()" />
-        </div>
-        <div><button class="btn-reset-filter" onclick="resetFilter()">Reset Filter</button></div>
-      </div>
-      <div class="surat-table-wrap">
-        <table class="surat-list">
+      <div class="surat-table-wrap" style="overflow-x:auto">
+        <table id="tableUsulan" class="surat-list" style="width:100%">
           <thead><tr>
-            <th>Tanggal Surat</th><th>Nomor Surat</th><th>Nama Pengaju</th>
-            <th>Bagian/Unit</th><th>Jenis Surat</th><th>Nama Barang</th><th>NUP</th><th>Kondisi</th>
+            <th>Tanggal Surat</th><th>Nomor Surat</th><th>Nama Pengaju</th><th>NIP</th>
+            <th>Jabatan</th><th>Bagian/Unit</th><th>Jenis Surat</th>
+            <th>Nama Barang</th><th>Merek/Tipe</th><th>Ruangan</th>
+            <th>NUP</th><th>Kondisi</th><th>Keluhan</th>
           </tr></thead>
-          <tbody id="suratTableBody">
-            <tr><td colspan="7" class="empty-state">⏳ Memuat data arsip…</td></tr>
-          </tbody>
+          <tfoot><tr>
+            <th></th><th></th><th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+          </tr></tfoot>
+          <tbody id="suratTableBody"></tbody>
         </table>
       </div>
       <div class="detail-panel" id="detailPanel">
@@ -275,30 +314,18 @@
 
     <!-- TAB: BA-PP -->
     <div class="tab-content" id="tabBA">
-      <div class="filter-grid">
-        <div>
-          <label>Cari Nama Pelaksana</label>
-          <input type="text" id="filterBANama" placeholder="Ketik nama…" oninput="renderBATable()" />
-        </div>
-        <div>
-          <label>Cari Nomor / Barang / NUP</label>
-          <input type="text" id="filterBAQ" placeholder="Ketik kata kunci…" oninput="renderBATable()" />
-        </div>
-        <div>
-          <label>Filter Bulan BA</label>
-          <input type="month" id="filterBABulan" onchange="renderBATable()" />
-        </div>
-        <div><button class="btn-reset-filter" onclick="resetBAFilter()">Reset Filter</button></div>
-      </div>
-      <div class="surat-table-wrap">
-        <table class="surat-list">
+      <div class="surat-table-wrap" style="overflow-x:auto">
+        <table id="tableBA" class="surat-list" style="width:100%">
           <thead><tr>
-            <th>Tanggal BA</th><th>Nomor BA</th><th>Pelaksana</th>
-            <th>Nama Barang</th><th>NUP</th><th>Kondisi</th><th>No Usulan</th>
+            <th>Tanggal BA</th><th>Nomor BA</th><th>Pelaksana</th><th>Jabatan Pelaksana</th>
+            <th>Nama Barang</th><th>Tipe</th><th>Merek</th><th>Ruangan</th>
+            <th>NUP</th><th>Lain-lain/No.Inv</th><th>Kondisi</th><th>Rincian</th><th>No Usulan</th>
           </tr></thead>
-          <tbody id="baTableBody">
-            <tr><td colspan="7" class="empty-state">⏳ Memuat data BA…</td></tr>
-          </tbody>
+          <tfoot><tr>
+            <th></th><th></th><th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+          </tr></tfoot>
+          <tbody id="baTableBody"></tbody>
         </table>
       </div>
       <div class="detail-panel" id="baDetailPanel">
@@ -314,30 +341,18 @@
 
     <!-- TAB: LAPORAN AC -->
     <div class="tab-content" id="tabAC">
-      <div class="filter-grid">
-        <div>
-          <label>Cari Nama Pelaksana</label>
-          <input type="text" id="filterACNama" placeholder="Ketik nama…" oninput="renderACTable()" />
-        </div>
-        <div>
-          <label>Cari Nomor / Barang / NUP</label>
-          <input type="text" id="filterACQ" placeholder="Ketik kata kunci…" oninput="renderACTable()" />
-        </div>
-        <div>
-          <label>Filter Bulan Laporan</label>
-          <input type="month" id="filterACBulan" onchange="renderACTable()" />
-        </div>
-        <div><button class="btn-reset-filter" onclick="resetACFilter()">Reset Filter</button></div>
-      </div>
-      <div class="surat-table-wrap">
-        <table class="surat-list">
+      <div class="surat-table-wrap" style="overflow-x:auto">
+        <table id="tableAC" class="surat-list" style="width:100%">
           <thead><tr>
-            <th>Tanggal Laporan</th><th>Nomor Laporan</th><th>Pelaksana</th>
-            <th>Nama Barang</th><th>Kapasitas AC</th><th>NUP</th><th>No Usulan</th>
+            <th>Tanggal Laporan</th><th>Nomor Laporan</th><th>Pelaksana</th><th>Jabatan Pelaksana</th>
+            <th>Nama Barang</th><th>Tipe</th><th>Merek</th><th>Ruangan</th>
+            <th>NUP</th><th>Kapasitas AC</th><th>Jenis Laporan</th><th>Jenis Pekerjaan</th><th>No Usulan</th>
           </tr></thead>
-          <tbody id="acTableBody">
-            <tr><td colspan="7" class="empty-state">⏳ Memuat data laporan AC…</td></tr>
-          </tbody>
+          <tfoot><tr>
+            <th></th><th></th><th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+          </tr></tfoot>
+          <tbody id="acTableBody"></tbody>
         </table>
       </div>
       <div class="detail-panel" id="acDetailPanel">
@@ -353,30 +368,18 @@
 
     <!-- TAB: LAPORAN KEGIATAN HARIAN (LKH) -->
     <div class="tab-content" id="tabLKH">
-      <div class="filter-grid">
-        <div>
-          <label>Cari Nama Pelaksana</label>
-          <input type="text" id="filterLKHNama" placeholder="Ketik nama…" oninput="renderLKHTable()" />
-        </div>
-        <div>
-          <label>Cari Nomor / Barang / NUP</label>
-          <input type="text" id="filterLKHQ" placeholder="Ketik kata kunci…" oninput="renderLKHTable()" />
-        </div>
-        <div>
-          <label>Filter Bulan LKH</label>
-          <input type="month" id="filterLKHBulan" onchange="renderLKHTable()" />
-        </div>
-        <div><button class="btn-reset-filter" onclick="resetLKHFilter()">Reset Filter</button></div>
-      </div>
-      <div class="surat-table-wrap">
-        <table class="surat-list">
+      <div class="surat-table-wrap" style="overflow-x:auto">
+        <table id="tableLKH" class="surat-list" style="width:100%">
           <thead><tr>
             <th>Tanggal LKH</th><th>Nomor LKH</th><th>Pelaksana</th>
-            <th>Nama Barang</th><th>NUP</th><th>Progress</th><th>No Usulan</th>
+            <th>Nama Kegiatan</th><th>Nama Barang</th><th>Tipe</th><th>Merek</th>
+            <th>Ruangan</th><th>NUP</th><th>Kondisi</th><th>Progress</th><th>No Usulan</th>
           </tr></thead>
-          <tbody id="lkhTableBody">
-            <tr><td colspan="7" class="empty-state">⏳ Memuat data LKH…</td></tr>
-          </tbody>
+          <tfoot><tr>
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+          </tr></tfoot>
+          <tbody id="lkhTableBody"></tbody>
         </table>
       </div>
       <div class="detail-panel" id="lkhDetailPanel">
@@ -914,70 +917,101 @@ function switchTab(tab) {
 // DATA
 let allSurat = [];
 let selectedRow = null;
+let dtUsulan = null;
 const JENIS_LABEL = { 'umum': 'BMN Umum', 'ac-perbaikan': '❄️ AC Perbaikan', 'ac-pemindahan': '🔄 AC Pemindahan' };
 
 async function loadSuratList() {
+  initUsulanTable();
   try {
     const resp = await fetch(GAS_URL + '?action=getSuratList');
     const data = await resp.json();
     if (data.status !== 'ok') throw new Error(data.error);
     allSurat = data.data;
-    renderTable();
+    dtUsulan.clear().rows.add(allSurat).draw();
   } catch(e) {
-    document.getElementById('suratTableBody').innerHTML =
-      `<tr><td colspan="7" class="empty-state">❌ Gagal memuat: ${e.message}</td></tr>`;
+    dtUsulan.settings()[0].oLanguage.sEmptyTable = `❌ Gagal memuat data: ${e.message}`;
+    dtUsulan.clear().draw();
   }
 }
 
-// FILTER
-function renderTable() {
-  const qNama  = document.getElementById('filterNama').value.toLowerCase();
-  const qQ     = document.getElementById('filterQ').value.toLowerCase();
-  const qBulan = document.getElementById('filterBulan').value;
+// Shared DataTables config factory
+function makeDTOptions(columns, filename) {
+  return {
+    columns,
+    dom: '<"dt-top-bar"<"dt-top-left"Bf><"dt-top-right"l>>rt<"dt-bot-bar"ip>',
+    buttons: [
+      { extend: 'copy',   text: '📋 Copy' },
+      { extend: 'csv',    text: '📄 CSV',   filename: filename || 'export' },
+      { extend: 'excel',  text: '📊 Excel', filename: filename || 'export' },
+      { extend: 'pdf',    text: '🖨️ PDF',   filename: filename || 'export', orientation: 'landscape' },
+      { extend: 'print',  text: '🖨️ Print' },
+      { extend: 'colvis', text: '🔲 Kolom ▾' },
+    ],
+    pageLength: 5,
+    lengthMenu: [5, 10, 25, 50, 100],
+    scrollX: true,
+    language: {
+      search: 'Cari semua:',
+      lengthMenu: 'Tampilkan _MENU_ baris per halaman',
+      info: 'Menampilkan _START_–_END_ dari _TOTAL_ data',
+      infoEmpty: 'Tidak ada data',
+      infoFiltered: '(difilter dari _MAX_ total)',
+      paginate: { first: '«', last: '»', next: '›', previous: '‹' },
+      emptyTable: '⏳ Memuat data…',
+      zeroRecords: 'Tidak ada data yang cocok',
+    },
+    initComplete: function() {
+      this.api().columns().every(function() {
+        const col = this;
+        $('<input type="text" placeholder="Filter…">')
+          .appendTo($(col.footer()).empty())
+          .on('input', function() { col.search(this.value).draw(); });
+      });
+    },
+  };
+}
 
-  const filtered = allSurat.filter(r => {
-    if (qNama  && !r.nama.toLowerCase().includes(qNama)) return false;
-    if (qQ && ![r.nomor, r.namaBarang, r.nup, r.bagian, r.keluhan]
-               .some(v => v.toLowerCase().includes(qQ))) return false;
-    if (qBulan && !r.tanggalSurat.startsWith(qBulan)) return false;
-    return true;
+function nomor(d)  { return `<span style="font-family:monospace;font-size:11px">${d||''}</span>`; }
+function bold(d)   { return `<strong>${d||''}</strong>`; }
+function badgeKondisi(d) {
+  if (!d) return '-';
+  const cls = d === 'Rusak Berat' ? 'badge-rb' : d === 'Baik' ? '' : 'badge-rr';
+  return `<span class="badge ${cls}">${d}</span>`;
+}
+
+function initUsulanTable() {
+  if (dtUsulan) return;
+  dtUsulan = $('#tableUsulan').DataTable({
+    data: [],
+    ...makeDTOptions([
+      { data: 'tanggalSurat', title: 'Tanggal Surat', render: d => formatTanggal(d) },
+      { data: 'nomor',        title: 'Nomor Surat',   render: nomor },
+      { data: 'nama',         title: 'Nama Pengaju',  render: bold },
+      { data: 'nip',          title: 'NIP',           defaultContent: '-' },
+      { data: 'jabatan',      title: 'Jabatan',       defaultContent: '-' },
+      { data: 'bagian',       title: 'Bagian/Unit',   defaultContent: '-' },
+      { data: 'jenisSurat',   title: 'Jenis Surat',   render: d => JENIS_LABEL[d] || d || 'BMN Umum' },
+      { data: 'namaBarang',   title: 'Nama Barang',   defaultContent: '-' },
+      { data: 'merekTipe',    title: 'Merek/Tipe',    defaultContent: '-' },
+      { data: 'ruangan',      title: 'Ruangan',       defaultContent: '-' },
+      { data: 'nup',          title: 'NUP',           defaultContent: '-' },
+      { data: 'kondisi',      title: 'Kondisi',       render: badgeKondisi },
+      { data: 'keluhan',      title: 'Keluhan',       defaultContent: '-' },
+    ], 'SuratUsulan'),
   });
 
-  const tbody = document.getElementById('suratTableBody');
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Tidak ada data yang cocok</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = filtered.map(r => {
-    const idx = allSurat.indexOf(r);
-    const bc  = r.kondisi === 'Rusak Berat' ? 'badge-rb' : 'badge-rr';
-    const jenisLabel = JENIS_LABEL[r.jenisSurat] || r.jenisSurat || 'BMN Umum';
-    return `<tr onclick="selectRow(${idx})" id="row_${idx}">
-      <td>${formatTanggal(r.tanggalSurat)}</td>
-      <td style="font-family:monospace;font-size:11px">${r.nomor}</td>
-      <td><strong>${r.nama}</strong></td>
-      <td>${r.bagian}</td>
-      <td style="white-space:nowrap">${jenisLabel}</td>
-      <td>${r.namaBarang}</td>
-      <td>${r.nup}</td>
-      <td><span class="badge ${bc}">${r.kondisi}</span></td>
-    </tr>`;
-  }).join('');
-}
-
-function resetFilter() {
-  ['filterNama','filterQ','filterBulan'].forEach(id => document.getElementById(id).value = '');
-  renderTable();
+  $('#tableUsulan tbody').on('click', 'tr', function() {
+    const d = dtUsulan.row(this).data();
+    if (!d) return;
+    dtUsulan.$('tr.selected').removeClass('selected');
+    $(this).addClass('selected');
+    selectRow(d);
+  });
 }
 
 // SELECT ROW
-function selectRow(idx) {
-  document.querySelectorAll('table.surat-list tr.selected').forEach(el => el.classList.remove('selected'));
-  const rowEl = document.getElementById('row_' + idx);
-  if (rowEl) rowEl.classList.add('selected');
-  selectedRow = allSurat[idx];
-  const d = selectedRow;
+function selectRow(d) {
+  selectedRow = d;
 
   document.getElementById('detailGrid').innerHTML = `
     <div class="dl">Nomor Surat</div>   <div class="dv">${d.nomor}</div>
@@ -1164,69 +1198,58 @@ function setStatus(type, msg) {
   bar.textContent = msg;
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
 // ===== BA-PP DATA =====
 let allBA = [];
 let selectedBA = null;
+let dtBA = null;
 
 async function loadBASuratList() {
+  initBATable();
   try {
     const resp = await fetch(GAS_URL + '?action=getBASuratList');
     const data = await resp.json();
     if (data.status !== 'ok') throw new Error(data.error);
     allBA = data.data;
     baLoaded = true;
-    renderBATable();
+    dtBA.clear().rows.add(allBA).draw();
   } catch(e) {
-    document.getElementById('baTableBody').innerHTML =
-      `<tr><td colspan="7" class="empty-state">❌ Gagal memuat: ${e.message}</td></tr>`;
+    dtBA.settings()[0].oLanguage.sEmptyTable = `❌ Gagal memuat data: ${e.message}`;
+    dtBA.clear().draw();
   }
 }
 
-function renderBATable() {
-  const qNama  = document.getElementById('filterBANama').value.toLowerCase();
-  const qQ     = document.getElementById('filterBAQ').value.toLowerCase();
-  const qBulan = document.getElementById('filterBABulan').value;
-
-  const filtered = allBA.filter(r => {
-    if (qNama  && !r.namaPelaksana.toLowerCase().includes(qNama)) return false;
-    if (qQ && ![r.nomor,r.namaBarang,r.nup,r.noSuratUsulan].some(v => v.toLowerCase().includes(qQ))) return false;
-    if (qBulan && !r.tanggalBA.startsWith(qBulan)) return false;
-    return true;
+function initBATable() {
+  if (dtBA) return;
+  dtBA = $('#tableBA').DataTable({
+    data: [],
+    ...makeDTOptions([
+      { data: 'tanggalBA',      title: 'Tanggal BA',          render: d => formatTanggal(d) },
+      { data: 'nomor',          title: 'Nomor BA',            render: nomor },
+      { data: 'namaPelaksana',  title: 'Pelaksana',           render: bold },
+      { data: 'jabPelaksana',   title: 'Jabatan Pelaksana',   defaultContent: '-' },
+      { data: 'namaBarang',     title: 'Nama Barang',         defaultContent: '-' },
+      { data: 'tipe',           title: 'Tipe',                defaultContent: '-' },
+      { data: 'merek',          title: 'Merek',               defaultContent: '-' },
+      { data: 'ruangan',        title: 'Ruangan',             defaultContent: '-' },
+      { data: 'nup',            title: 'NUP',                 defaultContent: '-' },
+      { data: 'lainLain',       title: 'Lain-lain/No.Inv',    defaultContent: '-' },
+      { data: 'kondisi',        title: 'Kondisi',             render: badgeKondisi },
+      { data: 'rincian',        title: 'Rincian',             defaultContent: '-' },
+      { data: 'noSuratUsulan',  title: 'No Usulan',           defaultContent: '-' },
+    ], 'BeritaAcara'),
   });
 
-  const tbody = document.getElementById('baTableBody');
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data yang cocok</td></tr>';
-    return;
-  }
-  tbody.innerHTML = filtered.map(r => {
-    const idx = allBA.indexOf(r);
-    const bc  = r.kondisi === 'Rusak Berat' ? 'badge-rb' : r.kondisi === 'Baik' ? '' : 'badge-rr';
-    return `<tr onclick="selectBARow(${idx})" id="barow_${idx}">
-      <td>${formatTanggal(r.tanggalBA)}</td>
-      <td style="font-family:monospace;font-size:11px">${r.nomor}</td>
-      <td><strong>${r.namaPelaksana}</strong></td>
-      <td>${r.namaBarang}</td>
-      <td>${r.nup}</td>
-      <td><span class="badge ${bc}">${r.kondisi}</span></td>
-      <td style="font-size:11px">${r.noSuratUsulan || '-'}</td>
-    </tr>`;
-  }).join('');
+  $('#tableBA tbody').on('click', 'tr', function() {
+    const d = dtBA.row(this).data();
+    if (!d) return;
+    dtBA.$('tr.selected').removeClass('selected');
+    $(this).addClass('selected');
+    selectBARow(d);
+  });
 }
 
-function resetBAFilter() {
-  ['filterBANama','filterBAQ','filterBABulan'].forEach(id => document.getElementById(id).value = '');
-  renderBATable();
-}
-
-function selectBARow(idx) {
-  document.querySelectorAll('#baTableBody tr.selected').forEach(el => el.classList.remove('selected'));
-  const rowEl = document.getElementById('barow_' + idx);
-  if (rowEl) rowEl.classList.add('selected');
-  selectedBA = allBA[idx];
-  const d = selectedBA;
+function selectBARow(d) {
+  selectedBA = d;
 
   document.getElementById('baDetailGrid').innerHTML = `
     <div class="dl">Nomor BA</div>         <div class="dv">${d.nomor}</div>
@@ -1373,56 +1396,53 @@ async function startRegenBAPDF() {
 // ===== LAPORAN AC =====
 let allAC     = [];
 let selectedAC = null;
+let dtAC = null;
 
 async function loadLaporanACList() {
+  initACTable();
   try {
     const resp = await fetch(GAS_URL + '?action=getLaporanACList');
     const data = await resp.json();
     if (data.status !== 'ok') throw new Error(data.error);
     allAC = data.data;
     acLoaded = true;
-    renderACTable();
+    dtAC.clear().rows.add(allAC).draw();
   } catch(e) {
-    document.getElementById('acTableBody').innerHTML =
-      `<tr><td colspan="7" class="empty-state">❌ Gagal memuat: ${e.message}</td></tr>`;
+    dtAC.settings()[0].oLanguage.sEmptyTable = `❌ Gagal memuat data: ${e.message}`;
+    dtAC.clear().draw();
   }
 }
 
-function renderACTable() {
-  const qNama  = document.getElementById('filterACNama').value.toLowerCase();
-  const qQ     = document.getElementById('filterACQ').value.toLowerCase();
-  const qBulan = document.getElementById('filterACBulan').value;
-
-  const filtered = allAC.filter(r => {
-    if (qNama  && !r.namaPelaksana.toLowerCase().includes(qNama)) return false;
-    if (qQ && ![r.nomor, r.namaBarang, r.nup, r.noSuratUsulan, r.kapasitasAC]
-               .some(v => (v||'').toLowerCase().includes(qQ))) return false;
-    if (qBulan && !r.tanggalLaporan.startsWith(qBulan)) return false;
-    return true;
+function initACTable() {
+  if (dtAC) return;
+  dtAC = $('#tableAC').DataTable({
+    data: [],
+    ...makeDTOptions([
+      { data: 'tanggalLaporan', title: 'Tanggal Laporan', render: d => formatTanggal(d) },
+      { data: 'nomor',          title: 'Nomor Laporan',   render: nomor },
+      { data: 'namaPelaksana',  title: 'Pelaksana',       render: bold },
+      { data: 'jabPelaksana',   title: 'Jabatan Pelaksana', defaultContent: '-' },
+      { data: 'namaBarang',     title: 'Nama Barang',     defaultContent: '-' },
+      { data: 'tipe',           title: 'Tipe',            defaultContent: '-' },
+      { data: 'merek',          title: 'Merek',           defaultContent: '-' },
+      { data: 'ruangan',        title: 'Ruangan',         defaultContent: '-' },
+      { data: 'nup',            title: 'NUP',             defaultContent: '-' },
+      { data: 'kapasitasAC',    title: 'Kapasitas AC',    defaultContent: '-' },
+      { data: 'jenisSurat',     title: 'Jenis Laporan',
+        render: d => (JENIS_LAP_CONFIG_AC[d] || JENIS_LAP_CONFIG_AC['ac-perbaikan']).judul },
+      { data: null,             title: 'Jenis Pekerjaan',
+        render: (d, type, row) => buildJenisList(row) },
+      { data: 'noSuratUsulan',  title: 'No Usulan',       defaultContent: '-' },
+    ], 'LaporanAC'),
   });
 
-  const tbody = document.getElementById('acTableBody');
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data yang cocok</td></tr>';
-    return;
-  }
-  tbody.innerHTML = filtered.map(r => {
-    const idx = allAC.indexOf(r);
-    return `<tr onclick="selectACRow(${idx})" id="acrow_${idx}">
-      <td>${formatTanggal(r.tanggalLaporan)}</td>
-      <td style="font-family:monospace;font-size:11px">${r.nomor}</td>
-      <td><strong>${r.namaPelaksana}</strong></td>
-      <td>${r.namaBarang}</td>
-      <td>${r.kapasitasAC || '-'}</td>
-      <td>${r.nup}</td>
-      <td style="font-size:11px">${r.noSuratUsulan || '-'}</td>
-    </tr>`;
-  }).join('');
-}
-
-function resetACFilter() {
-  ['filterACNama','filterACQ','filterACBulan'].forEach(id => document.getElementById(id).value = '');
-  renderACTable();
+  $('#tableAC tbody').on('click', 'tr', function() {
+    const d = dtAC.row(this).data();
+    if (!d) return;
+    dtAC.$('tr.selected').removeClass('selected');
+    $(this).addClass('selected');
+    selectACRow(d);
+  });
 }
 
 const JENIS_LAP_CONFIG_AC = {
@@ -1452,12 +1472,8 @@ function buildJenisList(d) {
   return items.length ? items.join('\n') : '-';
 }
 
-function selectACRow(idx) {
-  document.querySelectorAll('#acTableBody tr.selected').forEach(el => el.classList.remove('selected'));
-  const rowEl = document.getElementById('acrow_' + idx);
-  if (rowEl) rowEl.classList.add('selected');
-  selectedAC = allAC[idx];
-  const d = selectedAC;
+function selectACRow(d) {
+  selectedAC = d;
 
   const acLapCfg = JENIS_LAP_CONFIG_AC[d.jenisSurat] || JENIS_LAP_CONFIG_AC['ac-perbaikan'];
   const ruanganSesudahRow = acLapCfg.showRuanganSesudah
@@ -1613,65 +1629,59 @@ async function startRegenACPDF() {
 // ===== LAPORAN KEGIATAN HARIAN (LKH) =====
 let allLKH     = [];
 let selectedLKH = null;
+let dtLKH = null;
 
 async function loadLKHList() {
+  initLKHTable();
   try {
     const resp = await fetch(GAS_URL + '?action=getLKHList');
     const data = await resp.json();
     if (data.status !== 'ok') throw new Error(data.error);
     allLKH = data.data;
     lkhLoaded = true;
-    renderLKHTable();
+    dtLKH.clear().rows.add(allLKH).draw();
   } catch(e) {
-    document.getElementById('lkhTableBody').innerHTML =
-      `<tr><td colspan="7" class="empty-state">❌ Gagal memuat: ${e.message}</td></tr>`;
+    dtLKH.settings()[0].oLanguage.sEmptyTable = `❌ Gagal memuat data: ${e.message}`;
+    dtLKH.clear().draw();
   }
 }
 
-function renderLKHTable() {
-  const qNama  = document.getElementById('filterLKHNama').value.toLowerCase();
-  const qQ     = document.getElementById('filterLKHQ').value.toLowerCase();
-  const qBulan = document.getElementById('filterLKHBulan').value;
-
-  const filtered = allLKH.filter(r => {
-    if (qNama  && !r.namaPelaksana.toLowerCase().includes(qNama)) return false;
-    if (qQ && ![r.nomor, r.namaBarang, r.nup, r.noSuratUsulan, r.namaKegiatan]
-               .some(v => (v||'').toLowerCase().includes(qQ))) return false;
-    if (qBulan && !r.tanggalLKH.startsWith(qBulan)) return false;
-    return true;
+function initLKHTable() {
+  if (dtLKH) return;
+  dtLKH = $('#tableLKH').DataTable({
+    data: [],
+    ...makeDTOptions([
+      { data: 'tanggalLKH',    title: 'Tanggal LKH',   render: d => formatTanggal(d) },
+      { data: 'nomor',         title: 'Nomor LKH',     render: nomor },
+      { data: 'namaPelaksana', title: 'Pelaksana',      render: bold },
+      { data: 'namaKegiatan',  title: 'Nama Kegiatan',  defaultContent: '-' },
+      { data: 'namaBarang',    title: 'Nama Barang',    defaultContent: '-' },
+      { data: 'tipe',          title: 'Tipe',           defaultContent: '-' },
+      { data: 'merek',         title: 'Merek',          defaultContent: '-' },
+      { data: 'ruangan',       title: 'Ruangan',        defaultContent: '-' },
+      { data: 'nup',           title: 'NUP',            defaultContent: '-' },
+      { data: 'kondisi',       title: 'Kondisi',        defaultContent: '-' },
+      { data: 'progress',      title: 'Progress',
+        render: d => {
+          if (!d) return '-';
+          const color = d === 'Selesai' ? '#27ae60' : '#e67e22';
+          return `<span class="badge" style="background:${color};color:#fff">${d}</span>`;
+        }},
+      { data: 'noSuratUsulan', title: 'No Usulan',      defaultContent: '-' },
+    ], 'LaporanKegiatan'),
   });
 
-  const tbody = document.getElementById('lkhTableBody');
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data yang cocok</td></tr>';
-    return;
-  }
-  tbody.innerHTML = filtered.map(r => {
-    const idx = allLKH.indexOf(r);
-    const progColor = r.progress === 'Selesai' ? '#27ae60' : '#e67e22';
-    return `<tr onclick="selectLKHRow(${idx})" id="lkhrow_${idx}">
-      <td>${formatTanggal(r.tanggalLKH)}</td>
-      <td style="font-family:monospace;font-size:11px">${r.nomor}</td>
-      <td><strong>${r.namaPelaksana}</strong></td>
-      <td>${r.namaBarang}</td>
-      <td>${r.nup}</td>
-      <td><span class="badge" style="background:${progColor};color:#fff">${r.progress || '-'}</span></td>
-      <td style="font-size:11px">${r.noSuratUsulan || '-'}</td>
-    </tr>`;
-  }).join('');
+  $('#tableLKH tbody').on('click', 'tr', function() {
+    const d = dtLKH.row(this).data();
+    if (!d) return;
+    dtLKH.$('tr.selected').removeClass('selected');
+    $(this).addClass('selected');
+    selectLKHRow(d);
+  });
 }
 
-function resetLKHFilter() {
-  ['filterLKHNama','filterLKHQ','filterLKHBulan'].forEach(id => document.getElementById(id).value = '');
-  renderLKHTable();
-}
-
-function selectLKHRow(idx) {
-  document.querySelectorAll('#lkhTableBody tr.selected').forEach(el => el.classList.remove('selected'));
-  const rowEl = document.getElementById('lkhrow_' + idx);
-  if (rowEl) rowEl.classList.add('selected');
-  selectedLKH = allLKH[idx];
-  const d = selectedLKH;
+function selectLKHRow(d) {
+  selectedLKH = d;
 
   document.getElementById('lkhDetailGrid').innerHTML = `
     <div class="dl">Nomor LKH</div>       <div class="dv">${d.nomor}</div>

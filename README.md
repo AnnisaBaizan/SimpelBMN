@@ -217,32 +217,46 @@ Form laporan harian kegiatan pemeliharaan Barang Milik Negara oleh Instalasi Sar
 
 ### 5. Panel Admin — `admin.html`
 
-Halaman untuk melihat, mencari, dan mencetak ulang semua dokumen yang pernah disubmit.
+Halaman untuk melihat, mencari, menyaring, dan mencetak ulang semua dokumen yang pernah disubmit.
 
 #### Cara Akses
 
 Buka `admin.html` → masukkan **password admin** (dikonfigurasi saat deploy).
 
-#### Fitur Admin
+#### Fitur Tabel (semua 4 tab)
+
+Setiap tab menggunakan **DataTables 2.x** dengan fitur:
+
+| Fitur | Keterangan |
+|-------|-----------|
+| **Export** | Tombol Copy, CSV, Excel (.xlsx), PDF, dan Print tersedia di atas setiap tabel |
+| **Global Search** | Kotak pencarian di pojok kanan atas menyaring semua kolom sekaligus |
+| **Per-Column Filter** | Input filter individual di baris footer setiap kolom |
+| **ColVis** | Tombol 🔲 Kolom ▾ untuk menampilkan/menyembunyikan kolom tertentu |
+| **Pagination** | Navigasi halaman di bawah tabel; panjang halaman default **5 baris** |
+| **Pilihan baris** | Dropdown di kanan atas: 5 / 10 / 25 / 50 / 100 baris per halaman |
+| **Loading state** | "⏳ Memuat data…" ditampilkan saat fetch berlangsung |
+| **Error state** | "❌ Gagal memuat data: …" jika request GAS gagal |
+
+> **CDN yang dibutuhkan** (sudah ada di `admin.html`): jQuery 3.7.1 · JSZip 3.10.1 · pdfmake 0.2.7 · DataTables 2.0.8 · Buttons 3.0.2
 
 **Tab Surat Usulan:**
-- Tabel semua surat usulan dengan kolom: Tanggal, Nomor, Nama, Bagian, Jenis Surat, Nama Barang, NUP, Kondisi
-- Filter berdasarkan Nama, Nomor/Kata Kunci, dan Bulan
-- Klik baris → detail panel muncul (semua field lengkap termasuk Jenis Surat dan Ruangan Sesudah jika pemindahan)
-- Tombol **🖨️ Cetak / Regenerasi PDF** → muat ulang foto dari Drive, narasi surat berubah sesuai jenis, lalu buka dialog cetak
+- Kolom: No, Tanggal, Nomor, Nama, Bagian, Jenis Surat, Nama Barang, NUP, Kondisi
+- Klik baris → detail panel muncul di bawah tabel (semua field + Jenis Surat + Ruangan Sesudah jika pemindahan)
+- Tombol **🖨️ Cetak / Regenerasi PDF** → muat foto dari Drive, narasi surat berubah sesuai jenis, buka dialog cetak
 
 **Tab Berita Acara:**
-- Tabel semua BA dengan kolom: Tanggal BA, Nomor BA, Pelaksana, Nama Barang, NUP, Kondisi, No Usulan
-- Klik baris → detail + tombol Cetak
+- Kolom: No, Tanggal BA, Nomor BA, Pelaksana, Nama Barang, NUP, Kondisi, No Usulan
+- Klik baris → detail panel + tombol Cetak
 
 **Tab Laporan AC:**
-- Tabel semua Laporan AC dengan kolom: Tanggal Laporan, Nomor, Pelaksana, Nama Barang, Kapasitas AC, NUP, No Usulan
+- Kolom: No, Tanggal Laporan, Nomor, Pelaksana, Nama Barang, Kapasitas AC, NUP, No Usulan
 - Klik baris → detail panel (termasuk Jenis Surat, Ruangan Sesudah jika pemindahan) + tombol Cetak
-- Saat cetak: judul, narasi, dan caption foto berubah otomatis sesuai jenis (perbaikan vs pemindahan), foto 6 slot tersedia
+- Saat cetak: judul, narasi, dan caption foto berubah otomatis sesuai jenis (perbaikan vs pemindahan)
 
 **Tab Laporan Kegiatan (LKH):**
-- Tabel semua LKH dengan kolom: Tanggal LKH, Nomor LKH, Pelaksana, Nama Barang, NUP, Progress, No Usulan
-- Klik baris → detail lengkap + tombol Cetak
+- Kolom: No, Tanggal LKH, Nomor LKH, Pelaksana, Nama Barang, NUP, Progress, No Usulan
+- Klik baris → detail panel lengkap + tombol Cetak
 - Saat cetak: muat foto & TTD dari Drive, tanggal diformat terbilang, progress di-underline sesuai nilai
 
 > **Catatan:** Cetak akan mengunduh foto terbaru dari Google Drive. Pastikan koneksi internet stabil.
@@ -258,7 +272,7 @@ SimpleBMN/
 ├── bapp.html               # ~1.749 baris — Form Berita Acara PP
 ├── laporan-ac.html         # ~2.073 baris — Form Laporan Pemeliharaan AC
 ├── lkh.html                # ~1.600 baris — Form Laporan Kegiatan Harian Sarpras
-├── admin.html              # ~1.800 baris — Panel Admin (4 tab: Usulan, BA, AC, LKH)
+├── admin.html              # ~2.300 baris — Panel Admin (4 tab: Usulan, BA, AC, LKH) + DataTables 2.x
 ├── build.js                #    88 baris — Build script: inject env + embed TTD base64 → dist/
 ├── vercel.json             #             — Konfigurasi deploy Vercel
 ├── KOP.png                 #             — Kop surat institusi
@@ -818,7 +832,7 @@ WA_AKTIF  : false,             // ubah ke true untuk mengaktifkan
 
 | Layer | Teknologi |
 |-------|-----------|
-| Frontend | HTML5, CSS3, JavaScript (vanilla, tanpa framework) |
+| Frontend | HTML5, CSS3, JavaScript (vanilla, tanpa framework); jQuery 3.7.1 + DataTables 2.x (admin) |
 | Backend | Google Apps Script (GAS) |
 | Storage | Google Sheets (data) + Google Drive (file) |
 | Deploy | Vercel (static hosting + build-time env injection) |
