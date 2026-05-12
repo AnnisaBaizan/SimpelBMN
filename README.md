@@ -423,10 +423,11 @@ Lihat [bagian Manajemen TTD](#manajemen-ttd).
 3. **Framework Preset**: `Other`
 4. **Environment Variables** → tambahkan:
 
-| Variable | Nilai |
-|----------|-------|
-| `GAS_URL` | URL Web App dari GAS |
-| `ADMIN_PASSWORD` | Password untuk halaman admin |
+| Variable | Nilai | Wajib? |
+|----------|-------|--------|
+| `GAS_URL` | URL Web App dari GAS | ✓ |
+| `ADMIN_PASSWORD` | Password untuk halaman admin | ✓ |
+| `SURVEY_URL` | URL Google Form "Lapor Bug" (lihat [Tombol Lapor Bug](#tombol-lapor-bug)) | — |
 
 5. Klik **Deploy**
 
@@ -457,6 +458,7 @@ npx serve dist
 ```
 GAS_URL=https://script.google.com/macros/s/XXXXXXX/exec
 ADMIN_PASSWORD=password_rahasia
+SURVEY_URL=https://forms.gle/XXXXXXXX   # opsional — tombol Lapor Bug hilang jika kosong
 ```
 
 ---
@@ -775,6 +777,44 @@ Kedua mode ditangani otomatis oleh `loadTTDIntoEl` di `admin.html` — fungsi in
 | LKH-ISP | R (TTD Pelaksana) | Nama kunci atau URL Drive |
 | LKH-ISP | V (TTD Pengusul) | URL Drive (selalu manual/canvas) |
 | LKH-ISP | X (TTD Mengetahui) | Nama kunci atau URL Drive |
+
+---
+
+## Tombol Lapor Bug
+
+Tombol mengambang **🐛 Lapor Bug** muncul di pojok kanan-bawah semua halaman (kecuali saat print). Klik → buka Google Form survei singkat (7 pertanyaan) untuk melaporkan bug, error, atau saran.
+
+### Setup
+
+1. Buat Google Form baru, atau import template **`survei-bug-simplebmn.csv`** menggunakan addon Google Form Builder (lihat instruksi di bawah).
+2. Salin link bagikan form (Send → 🔗 icon → Copy link, atau pakai short link `forms.gle/...`).
+3. Set env var **`SURVEY_URL`** di Vercel Dashboard → **Settings → Environment Variables** (atau di `.env.local` untuk dev lokal).
+4. Redeploy / rebuild — tombol otomatis aktif dan mengarah ke form Anda.
+
+> Jika `SURVEY_URL` kosong, tombol tersembunyi otomatis (`display: none`). Jika `build.js` belum dijalankan dan placeholder `__SURVEY_URL__` masih ada, klik tombol akan menampilkan alert "Form Lapor Bug belum dikonfigurasi".
+
+### Import Template ke Google Form
+
+File **`survei-bug-simplebmn.csv`** berisi template 7 pertanyaan (semua opsional kecuali "form yang bermasalah" dan "ceritakan masalahnya"). Cara import:
+
+1. Buka [Google Forms](https://forms.google.com) → buat form kosong baru
+2. Install addon dari **🧩 Add-ons** menu — disarankan salah satu:
+   - **Form Builder for Sheets** (Limestrings)
+   - **Form Builder Plus**
+   - **Quick Add Questions to Form**
+3. Jalankan addon → pilih opsi **Import from CSV / Sheet**
+4. Upload `survei-bug-simplebmn.csv`
+5. Map kolom: `Question` → Title, `Type` → Type, `Required` → Required, `Options` → Choices, `HelpText` → Description
+6. Klik **Generate / Import**
+
+> Format kolom CSV (`Section, Question, Type, Required, Options, HelpText`) bersifat universal — kalau addon Anda butuh format berbeda, edit CSV-nya dulu di Google Sheets atau LibreOffice.
+
+### Cara Kerja Tombol
+
+- Posisi: `position: fixed; bottom: 20px; right: 20px` (semua halaman)
+- z-index: `998` (di bawah modal loading, di atas konten biasa)
+- Print: `@media print` → `display: none` (tidak ikut ter-cetak)
+- Konfigurasi: `__SURVEY_URL__` di-replace oleh `build.js` saat build dengan nilai `SURVEY_URL`
 
 ---
 

@@ -1,0 +1,9 @@
+Section,Question,Type,Required,Options,HelpText
+"Lapor Bug — SimpleBMN","Form singkat untuk melaporkan bug, error, atau hal aneh yang Anda temui di aplikasi SimpleBMN. Hanya butuh 1–2 menit. Identitas opsional — yang penting kami tahu masalahnya supaya bisa diperbaiki.",FORM_DESCRIPTION,,,
+,"Form / halaman mana yang bermasalah?",RADIO,YES,"📋 Surat Usulan BMN|📝 Berita Acara PP|❄️ Laporan AC|🛠️ Laporan Kegiatan Harian (LKH)|⚙️ Panel Admin|Beberapa halaman / tidak yakin",
+,"Ceritakan masalahnya — apa yang Anda lakukan dan apa yang terjadi?",PARAGRAPH,YES,,"Contoh: ""Saya klik tombol 🚀 Submit di form Laporan AC, halaman jadi blank dan tidak ada notifikasi. Form harus saya isi ulang dari awal."""
+,"Kapan masalah ini terjadi?",DATE,NO,,Boleh dikosongkan jika tidak ingat.
+,"Browser & perangkat yang dipakai",SHORT,NO,,"Mis. Chrome di laptop Windows, Safari di iPhone."
+,"Link screenshot (opsional)",SHORT,NO,,"Upload screenshot ke Google Drive lalu paste link-nya di sini, atau kosongkan."
+,"Seberapa mendesak masalah ini?",RADIO,NO,"🔴 Mendesak — saya tidak bisa kerja|🟡 Mengganggu — masih bisa kerja tapi ribet|🟢 Saran / minor — tidak menghalangi pekerjaan",
+,"Nama & kontak (opsional, hanya kalau bersedia dihubungi untuk follow-up)",SHORT,NO,,"Mis. ""Budi — WA 0812xxx"" atau email."

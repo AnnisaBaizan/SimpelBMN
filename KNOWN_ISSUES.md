@@ -51,6 +51,36 @@ Pipeline TTD list-based sudah diperbaiki end-to-end:
 
 `PELAKSANA_PROFILE`, `NIP_SARPRAS`, `JAB_SARPRAS` dihapus dari semua halaman. Identitas (NIP, jabatan, instansi) kini dibaca dari nama file PNG: `Nama_NIP_Jabatan_Instansi.png`. Menambah orang baru cukup tambah satu file PNG ke folder TTD yang sesuai.
 
+### 🔴 14. Foto belum di-compress optimal sebelum upload → PDF reprint membengkak — **PRIORITAS**
+**File:** `usulan.html`, `bapp.html`, `laporan-ac.html`, `lkh.html` · seluruh handler foto inline
+
+Saat user pilih foto dari kamera/galeri, file dibaca → resize/compress → tampilkan thumbnail → simpan base64 ke hidden input → upload ke Drive saat submit. Namun ukuran base64 yang dikirim ke GAS dan disimpan di Drive masih besar (foto kamera HP modern bisa 3–8 MB per gambar). Akibatnya:
+
+- **PDF reprint dari `admin.html` membengkak** — 6 foto × ukuran besar = PDF 10–30 MB, lambat di-render dan sulit dibagikan via WA/email
+- **Upload lambat** di koneksi seluler — user di lapangan butuh waktu lama menunggu submit
+- **Storage Drive cepat penuh** — folder foto BMN bertambah cepat
+- **Memori browser tinggi** — preview live lambat saat ada banyak foto besar
+
+**Dugaan akar masalah** (perlu verifikasi):
+- Quality JPEG saat compress masih terlalu tinggi (mungkin 0.85+) atau bahkan tidak di-compress sama sekali di sebagian slot
+- Max width yang dipakai terlalu besar (mungkin 1600–2000 px) untuk kebutuhan tampilan PDF
+- Foto PNG dari screenshot tidak dikonversi ke JPEG saat upload
+- Beberapa slot foto mungkin menyimpan file mentah tanpa lewat `compressAndPreview`
+
+**Dampak nyata:** User Sarpras komplain PDF reprint lambat dan sulit dibagikan. Pengusul di unit/bagian dengan koneksi terbatas kadang gagal submit karena timeout upload.
+
+**Saran perbaikan:**
+1. **Standardisasi parameter compress** di seluruh handler:
+   - `maxWidth = 1280` px (cukup untuk thumbnail di PDF A4)
+   - `quality = 0.7` (JPEG)
+   - Konversi semua output ke `image/jpeg` (kecuali ada transparansi)
+2. **Cek ukuran akhir** setelah compress — kalau masih > 500 KB, ulangi dengan quality lebih rendah (0.6, 0.5)
+3. **Audit semua handler foto** per halaman, pastikan tidak ada slot yang skip compression
+4. **Pindahkan `compressAndPreview()` ke `shared.js`** (lihat [MODULAR_PLAN.md §1i](MODULAR_PLAN.md)) — saat ini logika compress di-duplicate inline di tiap slot, jadi inkonsisten antar halaman dan rawan terlewat
+5. Tampilkan ukuran file final di thumbnail (mis. "382 KB ✓") supaya user tahu fotonya sudah ringan
+
+---
+
 ### 5. `JENIS_CONFIG` (usulan.html) dan `PR_JENIS` (admin.html) adalah duplikat
 **File:** `usulan.html` · Sekitar baris 900–950  
 **File:** `admin.html` · Sekitar baris 876–898

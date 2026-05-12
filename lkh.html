@@ -1571,5 +1571,27 @@
     window.addEventListener('resize', scalePreviews);
     document.addEventListener('DOMContentLoaded', () => setTimeout(scalePreviews, 100));
   </script>
+
+  <!-- ── Tombol Lapor Bug (mengambang, tersembunyi jika SURVEY_URL kosong / saat print) ── -->
+  <a id="btnLaporBug" href="__SURVEY_URL__" target="_blank" rel="noopener"
+     title="Laporkan bug, error, atau saran untuk SimpleBMN"
+     onclick="if(this.getAttribute('href').startsWith('__')){event.preventDefault();alert('Form Lapor Bug belum dikonfigurasi.\nHubungi admin Sarpras.');}">
+    🐛 Lapor Bug
+  </a>
+  <style>
+    #btnLaporBug {
+      position: fixed; bottom: 20px; right: 20px;
+      background: #e74c3c; color: #fff;
+      padding: 10px 16px; border-radius: 24px;
+      text-decoration: none; font-size: 13px; font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
+      z-index: 998; transition: all .2s;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: Arial, sans-serif;
+    }
+    #btnLaporBug:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.3); background: #c0392b; }
+    #btnLaporBug[href=""] { display: none !important; }
+    @media print { #btnLaporBug { display: none !important; } }
+  </style>
 </body>
 </html>

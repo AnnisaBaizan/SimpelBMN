@@ -179,6 +179,29 @@
   .modal-step-item.done   { color: #27ae60; }
   .modal-step-item .si    { width: 18px; text-align: center; }
 
+  /* Detail Modal */
+  .detail-modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 6000;
+    background: rgba(0,0,0,.5); align-items: flex-start; justify-content: center;
+    padding: 40px 16px; overflow-y: auto;
+  }
+  .detail-modal-overlay.show { display: flex; }
+  .detail-modal-box {
+    background: #fff; border-radius: 10px; width: 100%; max-width: 860px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25); flex-shrink: 0; margin: auto;
+  }
+  .detail-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px; border-bottom: 2px solid #1a3a5c;
+  }
+  .detail-modal-header h3 { font-size: 14px; color: #1a3a5c; font-weight: 700; margin: 0; }
+  .detail-modal-close {
+    background: none; border: none; font-size: 20px; cursor: pointer;
+    color: #888; line-height: 1; padding: 2px 7px; border-radius: 4px;
+  }
+  .detail-modal-close:hover { background: #f0f0f0; color: #333; }
+  .detail-modal-body { padding: 20px 22px 24px; }
+
   /* DataTables overrides */
   .admin-wrap .dt-container { font-size: 12px; }
   .admin-wrap .dt-layout-row { margin-bottom: 10px; }
@@ -301,15 +324,6 @@
           <tbody id="suratTableBody"></tbody>
         </table>
       </div>
-      <div class="detail-panel" id="detailPanel">
-        <h3>📄 Detail Surat Terpilih</h3>
-        <div class="detail-grid" id="detailGrid"></div>
-        <div class="action-row">
-          <button class="btn btn-pdf" id="btnRegen" onclick="startRegenPDF()">🖨️ Cetak / Simpan PDF</button>
-          <span class="foto-status" id="fotoStatus"></span>
-        </div>
-        <div class="status-bar" id="statusBar"></div>
-      </div>
     </div>
 
     <!-- TAB: BA-PP -->
@@ -327,15 +341,6 @@
           </tr></tfoot>
           <tbody id="baTableBody"></tbody>
         </table>
-      </div>
-      <div class="detail-panel" id="baDetailPanel">
-        <h3>📝 Detail Berita Acara Terpilih</h3>
-        <div class="detail-grid" id="baDetailGrid"></div>
-        <div class="action-row">
-          <button class="btn btn-pdf" id="btnRegenBA" onclick="startRegenBAPDF()">🖨️ Cetak / Simpan PDF</button>
-          <span class="foto-status" id="baFotoStatus"></span>
-        </div>
-        <div class="status-bar" id="baStatusBar"></div>
       </div>
     </div>
 
@@ -355,15 +360,6 @@
           <tbody id="acTableBody"></tbody>
         </table>
       </div>
-      <div class="detail-panel" id="acDetailPanel">
-        <h3>❄️ Detail Laporan AC Terpilih</h3>
-        <div class="detail-grid" id="acDetailGrid"></div>
-        <div class="action-row">
-          <button class="btn btn-pdf" id="btnRegenAC" onclick="startRegenACPDF()">🖨️ Cetak / Simpan PDF</button>
-          <span class="foto-status" id="acFotoStatus"></span>
-        </div>
-        <div class="status-bar" id="acStatusBar"></div>
-      </div>
     </div>
 
     <!-- TAB: LAPORAN KEGIATAN HARIAN (LKH) -->
@@ -382,17 +378,26 @@
           <tbody id="lkhTableBody"></tbody>
         </table>
       </div>
-      <div class="detail-panel" id="lkhDetailPanel">
-        <h3>📋 Detail Laporan Kegiatan Terpilih</h3>
-        <div class="detail-grid" id="lkhDetailGrid"></div>
-        <div class="action-row">
-          <button class="btn btn-pdf" id="btnRegenLKH" onclick="startRegenLKHPDF()">🖨️ Cetak / Simpan PDF</button>
-          <span class="foto-status" id="lkhFotoStatus"></span>
-        </div>
-        <div class="status-bar" id="lkhStatusBar"></div>
-      </div>
     </div>
 
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="detail-modal-overlay" id="detailModal" onclick="if(event.target===this)closeDetailModal()">
+  <div class="detail-modal-box">
+    <div class="detail-modal-header">
+      <h3 id="detailModalTitle">Detail</h3>
+      <button class="detail-modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="detail-modal-body">
+      <div class="detail-grid" id="detailModalGrid"></div>
+      <div class="action-row" style="margin-top:16px">
+        <button class="btn btn-pdf" id="detailModalPDFBtn">🖨️ Cetak / Simpan PDF</button>
+        <span class="foto-status" id="detailModalFotoStatus"></span>
+      </div>
+      <div class="status-bar" id="detailModalStatusBar"></div>
+    </div>
   </div>
 </div>
 
@@ -1013,7 +1018,7 @@ function initUsulanTable() {
 function selectRow(d) {
   selectedRow = d;
 
-  document.getElementById('detailGrid').innerHTML = `
+  document.getElementById('detailModalGrid').innerHTML = `
     <div class="dl">Nomor Surat</div>   <div class="dv">${d.nomor}</div>
     <div class="dl">Jenis Surat</div>   <div class="dv">${JENIS_LABEL[d.jenisSurat] || d.jenisSurat || 'BMN Umum'}</div>
     <div class="dl">Tanggal Surat</div> <div class="dv">${formatTanggal(d.tanggalSurat)}</div>
@@ -1031,10 +1036,12 @@ function selectRow(d) {
 
   const fotoAda = [d.fotoNup,d.fotoMerek,d.fotoKerusakan,d.fotoKeseluruhan,d.fotoLainLain].filter(f=>f&&f!=='-').length;
   const ttdAda  = [d.ttdPenerima,d.ttdPengirim].filter(f=>f&&f!=='-').length;
-  document.getElementById('fotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia di Drive`;
-  document.getElementById('statusBar').style.display = 'none';
-  document.getElementById('detailPanel').style.display = 'block';
-  document.getElementById('btnRegen').disabled = false;
+  document.getElementById('detailModalTitle').textContent = '📄 Detail Surat Terpilih';
+  document.getElementById('detailModalFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia di Drive`;
+  document.getElementById('detailModalStatusBar').style.display = 'none';
+  document.getElementById('detailModalPDFBtn').onclick = startRegenPDF;
+  document.getElementById('detailModalPDFBtn').disabled = false;
+  openDetailModal();
 }
 
 // MODAL HELPERS
@@ -1051,7 +1058,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 async function startRegenPDF() {
   if (!selectedRow) return;
   const d = selectedRow;
-  const btn = document.getElementById('btnRegen');
+  const btn = document.getElementById('detailModalPDFBtn');
   btn.disabled = true;
 
   // Reset & tampilkan modal
@@ -1192,8 +1199,11 @@ function formatTanggal(val) {
   return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
 }
 
+function openDetailModal()  { document.getElementById('detailModal').classList.add('show'); }
+function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
+
 function setStatus(type, msg) {
-  const bar = document.getElementById('statusBar');
+  const bar = document.getElementById('detailModalStatusBar');
   bar.className = 'status-bar ' + type;
   bar.textContent = msg;
 }
@@ -1251,7 +1261,7 @@ function initBATable() {
 function selectBARow(d) {
   selectedBA = d;
 
-  document.getElementById('baDetailGrid').innerHTML = `
+  document.getElementById('detailModalGrid').innerHTML = `
     <div class="dl">Nomor BA</div>         <div class="dv">${d.nomor}</div>
     <div class="dl">Tanggal BA</div>       <div class="dv">${formatTanggal(d.tanggalBA)}</div>
     <div class="dl">No Surat Usulan</div>  <div class="dv">${d.noSuratUsulan || '-'}</div>
@@ -1269,10 +1279,12 @@ function selectBARow(d) {
   `;
   const fotoAda = [d.foto1,d.foto2,d.foto3,d.foto4,d.foto5,d.foto6].filter(f=>f&&f!=='-').length;
   const ttdAda  = [d.ttdPelaksana,d.ttdPengawas,d.ttdPengguna].filter(f=>f&&f!=='-').length;
-  document.getElementById('baFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
-  document.getElementById('baStatusBar').style.display = 'none';
-  document.getElementById('baDetailPanel').style.display = 'block';
-  document.getElementById('btnRegenBA').disabled = false;
+  document.getElementById('detailModalTitle').textContent = '📝 Detail Berita Acara Terpilih';
+  document.getElementById('detailModalFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
+  document.getElementById('detailModalStatusBar').style.display = 'none';
+  document.getElementById('detailModalPDFBtn').onclick = startRegenBAPDF;
+  document.getElementById('detailModalPDFBtn').disabled = false;
+  openDetailModal();
 }
 
 // ===== REGEN BA PDF =====
@@ -1296,7 +1308,7 @@ function tahunTerbilang(y) {
 async function startRegenBAPDF() {
   if (!selectedBA) return;
   const d = selectedBA;
-  const btn = document.getElementById('btnRegenBA');
+  const btn = document.getElementById('detailModalPDFBtn');
   btn.disabled = true;
   ['ms1','ms2','ms3'].forEach(id => setStep(id,'','⏳'));
   showModal();
@@ -1479,7 +1491,7 @@ function selectACRow(d) {
   const ruanganSesudahRow = acLapCfg.showRuanganSesudah
     ? `<div class="dl">Ruangan Sesudah Pindah</div><div class="dv">${d.ruanganSesudah || '-'}</div>`
     : '';
-  document.getElementById('acDetailGrid').innerHTML = `
+  document.getElementById('detailModalGrid').innerHTML = `
     <div class="dl">Nomor Laporan</div>   <div class="dv">${d.nomor}</div>
     <div class="dl">Jenis Surat</div>     <div class="dv">${acLapCfg.judul}</div>
     <div class="dl">Tanggal Laporan</div> <div class="dv">${formatTanggal(d.tanggalLaporan)}</div>
@@ -1499,17 +1511,19 @@ function selectACRow(d) {
   `;
   const fotoAda = [d.foto1,d.foto2,d.foto3,d.foto4,d.foto5,d.foto6].filter(f=>f&&f!=='-').length;
   const ttdAda  = [d.ttdPelaksana,d.ttdPengguna,d.ttdPengawas].filter(f=>f&&f!=='-').length;
-  document.getElementById('acFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
-  document.getElementById('acStatusBar').style.display = 'none';
-  document.getElementById('acDetailPanel').style.display = 'block';
-  document.getElementById('btnRegenAC').disabled = false;
+  document.getElementById('detailModalTitle').textContent = '❄️ Detail Laporan AC Terpilih';
+  document.getElementById('detailModalFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
+  document.getElementById('detailModalStatusBar').style.display = 'none';
+  document.getElementById('detailModalPDFBtn').onclick = startRegenACPDF;
+  document.getElementById('detailModalPDFBtn').disabled = false;
+  openDetailModal();
 }
 
 // ===== REGEN LAPORAN AC PDF =====
 async function startRegenACPDF() {
   if (!selectedAC) return;
   const d = selectedAC;
-  const btn = document.getElementById('btnRegenAC');
+  const btn = document.getElementById('detailModalPDFBtn');
   btn.disabled = true;
   ['ms1','ms2','ms3'].forEach(id => setStep(id,'','⏳'));
   showModal();
@@ -1683,7 +1697,7 @@ function initLKHTable() {
 function selectLKHRow(d) {
   selectedLKH = d;
 
-  document.getElementById('lkhDetailGrid').innerHTML = `
+  document.getElementById('detailModalGrid').innerHTML = `
     <div class="dl">Nomor LKH</div>       <div class="dv">${d.nomor}</div>
     <div class="dl">Tanggal LKH</div>     <div class="dv">${formatTanggal(d.tanggalLKH)}</div>
     <div class="dl">No Surat Usulan</div> <div class="dv">${d.noSuratUsulan || '-'}</div>
@@ -1700,15 +1714,17 @@ function selectLKHRow(d) {
   `;
   const fotoAda = [d.foto1,d.foto2,d.foto3,d.foto4,d.foto5,d.foto6].filter(f=>f&&f!=='-').length;
   const ttdAda  = [d.ttdPelaksana,d.ttdPengusul,d.ttdMengetahui].filter(f=>f&&f!=='-').length;
-  document.getElementById('lkhFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
-  document.getElementById('lkhStatusBar').style.display = 'none';
-  document.getElementById('lkhDetailPanel').style.display = 'block';
-  document.getElementById('btnRegenLKH').disabled = false;
+  document.getElementById('detailModalTitle').textContent = '📋 Detail Laporan Kegiatan Terpilih';
+  document.getElementById('detailModalFotoStatus').textContent = `📎 ${fotoAda} foto • ✍️ ${ttdAda} TTD tersedia`;
+  document.getElementById('detailModalStatusBar').style.display = 'none';
+  document.getElementById('detailModalPDFBtn').onclick = startRegenLKHPDF;
+  document.getElementById('detailModalPDFBtn').disabled = false;
+  openDetailModal();
 }
 
 async function startRegenLKHPDF() {
   if (!selectedLKH) return;
-  const btn = document.getElementById('btnRegenLKH');
+  const btn = document.getElementById('detailModalPDFBtn');
   btn.disabled = true;
   showModal();
   const d = selectedLKH;
@@ -1815,27 +1831,5 @@ async function startRegenLKHPDF() {
   }, 2000);
 }
 </script>
-
-<!-- ── Tombol Lapor Bug (mengambang, tersembunyi jika SURVEY_URL kosong / saat print) ── -->
-<a id="btnLaporBug" href="__SURVEY_URL__" target="_blank" rel="noopener"
-   title="Laporkan bug, error, atau saran untuk SimpleBMN"
-   onclick="if(this.getAttribute('href').startsWith('__')){event.preventDefault();alert('Form Lapor Bug belum dikonfigurasi.\nHubungi admin Sarpras.');}">
-  🐛 Lapor Bug
-</a>
-<style>
-  #btnLaporBug {
-    position: fixed; bottom: 20px; right: 20px;
-    background: #e74c3c; color: #fff;
-    padding: 10px 16px; border-radius: 24px;
-    text-decoration: none; font-size: 13px; font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,.2);
-    z-index: 998; transition: all .2s;
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: Arial, sans-serif;
-  }
-  #btnLaporBug:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.3); background: #c0392b; }
-  #btnLaporBug[href=""] { display: none !important; }
-  @media print { #btnLaporBug { display: none !important; } }
-</style>
 </body>
 </html>

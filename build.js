@@ -6,9 +6,11 @@ const path = require('path');
 
 const GAS_URL        = process.env.GAS_URL        || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD  || '';
+const SURVEY_URL     = process.env.SURVEY_URL      || '';
 
 if (!GAS_URL)        { console.error('ERROR: GAS_URL tidak diset'); process.exit(1); }
 if (!ADMIN_PASSWORD) { console.error('ERROR: ADMIN_PASSWORD tidak diset'); process.exit(1); }
+if (!SURVEY_URL)     { console.warn('⚠️  SURVEY_URL tidak diset — tombol Lapor Bug akan tersembunyi'); }
 
 const SRC  = __dirname;
 const DIST = path.join(__dirname, 'dist');
@@ -57,6 +59,7 @@ HTML_FILES.forEach(file => {
   let content = fs.readFileSync(src, 'utf8');
   content = content.replaceAll('__GAS_URL__',        GAS_URL);
   content = content.replaceAll('__ADMIN_PASSWORD__', ADMIN_PASSWORD);
+  content = content.replaceAll('__SURVEY_URL__',     SURVEY_URL);
   content = content.replaceAll('__TTD_SAPRAS__',     TTD_SAPRAS_JSON);
   content = content.replaceAll('__TTD_PELAKSANA__',  TTD_PELAKSANA_JSON);
   content = content.replaceAll('__TTD_ATASAN__',     TTD_ATASAN_JSON);
