@@ -1,5 +1,5 @@
 {
-  "name": "simplebmn",
+  "name": "simpelbmn",
   "version": "1.0.0",
   "description": "Sistem digital pengelolaan dokumen **Barang Milik Negara (BMN)** — pengajuan, berita acara, laporan AC, dengan tanda tangan digital dan integrasi Google Sheets & Drive.",
   "main": "build.js",
@@ -8,16 +8,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AnnisaBaizan/SimpleBMN.git"
+    "url": "git+https://github.com/AnnisaBaizan/SimpelBMN.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/AnnisaBaizan/SimpleBMN/issues"
+    "url": "https://github.com/AnnisaBaizan/SimpelBMN/issues"
   },
-  "homepage": "https://github.com/AnnisaBaizan/SimpleBMN#readme",
+  "homepage": "https://github.com/AnnisaBaizan/SimpelBMN#readme",
   "dependencies": {
     "xlsx": "^0.18.5"
   }
