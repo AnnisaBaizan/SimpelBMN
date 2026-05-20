@@ -344,8 +344,9 @@
         <h3>Jenis Surat Laporan</h3>
         <div class="form-row">
           <select id="selectJenisLaporan" onchange="setJenisLaporan(this.value)">
-            <option value="ac-perbaikan">❄️ Perbaikan / Pemeliharaan AC</option>
-            <option value="ac-pemindahan">🔄 Pemindahan AC</option>
+            <option value="ac-perbaikan">❄️ Pemeliharaan dan Perbaikan</option>
+            <option value="ac-bongkar-pasang">🔧 Bongkar Pasang</option>
+            <option value="ac-bongkar">📦 Bongkar</option>
           </select>
         </div>
       </div>
@@ -473,7 +474,7 @@
           <input type="text" id="ruangan" placeholder="Contoh: Ruang Rapat Lt.2" oninput="syncPreview()" />
         </div>
         <div class="form-row" id="rowRuanganSesudah" style="display:none;">
-          <label>Ruangan Sesudah Pindah <span class="req">*</span></label>
+          <label id="labelRuanganSesudah">Ruangan Sesudah Pindah <span class="req">*</span></label>
           <input type="text" id="ruanganSesudah" placeholder="Contoh: Ruang Direktur Lt.3" oninput="syncPreview()" />
         </div>
         <div class="form-row">
@@ -755,7 +756,7 @@
           </li>
           <li id="pvRuanganSesudahRow" style="display:none;">
             <span class="dl-dash">–</span>
-            <span class="dl-key">Ruangan Sesudah Pindah</span>
+            <span class="dl-key" id="pvLabelRuanganSesudah">Ruangan Sesudah Pindah</span>
             <span class="dl-sep">:</span>
             <span class="dl-val" id="pvRuanganSesudah">……………………………</span>
           </li>
@@ -945,21 +946,41 @@
         judul      : 'Laporan Pelaksanaan Pekerjaan Pemeliharaan/Perbaikan Air Conditioner',
         pembuka    : 'Telah selesai melakukan pemeliharaan/perbaikan air conditioner, sesuai dengan ketentuan sebagai berikut:',
         penutup    : 'Demikian laporan pemeliharaan/perbaikan air conditioner ini dibuat.\nAtas perhatiannya, kami ucapkan terima kasih.',
-        showRuanganSesudah : false,
+        showRuanganSesudah       : false,
+        labelRuanganSesudah      : '',
+        placeholderRuanganSesudah: '',
         foto3Label   : '📸 3. Foto (Sebelum / Spare Part)',
         foto6Label   : '📸 6. Foto Lain-lain',
         foto3Caption : '3. Foto (Sebelum / Spare Part)',
         foto6Caption : '6. Foto Lain-lain',
+        // Jenis surat usulan (di sheet Usulan-PP) yang valid sebagai "Dasar Surat" untuk laporan jenis ini
+        usulanMatch  : 'ac-perbaikan',
       },
-      'ac-pemindahan': {
-        judul      : 'Laporan Pelaksanaan Pekerjaan Pemindahan Air Conditioner',
-        pembuka    : 'Telah selesai melakukan pemindahan air conditioner, sesuai dengan ketentuan sebagai berikut:',
-        penutup    : 'Demikian laporan pemindahan air conditioner ini dibuat.\nAtas perhatiannya, kami ucapkan terima kasih.',
-        showRuanganSesudah : true,
-        foto3Label   : '📸 3. Foto AC dan Ruangan Sebelum Pemindahan',
-        foto6Label   : '📸 6. Foto AC dan Ruangan Sesudah Pemindahan',
-        foto3Caption : '3. Foto AC dan Ruangan Sebelum Pemindahan',
-        foto6Caption : '6. Foto AC dan Ruangan Sesudah Pemindahan',
+      'ac-bongkar-pasang': {
+        judul      : 'Laporan Pelaksanaan Pekerjaan Bongkar Pasang Air Conditioner',
+        pembuka    : 'Telah selesai melakukan bongkar pasang air conditioner, sesuai dengan ketentuan sebagai berikut:',
+        penutup    : 'Demikian laporan bongkar pasang air conditioner ini dibuat.\nAtas perhatiannya, kami ucapkan terima kasih.',
+        showRuanganSesudah       : true,
+        labelRuanganSesudah      : 'Ruangan Tujuan Pemasangan',
+        placeholderRuanganSesudah: 'Contoh: Ruang Direktur Lt.3',
+        foto3Label   : '📸 3. Foto AC dan Ruangan Sebelum Bongkar Pasang',
+        foto6Label   : '📸 6. Foto AC dan Ruangan Sesudah Pemasangan',
+        foto3Caption : '3. Foto AC dan Ruangan Sebelum Bongkar Pasang',
+        foto6Caption : '6. Foto AC dan Ruangan Sesudah Pemasangan',
+        usulanMatch  : 'ac-pemindahan',
+      },
+      'ac-bongkar': {
+        judul      : 'Laporan Pelaksanaan Pekerjaan Bongkar Air Conditioner',
+        pembuka    : 'Telah selesai melakukan bongkar air conditioner, sesuai dengan ketentuan sebagai berikut:',
+        penutup    : 'Demikian laporan bongkar air conditioner ini dibuat.\nAtas perhatiannya, kami ucapkan terima kasih.',
+        showRuanganSesudah       : true,
+        labelRuanganSesudah      : 'Ruangan Gudang Penyimpanan',
+        placeholderRuanganSesudah: 'Contoh: Gudang Sarpras Lt.1',
+        foto3Label   : '📸 3. Foto AC dan Ruangan Sebelum Bongkar',
+        foto6Label   : '📸 6. Foto AC di Ruangan Gudang Penyimpanan',
+        foto3Caption : '3. Foto AC dan Ruangan Sebelum Bongkar',
+        foto6Caption : '6. Foto AC di Ruangan Gudang Penyimpanan',
+        usulanMatch  : 'ac-pemindahan',
       },
     };
 
@@ -1013,11 +1034,17 @@
       const cap6 = document.getElementById('pvCaption6');
       if (cap3) cap3.textContent = cfg.foto3Caption;
       if (cap6) cap6.textContent = cfg.foto6Caption;
-      // Show/hide ruangan sesudah
+      // Show/hide ruangan sesudah + update label & placeholder dinamis
       const rowRS = document.getElementById('rowRuanganSesudah');
       if (rowRS) rowRS.style.display = cfg.showRuanganSesudah ? '' : 'none';
+      const lblRS = document.getElementById('labelRuanganSesudah');
+      if (lblRS && cfg.labelRuanganSesudah) lblRS.innerHTML = cfg.labelRuanganSesudah + ' <span class="req">*</span>';
+      const inpRS = document.getElementById('ruanganSesudah');
+      if (inpRS && cfg.placeholderRuanganSesudah) inpRS.placeholder = cfg.placeholderRuanganSesudah;
       const pvRS = document.getElementById('pvRuanganSesudahRow');
       if (pvRS) pvRS.style.display = cfg.showRuanganSesudah ? '' : 'none';
+      const pvLblRS = document.getElementById('pvLabelRuanganSesudah');
+      if (pvLblRS && cfg.labelRuanganSesudah) pvLblRS.textContent = cfg.labelRuanganSesudah;
       // Update narasi di preview
       const pvJudul = document.getElementById('pvJudul');
       if (pvJudul) pvJudul.textContent = cfg.judul;
@@ -1057,8 +1084,10 @@
     function buildSelectUsulan() {
       const sel = document.getElementById('selectUsulan');
       sel.innerHTML = '<option value="">— Pilih nomor surat usulan —</option>';
+      // Jenis surat usulan yang valid sebagai dasar untuk laporan jenis aktif
+      const wantUsulanJenis = (JENIS_LAP_CONFIG[jenisLaporan] || {}).usulanMatch || jenisLaporan;
       suratUsulanACDB.forEach((s, i) => {
-        if (s.jenisSurat !== jenisLaporan) return; // filter by active jenis
+        if (s.jenisSurat !== wantUsulanJenis) return;
         const opt = document.createElement('option');
         opt.value = i; // simpan index original agar onSelectUsulan bisa lookup
         const label = s.jenisSurat === 'ac-pemindahan' ? '🔄' : '❄️';
@@ -1107,8 +1136,9 @@
       showAutoFoto(1, autoFotoUrls.foto1);
       showAutoFoto(2, autoFotoUrls.foto2);
 
-      // Auto-load foto 3 & 6 — hanya untuk pemindahan (fotoKerusakan=Sebelum, fotoLainLain=Sesudah)
-      if (jenisLaporan === 'ac-pemindahan') {
+      // Auto-load foto 3 & 6 — untuk bongkar pasang & bongkar (fotoKerusakan=Sebelum, fotoLainLain=Sesudah)
+      // Sumber data: surat usulan jenis 'ac-pemindahan' (lihat usulanMatch di JENIS_LAP_CONFIG)
+      if (jenisLaporan === 'ac-bongkar-pasang' || jenisLaporan === 'ac-bongkar') {
         autoFotoUrls.foto3 = s.fotoKerusakan !== '-' ? s.fotoKerusakan : null;
         autoFotoUrls.foto6 = s.fotoLainLain  !== '-' ? s.fotoLainLain  : null;
         showAutoFoto(3, autoFotoUrls.foto3);
