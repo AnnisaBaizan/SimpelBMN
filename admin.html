@@ -617,7 +617,7 @@
       <tr><td>Tipe</td><td>:</td><td class="nilai" id="acPrTipe"></td></tr>
       <tr><td>Merek</td><td>:</td><td class="nilai" id="acPrMerek"></td></tr>
       <tr><td>Ruangan (Sesuai DBR)</td><td>:</td><td class="nilai" id="acPrRuangan"></td></tr>
-      <tr id="acPrRowRuanganSesudah" style="display:none;"><td>Ruangan Sesudah Pindah</td><td>:</td><td class="nilai" id="acPrRuanganSesudah"></td></tr>
+      <tr id="acPrRowRuanganSesudah" style="display:none;"><td id="acPrLabelRuanganSesudah">Ruangan Sesudah Pindah</td><td>:</td><td class="nilai" id="acPrRuanganSesudah"></td></tr>
       <tr><td>NUP</td><td>:</td><td class="nilai" id="acPrNup"></td></tr>
       <tr><td>Kapasitas AC</td><td>:</td><td class="nilai" id="acPrKapasitas"></td></tr>
       <tr>
@@ -1451,14 +1451,33 @@ const JENIS_LAP_CONFIG_AC = {
     penutup : 'Demikian laporan pemeliharaan/perbaikan Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.',
     foto3Caption: '3. Foto Sebelum / Spare Part',
     foto6Caption: '6. Foto Lain-lain',
-    showRuanganSesudah: false,
+    showRuanganSesudah : false,
+    labelRuanganSesudah: '',
   },
+  'ac-bongkar-pasang': {
+    judul   : 'Laporan Bongkar Pasang Air Conditioner',
+    penutup : 'Demikian laporan bongkar pasang Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.',
+    foto3Caption: '3. Foto AC dan Ruangan Sebelum Bongkar Pasang',
+    foto6Caption: '6. Foto AC dan Ruangan Sesudah Pemasangan',
+    showRuanganSesudah : true,
+    labelRuanganSesudah: 'Ruangan Tujuan Pemasangan',
+  },
+  'ac-bongkar': {
+    judul   : 'Laporan Bongkar Air Conditioner',
+    penutup : 'Demikian laporan bongkar Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.',
+    foto3Caption: '3. Foto AC dan Ruangan Sebelum Bongkar',
+    foto6Caption: '6. Foto AC di Ruangan Gudang Penyimpanan',
+    showRuanganSesudah : true,
+    labelRuanganSesudah: 'Ruangan Gudang Penyimpanan',
+  },
+  // Legacy alias — data lama bernilai 'ac-pemindahan' di sheet di-render sebagai Bongkar Pasang
   'ac-pemindahan': {
-    judul   : 'Laporan Pemindahan Air Conditioner',
-    penutup : 'Demikian laporan pemindahan Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.',
-    foto3Caption: '3. Foto AC dan Ruangan Sebelum Pemindahan',
-    foto6Caption: '6. Foto AC dan Ruangan Sesudah Pemindahan',
-    showRuanganSesudah: true,
+    judul   : 'Laporan Bongkar Pasang Air Conditioner',
+    penutup : 'Demikian laporan bongkar pasang Air Conditioner ini dibuat untuk dipergunakan sebagaimana mestinya.',
+    foto3Caption: '3. Foto AC dan Ruangan Sebelum Bongkar Pasang',
+    foto6Caption: '6. Foto AC dan Ruangan Sesudah Pemasangan',
+    showRuanganSesudah : true,
+    labelRuanganSesudah: 'Ruangan Tujuan Pemasangan',
   },
 };
 
@@ -1477,7 +1496,7 @@ function selectACRow(d) {
 
   const acLapCfg = JENIS_LAP_CONFIG_AC[d.jenisSurat] || JENIS_LAP_CONFIG_AC['ac-perbaikan'];
   const ruanganSesudahRow = acLapCfg.showRuanganSesudah
-    ? `<div class="dl">Ruangan Sesudah Pindah</div><div class="dv">${d.ruanganSesudah || '-'}</div>`
+    ? `<div class="dl">${acLapCfg.labelRuanganSesudah || 'Ruangan Sesudah Pindah'}</div><div class="dv">${d.ruanganSesudah || '-'}</div>`
     : '';
   document.getElementById('acDetailGrid').innerHTML = `
     <div class="dl">Nomor Laporan</div>   <div class="dv">${d.nomor}</div>
@@ -1530,6 +1549,8 @@ async function startRegenACPDF() {
   if (acCap6El) acCap6El.textContent = acCfg.foto6Caption;
   const acRowRS = document.getElementById('acPrRowRuanganSesudah');
   if (acRowRS) acRowRS.style.display = acCfg.showRuanganSesudah ? '' : 'none';
+  const acLblRS = document.getElementById('acPrLabelRuanganSesudah');
+  if (acLblRS) acLblRS.textContent = acCfg.labelRuanganSesudah || 'Ruangan Sesudah Pindah';
   set('acPrRuanganSesudah', d.ruanganSesudah || '');
 
   set('acPrNomor',          d.nomor);
